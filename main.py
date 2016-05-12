@@ -5,10 +5,14 @@ import logging
 # Import the Flask Framework
 from flask import jsonify
 from flask import Flask
+from flask.ext.cors import CORS #, cross_origin
+
 app = Flask(__name__)
 # Note: We don't need to call run() since our application is embedded within
 # the App Engine WSGI application server.
 
+# CORS support
+CORS(app)
 
 @app.route('/')
 def hello():

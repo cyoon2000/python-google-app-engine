@@ -72,16 +72,9 @@ page for libraries that are already included in the SDK.  To include SDK
 libraries, add them in your app.yaml file. Other than libraries included in
 the SDK, only pure python libraries may be added to an App Engine project.
 
-### Feedback
-Star this repo if you found it useful. Use the github issue tracker to give
-feedback on this repo.
-
-## Contributing changes
-See [CONTRIB.md](CONTRIB.md)
-
-## Licensing
-See [LICENSE](LICENSE)
-
-## Author
-Logan Henriquez and Johan Euphrosine
-# app-engine-flask
+### Installing 3rd Party Libraries
+Reference: http://stackoverflow.com/questions/14850853/how-to-include-third-party-python-libraries-in-google-app-engine/29681061#29681061
+To include 3rd party lib (in local repo):
+    ```
+    pip install flask-cors -t lib --upgrade
+    ```
