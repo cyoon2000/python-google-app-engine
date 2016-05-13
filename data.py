@@ -4,21 +4,16 @@ import logging
 from collections import namedtuple
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
-# CSV_PATH = BASE_PATH + '/test.csv'
 CSV_PATH = BASE_PATH + '/resorts.csv'
+CSV_PATH_UNIT = BASE_PATH + '/units.csv'
+CSV_PATH_PHOTO = BASE_PATH + '/photos.csv'
 # reader = csv.DictReader(open(BASE_PATH + '/resorts.csv'))
-# reader = csv.DictReader(open(BASE_PATH + '/test.csv'))
-
-# fields = ("name","category","resortId", "gcalId")
-# name,displayName,wifi,parking,communalKitchen,privateBeach,freeBreakfast,noteOnFood,
-# lessonKite,rentKite,lessonWindsurf,rentWindsurf,mtnbike,rentPerformanceMtnBike,fishingTrip,scubaDivingTrip,yoga,massage,noteOnActivity,
-# checkIn,checkOut,cc,extraPersonCharge,pets,minimumStay,cancelPolicy,profilePhoto,photos
+PHOTO_PATH = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/'
 
 fields = ("name", "displayName", "wifi", "parking", "communalKitchen", "privateBeach", "freeBreakfast", "noteOnFood",
           "lessonKite", "rentKite", "lessonWindsurf", "rentWindsurf", "mtnbike", "rentPerformanceMtnBike", "fishingTrip", "scubaDivingTrip",
           "yoga", "massage","noteOnActivity",
           "checkIn", "checkOut", "cc", "extraPersonCharge", "pets", "minimumStay", "cancelPolicy", "profilePhoto", "photos")
-
 class ResortRecord(namedtuple('ResortRecord_', fields)):
 
     @classmethod
@@ -34,36 +29,106 @@ class ResortRecord(namedtuple('ResortRecord_', fields)):
         #     return "%s raised %i in round %s on %s" % (self.company, self.raisedAmt, self.round, date)
 
 
-def read_data():
-    logging.info('........Loading data %s........', CSV_PATH)
+fields = ("category", "resortName", "displayName", "type", "maxCapacity", "bedSetup",
+          "numBedroom", "numBathroom", "kitchen", "kitchenette", "privateBath",
+          "ac", "patio", "seaview", "profilePhoto", "photos")
+class UnitRecord(namedtuple('UnitRecord_', fields)):
+
+    @classmethod
+    def parse(klass, row):
+        row = list(row)                                # Make row mutable
+        return klass(*row)
+
+
+fields = ("resortName", "unitType", "profile",  "alt", "fileName", "ext")
+class PhotoRecord(namedtuple('PhotoRecord_', fields)):
+
+    @classmethod
+    def parse(klass, row):
+        row = list(row)                                # Make row mutable
+        return klass(*row)
+
+
+def read_data_resorts():
+    logging.info('loading Resort data........')
     with open(CSV_PATH, 'rU') as data:
         data.readline()            # Skip the header
         reader = csv.reader(data)  # Create a regular tuple reader
         for row in map(ResortRecord.parse, reader):
-            #logging.info(row)
+            # logging.info(row)
             yield row
 
 
-def find_all_resorts():
+def read_data_units():
+    logging.info('loading Unit data........')
+    with open(CSV_PATH_UNIT, 'rU') as data:
+        data.readline()            # Skip the header
+        reader = csv.reader(data)  # Create a regular tuple reader
+        for row in map(UnitRecord.parse, reader):
+            yield row
+
+
+def read_data_photos():
+    logging.info('loading Photo data........')
+    with open(CSV_PATH_PHOTO, 'rU') as data:
+        data.readline()            # Skip the header
+        reader = csv.reader(data)  # Create a regular tuple reader
+        for row in map(PhotoRecord.parse, reader):
+            yield row
+
+def resorts():
     result = []
-    for row in read_data():
+    for row in read_data_resorts():
         result.append(row)
     return result
 
 
-def find_resort(resortname):
-    for row in read_data():
+def units():
+    result = []
+    for row in read_data_units():
+        result.append(row)
+    return result
+
+
+def photos():
+    result = []
+    for row in read_data_photos():
+        result.append(row)
+    return result
+
+# def find_resort(resortname):
+#     for row in read_data_resorts():
+#         if row.name == resortname:
+#             return row
+#     return None
+
+def find_resort(resorts, resortname):
+    for row in resorts:
         if row.name == resortname:
             return row
-    #return result
     return None
 
+# def find_units_by_resort_name(resortname):
+#     result = []
+#     for row in read_data_units():
+#         if row.resortName == resortname:
+#             result.append(row)
+#     return result
 
-# def serialize_resorts(resorts):
-#     resorts_json = []
-#     for resort in resorts:
-#         resorts_json.append(serialize_resort_summary(resort))
-#     return resorts_json
+def find_units_by_resort_name(units, resortname):
+    result = []
+    for row in units:
+        if row.resortName == resortname:
+            result.append(row)
+    return result
+
+
+def find_photos_by_resort_name(photos, resortname):
+    result = []
+    for row in photos:
+        if row.resortName == resortname:
+            result.append(row)
+    return result
 
 
 def serialize_resort_summary(resort):
@@ -77,25 +142,7 @@ def serialize_resort_summary(resort):
     }
 
 
-# def serialize_resort_detail(resort, units):
-#     return {
-#         'name': resort['name'],
-#         'displayName': resort['displayName'],
-#         # TODO - replace with real!
-#         'profilePhoto': get_mock_profile_photo(),
-#         'beachFront': resort['privateBeach'],
-#         'price': 150,
-#         # TODO - replace with real!
-#         'desc': get_mock_desc(),
-#         'generalSection': serialize_section_general(resort),
-#         'foodSection': serialize_section_food(resort),
-#         'activitySection': serialize_section_activity(resort),
-#         'policySection': serialize_section_policy(resort),
-#         'photos': get_mock_photos(),
-#         'unitTypes': serialize_units_summary(units)
-#     }
-
-def serialize_resort_detail(resort, units):
+def serialize_resort_detail(resort, units, photos):
     if resort is None:
         return {}
     return {
@@ -110,8 +157,9 @@ def serialize_resort_detail(resort, units):
         'foodSection': serialize_section_food(resort),
         'activitySection': serialize_section_activity(resort),
         'policySection': serialize_section_policy(resort),
-        'photos': get_mock_photos(),
-        #'unitTypes': serialize_units_summary(units)
+        'unitTypes': serialize_units_summary(units),
+        # 'photos': get_mock_photos(),
+        'photos': serialize_photos(photos)
     }
 
 
@@ -123,12 +171,32 @@ def serialize_units_summary(units):
 
 
 def serialize_unit_summary(unit):
+    # print unit
     return {
-        'displayName': unit['displayName'],
+        'displayName': unit.displayName,
         'profilePhoto': get_mock_unit_profile_photo(),
-        'maxCapacity': unit['maxCapacity'],
+        'maxCapacity': unit.maxCapacity,
         'price': 150,
         }
+
+def serialize_photos(photos):
+    json = []
+    for photo in photos:
+        json.append(serialize_photo(photo))
+    return json
+
+
+def serialize_photo(photo):
+    if photo.ext:
+        url = PHOTO_PATH + photo.fileName + photo.ext
+    else:
+        url = PHOTO_PATH + photo.fileName + '.jpg'
+    return {
+        'resortName': photo.resortName,
+        'url': url,
+        'alt': photo.alt
+        }
+
 
 def serialize_section_general(resort):
     # return {
@@ -295,31 +363,31 @@ def get_mock_unit_profile_photo():
         'photoUrl3x': ""
     }
 
-def get_mock_photos():
-
-    # https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/Kite%20Baja-59.jpg
-    path = "https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/Kite%20Baja-"
-    url1 = path + "59.jpg"
-    url2 = path + "60.jpg"
-    url3 = path + "61.jpg"
-    url4 = path + "62.jpg"
-    url5 = path + "63.jpg"
-    url6 = path + "64.jpg"
-    url7 = path + "65.jpg"
-    url8 = path + "66.jpg"
-    url9 = path + "67.jpg"
-    url10 = path + "68.jpg"
-    return [
-        {'url': url1},
-        {'url': url2},
-        {'url': url3},
-        {'url': url4},
-        {'url': url5},
-        {'url': url6},
-        {'url': url7},
-        {'url': url8},
-        {'url': url9},
-        {'url': url10}
-    ]
+# def get_mock_photos():
+#
+#     # https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/Kite%20Baja-59.jpg
+#     path = "https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/Kite%20Baja-"
+#     url1 = path + "59.jpg"
+#     url2 = path + "60.jpg"
+#     url3 = path + "61.jpg"
+#     url4 = path + "62.jpg"
+#     url5 = path + "63.jpg"
+#     url6 = path + "64.jpg"
+#     url7 = path + "65.jpg"
+#     url8 = path + "66.jpg"
+#     url9 = path + "67.jpg"
+#     url10 = path + "68.jpg"
+#     return [
+#         {'url': url1},
+#         {'url': url2},
+#         {'url': url3},
+#         {'url': url4},
+#         {'url': url5},
+#         {'url': url6},
+#         {'url': url7},
+#         {'url': url8},
+#         {'url': url9},
+#         {'url': url10}
+#     ]
 
 

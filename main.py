@@ -14,6 +14,11 @@ app = Flask(__name__)
 # CORS support
 CORS(app)
 
+
+resorts_data = data.resorts()
+units_data = data.units()
+photos_data = data.photos()
+
 @app.route('/')
 def hello():
     """Return a friendly HTTP greeting."""
@@ -35,16 +40,18 @@ def application_error(e):
 @app.route('/resorts')
 #@requires_auth
 def show_resorts():
-    resorts = data.find_all_resorts()
-    results = [data.serialize_resort_summary(r) for r in resorts]
+    # resort_list = data.find_all_resorts()
+    results = [data.serialize_resort_summary(r) for r in resorts_data]
     # results = data.serialize_resorts(resorts)
     return jsonify(results=results)
 
 
 @app.route('/resorts/<resortname>')
 def show_resort_by_name(resortname):
-    resort = data.find_resort(resortname)
+    resort = data.find_resort(resorts_data, resortname)
     if not resort:
         return 'Sorry, Invalid Request', 400
-    r = data.serialize_resort_detail(resort, None)
-    return jsonify(results=r)
+    units = data.find_units_by_resort_name(units_data, resortname)
+    photos = data.find_photos_by_resort_name(photos_data, resortname)
+    results = data.serialize_resort_detail(resort, units, photos)
+    return jsonify(results=results)
