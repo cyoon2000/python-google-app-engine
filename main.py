@@ -14,10 +14,11 @@ app = Flask(__name__)
 # CORS support
 CORS(app)
 
-
+# TODO - find a way to load data only once
 resorts_data = data.resorts()
 units_data = data.units()
 photos_by_resort_dict = data.photos_by_resort_dict()
+profile_photo_dict = data.profile_photo_dict()
 
 @app.route('/')
 def hello():

@@ -16,7 +16,7 @@ RESORT_NAME_LIST = ["bj", "kirk", "dw", "kirt", "plp", "pelican", "vp", "vbay", 
 # photo file path
 PHOTO_PATH = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
 
-
+# parse instruction for Resort CSV file
 fields = ("name", "displayName", "wifi", "parking", "communalKitchen", "privateBeach", "freeBreakfast", "noteOnFood",
           "lessonKite", "rentKite", "lessonWindsurf", "rentWindsurf", "mtnbike", "rentPerformanceMtnBike", "fishingTrip", "scubaDivingTrip",
           "yoga", "massage","noteOnActivity",
@@ -36,6 +36,7 @@ class ResortRecord(namedtuple('ResortRecord_', fields)):
         #     return "%s raised %i in round %s on %s" % (self.company, self.raisedAmt, self.round, date)
 
 
+# parse instruction for Unit CSV file
 fields = ("category", "resortName", "displayName", "type", "maxCapacity", "bedSetup",
           "numBedroom", "numBathroom", "kitchen", "kitchenette", "privateBath",
           "ac", "patio", "seaview", "profilePhoto", "photos")
@@ -46,7 +47,8 @@ class UnitRecord(namedtuple('UnitRecord_', fields)):
         row = list(row)                                # Make row mutable
         return klass(*row)
 
-#resortName,tag,group,alt,fileName,ext
+
+# parse instruction for Photo CSV file
 fields = ("resortName", "tag", "group",  "alt", "fileName", "ext")
 class PhotoRecord(namedtuple('PhotoRecord_', fields)):
 
@@ -83,6 +85,7 @@ def read_data_photos():
         for row in map(PhotoRecord.parse, reader):
             yield row
 
+
 def resorts():
     result = []
     for row in read_data_resorts():
@@ -110,6 +113,29 @@ def photos_by_resort_dict():
         if photo.resortName in RESORT_NAME_LIST:
             photos_by_resort[photo.resortName].append(photo)
     return photos_by_resort
+
+
+def profile_photo_dict():
+    profile_photo_dict = defaultdict(list)
+    for photo in photos():
+        # group is '0' for profile photo
+        if (photo.group == '0') and (photo.resortName in RESORT_NAME_LIST):
+            profile_photo_dict[photo.resortName].append(photo)
+    return profile_photo_dict
+
+def get_first_element(list):
+    return list[0] if list else None
+
+def build_photo_url(photo):
+    if photo.ext:
+        url = PHOTO_PATH + photo.fileName + photo.ext
+    else:
+        url = PHOTO_PATH + photo.fileName + '.jpg'
+    return url
+
+def get_profile_photo(resort):
+    photos_dict = profile_photo_dict()
+    return get_first_element(photos_dict[resort.name])
 
 
 # def find_resort(resortname):
@@ -140,10 +166,12 @@ def find_units_by_resort_name(units, resortname):
 
 
 def serialize_resort_summary(resort):
+    profile_photo = get_profile_photo(resort)
     return {
         'name': resort.name,
         'displayName': resort.displayName,
-        'profilePhoto': get_profile_photo(resort.name),
+        # 'profilePhoto': get_profile_photo(resort.name),
+        'profilePhoto': serialize_profile_photo(profile_photo),
         'beachFront': resort.privateBeach,
         'price': 150,
         'desc': ''
@@ -153,10 +181,11 @@ def serialize_resort_summary(resort):
 def serialize_resort_detail(resort, units, photos):
     if resort is None:
         return {}
+    profile_photo = get_profile_photo(resort)
     return {
         'name': resort.name,
         'displayName': resort.displayName,
-        'profilePhoto': get_mock_profile_photo(),
+        'profilePhoto': serialize_profile_photo(profile_photo),
         'beachFront': resort.privateBeach,
         'price': 150,
         # TODO - replace with real!
@@ -194,15 +223,24 @@ def serialize_photos(photos):
 
 
 def serialize_photo(photo):
-    if photo.ext:
-        url = PHOTO_PATH + photo.fileName + photo.ext
-    else:
-        url = PHOTO_PATH + photo.fileName + '.jpg'
     return {
-        'resortName': photo.resortName,
-        'url': url,
+        # 'resortName': photo.resortName,
+        'url': build_photo_url(photo),
         'alt': photo.alt
         }
+
+
+def serialize_profile_photo(photo):
+    if not photo:
+        return None
+    return {
+        'thumbUrl': build_photo_url(photo),
+        'thumbUrl2x': build_photo_url(photo),
+        'thumbUrl3x': "",
+        'photoUrl': build_photo_url(photo),
+        'photoUrl2x': build_photo_url(photo),
+        'photoUrl3x': ""
+    }
 
 
 def serialize_section_general(resort):
@@ -277,86 +315,6 @@ def serialize_section_policy(resort):
 def get_mock_desc():
     return "Located just a 40 minute drive south of La Paz on the Sea of Cortez in Baja lies one of Mexico's most beautiful secrets... Baja Joe's will show you the way to Paradise!"
 
-
-def get_profile_photo(resort):
-
-    path = "https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/Kite%20Baja-"
-    if resort == 'bj':
-        thumbUrl = path + '4.jpg'
-        thumbUrl2x = path + '4.jpg'
-        photoUrl = path + '4.jpg'
-        photoUrl2x = path + '4.jpg'
-    if resort == 'kirk':
-        thumbUrl = path + '249.jpg'
-        thumbUrl2x = path + '249.jpg'
-        photoUrl = path + '249.jpg'
-        photoUrl2x = path + '249.jpg'
-    if resort == 'dw':
-        thumbUrl = path + '158.jpg'
-        thumbUrl2x = path + '158.jpg'
-        photoUrl = path + '158.jpg'
-        photoUrl2x = path + '158.jpg'
-    if resort == 'kirt':
-        thumbUrl = path + '59.jpg'
-        thumbUrl2x = path + '59.jpg'
-        photoUrl = path + '59.jpg'
-        photoUrl2x = path + '59.jpg'
-    # TODO - select correct image
-    if resort == 'plp':
-        thumbUrl = path + '87.jpg'
-        thumbUrl2x = path + '87.jpg'
-        photoUrl = path + '87.jpg'
-        photoUrl2x = path + '87.jpg'
-    if resort == 'pelican':
-        thumbUrl = path + '180.jpg'
-        thumbUrl2x = path + '180.jpg'
-        photoUrl = path + '180.jpg'
-        photoUrl2x = path + '180.jpg'
-    if resort == 'vp':
-        thumbUrl = path + '84.jpg'
-        thumbUrl2x = path + '84.jpg'
-        photoUrl = path + '84.jpg'
-        photoUrl2x = path + '84.jpg'
-    if resort == 'vbay':
-        thumbUrl = path + '137.jpg'
-        thumbUrl2x = path + '137.jpg'
-        photoUrl = path + '137.jpg'
-        photoUrl2x = path + '137.jpg'
-    if resort == 'vwind':
-        thumbUrl = path + '59.jpg'
-        thumbUrl2x = path + '59.jpg'
-        photoUrl = path + '59.jpg'
-        photoUrl2x = path + '59.jpg'
-    return {
-        'thumbUrl': thumbUrl,
-        'thumbUrl2x': thumbUrl2x,
-        'thumbUrl3x': "",
-        'photoUrl': photoUrl,
-        'photoUrl2x': photoUrl2x,
-        'photoUrl3x': ""
-    }
-
-def get_mock_profile_photo():
-    # thumbUrl = "https://dl.dropboxusercontent.com/u/122147773/showcase/search-result/thumbnail-sleep-full-01.png"
-    # thumbUrl2x = "https://dl.dropboxusercontent.com/u/122147773/showcase/search-result/thumbnail-sleep-full-01@2x.png"
-    # thumbUrl3x = ""
-    # photoUrl = "https://dl.dropboxusercontent.com/u/122147773/showcase/search-result/header-sleep-full-01.png"
-    # photoUrl2x = "https://dl.dropboxusercontent.com/u/122147773/showcase/search-result/header-sleep-full-01@2x.png"
-    # photoUrl3x = ""
-    path1 = "https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/Kite%20Baja-"
-    path2 = "https://dl.dropboxusercontent.com/u/122147773/gokitebaja/profile-image/Kite%20Baja-"
-    thumbUrl = path1 + '142.jpg'
-    thumbUrl2x = path1 + '142.jpg'
-    photoUrl = path2 + '142.jpg'
-    photoUrl2x = path2 + '142.jpg'
-    return {
-        'thumbUrl': thumbUrl,
-        'thumbUrl2x': thumbUrl2x,
-        'thumbUrl3x': "",
-        'photoUrl': photoUrl,
-        'photoUrl2x': photoUrl2x,
-        'photoUrl3x': ""
-    }
 
 def get_mock_unit_profile_photo():
     thumbUrl = "https://dl.dropboxusercontent.com/u/122147773/showcase/search-result/thumbnail-sleep-full-05.png"
