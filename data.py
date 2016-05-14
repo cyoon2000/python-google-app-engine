@@ -2,13 +2,20 @@ import os
 import csv
 import logging
 from collections import namedtuple
+from collections import defaultdict
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 CSV_PATH = BASE_PATH + '/resorts.csv'
 CSV_PATH_UNIT = BASE_PATH + '/units.csv'
 CSV_PATH_PHOTO = BASE_PATH + '/photos.csv'
 # reader = csv.DictReader(open(BASE_PATH + '/resorts.csv'))
-PHOTO_PATH = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/'
+
+# resort-names - used as resort ID
+RESORT_NAME_LIST = ["bj", "kirk", "dw", "kirt", "plp", "pelican", "vp", "vbay", "vwind"]
+
+# photo file path
+PHOTO_PATH = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
+
 
 fields = ("name", "displayName", "wifi", "parking", "communalKitchen", "privateBeach", "freeBreakfast", "noteOnFood",
           "lessonKite", "rentKite", "lessonWindsurf", "rentWindsurf", "mtnbike", "rentPerformanceMtnBike", "fishingTrip", "scubaDivingTrip",
@@ -39,8 +46,8 @@ class UnitRecord(namedtuple('UnitRecord_', fields)):
         row = list(row)                                # Make row mutable
         return klass(*row)
 
-
-fields = ("resortName", "unitType", "profile",  "alt", "fileName", "ext")
+#resortName,tag,group,alt,fileName,ext
+fields = ("resortName", "tag", "group",  "alt", "fileName", "ext")
 class PhotoRecord(namedtuple('PhotoRecord_', fields)):
 
     @classmethod
@@ -96,6 +103,15 @@ def photos():
         result.append(row)
     return result
 
+
+def photos_by_resort_dict():
+    photos_by_resort = defaultdict(list)
+    for photo in photos():
+        if photo.resortName in RESORT_NAME_LIST:
+            photos_by_resort[photo.resortName].append(photo)
+    return photos_by_resort
+
+
 # def find_resort(resortname):
 #     for row in read_data_resorts():
 #         if row.name == resortname:
@@ -118,14 +134,6 @@ def find_resort(resorts, resortname):
 def find_units_by_resort_name(units, resortname):
     result = []
     for row in units:
-        if row.resortName == resortname:
-            result.append(row)
-    return result
-
-
-def find_photos_by_resort_name(photos, resortname):
-    result = []
-    for row in photos:
         if row.resortName == resortname:
             result.append(row)
     return result
@@ -158,7 +166,6 @@ def serialize_resort_detail(resort, units, photos):
         'activitySection': serialize_section_activity(resort),
         'policySection': serialize_section_policy(resort),
         'unitTypes': serialize_units_summary(units),
-        # 'photos': get_mock_photos(),
         'photos': serialize_photos(photos)
     }
 
@@ -363,31 +370,5 @@ def get_mock_unit_profile_photo():
         'photoUrl3x': ""
     }
 
-# def get_mock_photos():
-#
-#     # https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/Kite%20Baja-59.jpg
-#     path = "https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/Kite%20Baja-"
-#     url1 = path + "59.jpg"
-#     url2 = path + "60.jpg"
-#     url3 = path + "61.jpg"
-#     url4 = path + "62.jpg"
-#     url5 = path + "63.jpg"
-#     url6 = path + "64.jpg"
-#     url7 = path + "65.jpg"
-#     url8 = path + "66.jpg"
-#     url9 = path + "67.jpg"
-#     url10 = path + "68.jpg"
-#     return [
-#         {'url': url1},
-#         {'url': url2},
-#         {'url': url3},
-#         {'url': url4},
-#         {'url': url5},
-#         {'url': url6},
-#         {'url': url7},
-#         {'url': url8},
-#         {'url': url9},
-#         {'url': url10}
-#     ]
 
 

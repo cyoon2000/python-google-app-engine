@@ -17,7 +17,7 @@ CORS(app)
 
 resorts_data = data.resorts()
 units_data = data.units()
-photos_data = data.photos()
+photos_by_resort_dict = data.photos_by_resort_dict()
 
 @app.route('/')
 def hello():
@@ -52,6 +52,6 @@ def show_resort_by_name(resortname):
     if not resort:
         return 'Sorry, Invalid Request', 400
     units = data.find_units_by_resort_name(units_data, resortname)
-    photos = data.find_photos_by_resort_name(photos_data, resortname)
-    results = data.serialize_resort_detail(resort, units, photos)
+    # photos = data.find_photos_by_resort_name(photos_data, resortname)
+    results = data.serialize_resort_detail(resort, units, photos_by_resort_dict[resortname])
     return jsonify(results=results)
