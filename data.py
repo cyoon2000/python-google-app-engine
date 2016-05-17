@@ -10,12 +10,6 @@ CSV_PATH_UNIT = BASE_PATH + '/units.csv'
 CSV_PATH_PHOTO = BASE_PATH + '/photos.csv'
 # reader = csv.DictReader(open(BASE_PATH + '/resorts.csv'))
 
-# resort-names - used as resort ID
-#RESORT_NAME_LIST = ["bj", "kirk", "dw", "kirt", "plp", "pelican", "vp", "vbay", "vwind"]
-
-# photo file path
-#PHOTO_PATH = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
-
 # parse instruction for Resort CSV file
 fields = ("name", "displayName", "wifi", "parking", "communalKitchen", "privateBeach", "freeBreakfast", "noteOnFood",
           "lessonKite", "rentKite", "lessonWindsurf", "rentWindsurf", "mtnbike", "rentPerformanceMtnBike", "fishingTrip", "scubaDivingTrip",
@@ -49,7 +43,7 @@ class UnitRecord(namedtuple('UnitRecord_', fields)):
 
 
 # parse instruction for Photo CSV file
-fields = ("resortName", "tag", "group",  "alt", "fileName", "ext")
+fields = ("resortName", "tag", "group", "fileName", "ext", "alt")
 class PhotoRecord(namedtuple('PhotoRecord_', fields)):
 
     @classmethod

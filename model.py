@@ -7,8 +7,9 @@ from collections import defaultdict
 RESORT_NAME_LIST = ["bj", "kirk", "dw", "kirt", "plp", "pelican", "vp", "vbay", "vwind"]
 
 # photo file path
-PHOTO_PATH = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
-
+PHOTO_PATH_THUMB = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image-480/la-ventana-'
+PHOTO_PATH_1X = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
+PHOTO_PATH_2X = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
 
 class ResortInfo(object):
     def __init__(self, resort):
@@ -125,7 +126,12 @@ class ResortsList(object):
         photos_by_resort = defaultdict(list)
         for photo in self.photos:
             if photo.resortName in RESORT_NAME_LIST:
-                photos_by_resort[photo.resortName].append(photo)
+                # if photo.group value is empty, do not add
+                if photo.group:
+                    photos_by_resort[photo.resortName].append(photo)
+        # now loop thru dictionary (each resort), sort photos by group
+        for resort_name, photo_list in photos_by_resort.iteritems():
+            photo_list.sort(key=lambda tup: tup[2])
         return photos_by_resort
 
 
@@ -157,12 +163,22 @@ def get_first_element(list):
     return list[0] if list else None
 
 
-def build_photo_url(photo):
+def build_photo_url(file_path, photo):
     if photo.ext:
-        url = PHOTO_PATH + photo.fileName + photo.ext
+        url = file_path + photo.fileName + photo.ext
     else:
-        url = PHOTO_PATH + photo.fileName + '.jpg'
+        url = file_path + photo.fileName + '.jpg'
     return url
+
+
+def build_photo_url_thumb(photo):
+    return build_photo_url (PHOTO_PATH_THUMB, photo)
+
+def build_photo_url_full_1x(photo):
+    return build_photo_url (PHOTO_PATH_1X, photo)
+
+def build_photo_url_full_2x(photo):
+    return build_photo_url (PHOTO_PATH_2X, photo)
 
 
 def serialize_units_summary(units):
@@ -192,8 +208,9 @@ def serialize_photos(photos):
 def serialize_photo(photo):
     return {
         # 'resortName': photo.resortName,
-        'url': build_photo_url(photo),
-        'alt': photo.alt
+        'photoUrl': build_photo_url_full_1x(photo),
+        'alt': photo.alt,
+        'group': photo.group
     }
 
 
@@ -201,11 +218,11 @@ def serialize_profile_photo(photo):
     if not photo:
         return None
     return {
-        'thumbUrl': build_photo_url(photo),
-        'thumbUrl2x': build_photo_url(photo),
+        'thumbUrl': build_photo_url_thumb(photo),
+        'thumbUrl2x': build_photo_url_thumb(photo),
         'thumbUrl3x': "",
-        'photoUrl': build_photo_url(photo),
-        'photoUrl2x': build_photo_url(photo),
+        'photoUrl': build_photo_url_full_1x(photo),
+        'photoUrl2x': build_photo_url_full_2x(photo),
         'photoUrl3x': ""
     }
 
