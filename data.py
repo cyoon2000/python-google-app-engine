@@ -110,7 +110,7 @@ class ResortData():
     resorts = resorts()
     units = units()
     photos = photos()
-    logging.info("..........................................Finished loading Resorts Data.")
+    logging.info("..................................Finished loading Resorts Data.")
 
 
 def log_dictionary(dict):
@@ -140,7 +140,8 @@ def photos_by_resort_dict():
             # if photo.group value is empty, do not add
             if photo.group:
                 photos_by_resort[photo.resortName].append(photo)
-    # now loop thru dictionary (each resort), sort photos by group
+
+    # sort photos by 'group'
     for resort_name, photo_list in photos_by_resort.iteritems():
         photo_list.sort(key=lambda tup: tup[3])
 
@@ -162,28 +163,29 @@ def profile_photo_dict():
 
 
 # populate dictionary (key = unittype, value = PhotoRecord)
-# def photos_by_unit_dict():
-#     logging.info("Loading dictionary for photos of unit types..")
-#     photos_by_unit = defaultdict(list)
-#     for photo in ResortData.photos:
-#         # TODO -
-#         #if photo.unitType in UNIT_NAME_LIST:
-#         # if photo.group value is empty, do not add
-#         if photo.unitGroup:
-#             photos_by_unit[photo.unitType].append(photo)
-#     # now loop thru dictionary (each unit type), sort photos by unitGroup
-#     # first photo is profile photo for the unit type
-#     for unit_name, photo_list in photos_by_unit.iteritems():
-#         photo_list.sort(key=lambda tup: tup[4])
-#
-#     log_dictionary(photos_by_unit)
-#     return photos_by_unit
+def photos_by_unit_dict():
+    logging.info("Loading dictionary for photos of unit types..")
+    photos_by_unit = defaultdict(list)
+    for photo in ResortData.photos:
+        # TODO -
+        #if photo.unitType in UNIT_NAME_LIST:
+        # do not add if unitGroup is empty
+        if photo.unitGroup:
+            photos_by_unit[photo.unitType].append(photo)
+
+    # sort photos by 'unitGroup'
+    # first photo is profile photo for the unit type
+    for unit_name, photo_list in photos_by_unit.iteritems():
+        photo_list.sort(key=lambda tup: tup[4])
+
+    log_dictionary(photos_by_unit)
+    return photos_by_unit
 
 
 class DictionaryData():
     units_by_resort_dict = units_by_resort_dict()
     photos_by_resort_dict = photos_by_resort_dict()
     profile_photo_dict = profile_photo_dict()
-    # photos_by_unit_dict = photos_by_unit_dict()
+    photos_by_unit_dict = photos_by_unit_dict()
 
 

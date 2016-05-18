@@ -65,15 +65,13 @@ def show_resort_by_name(resortname):
     return jsonify(results=results)
 
 
+@app.route('/resorts/<resortname>/<typename>')
+def show_unit_detail(resortname, typename):
+    unit = model.find_unit_by_name(typename)
 
-# @app.route('/resorts/<resortname>/<typename>')
-# def show_unit_detail(resortname, typename):
-#     unit = model.ResortsList.find_unit_by_name(resorts_instance, typename)
-#
-#     if not unit:
-#         return 'Sorry, Invalid Request', 400
-#
-#     unit_info = model.UnitInfo(unit)
-#     #results = unit_info.serialize_resort_info()
-#     results = model.UnitInfo.serialize_unit_summary(unit)
-#     return jsonify(results=results)
+    if not unit:
+        return 'Sorry, Invalid Request', 400
+
+    # unit_info = model.UnitInfo(unit)
+    results = model.serialize_unit_detail(unit)
+    return jsonify(results=results)

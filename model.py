@@ -76,23 +76,23 @@ class UnitInfo(object):
     #         units_json.append(serialize_unit_summary(unit))
     #     return units_json
 
-    @staticmethod
-    def serialize_unit_summary(unit):
-        return {
-            'displayName': unit.displayName,
-            'profilePhoto': get_mock_unit_profile_photo(),
-            'maxCapacity': unit.maxCapacity,
-            'price': 150
-        }
-
-    @staticmethod
-    def serialize_unit_detail(unit):
-        return {
-            'displayName': unit.displayName,
-            'profilePhoto': get_mock_unit_profile_photo(),
-            'maxCapacity': unit.maxCapacity,
-            'price': 150
-            }
+    # @staticmethod
+    # def serialize_unit_summary(unit):
+    #     return {
+    #         'displayName': unit.displayName,
+    #         'profilePhoto': get_mock_unit_profile_photo(),
+    #         'maxCapacity': unit.maxCapacity,
+    #         'price': 150
+    #     }
+    #
+    # @staticmethod
+    # def serialize_unit_detail(unit):
+    #     return {
+    #         'displayName': unit.displayName,
+    #         'profilePhoto': get_mock_unit_profile_photo(),
+    #         'maxCapacity': unit.maxCapacity,
+    #         'price': 150
+    #         }
 
 
 def serialize_resorts(resorts):
@@ -105,9 +105,9 @@ def serialize_resorts(resorts):
         json.append(resort_info.serialize_resort_summary(resort, profile_photo))
     return json
 
+
 def serialize_resort_detail(resort):
     return ResortInfo().serialize_resort_detail(resort)
-
 
 
 def find_all_resorts():
@@ -158,12 +158,12 @@ def find_photos_by_resort_name(resortname):
     return data.DictionaryData.photos_by_resort_dict[resortname]
 
 
-def find_photos_by_unit_type(unittype):
-    return data.DictionaryData.photos_by_unit_dict[unittype]
+def find_photos_by_unit_type(typename):
+    return data.DictionaryData.photos_by_unit_dict[typename]
 
 
 def find_profile_photo_for_unit_type(typename):
-    return data.DictionaryData.photos_by_unit_dict[typename]
+    return get_first_element(data.DictionaryData.photos_by_unit_dict[typename])
 
 
 def get_first_element(list):
@@ -171,6 +171,8 @@ def get_first_element(list):
 
 
 def build_photo_url(file_path, photo):
+    if not photo:
+        return None
     if photo.ext:
         url = file_path + photo.fileName + photo.ext
     else:
@@ -196,11 +198,36 @@ def serialize_units_summary(units):
 
 
 def serialize_unit_summary(unit):
+    profile_photo = find_profile_photo_for_unit_type(unit.typeName)
     return {
+        'unitType': unit.typeName,
+        'type': unit.type,
         'displayName': unit.displayName,
-        'profilePhoto': get_mock_unit_profile_photo(),
+        'profilePhoto': build_photo_url_full_1x(profile_photo),
         'maxCapacity': unit.maxCapacity,
         'price': 150,
+        }
+
+
+#typeName,resortName,displayName,type,maxCapacity,bedSetup,numBedroom,numBathroom,kitchen,kitchenette,privateBath,ac,patio,seaview,profilePhoto,photos
+def serialize_unit_detail(unit):
+    profile_photo = find_profile_photo_for_unit_type(unit.typeName)
+    photos = find_photos_by_unit_type(unit.typeName)
+    return {
+        'unitType': unit.typeName,
+        'type': unit.type,
+        'displayName': unit.displayName,
+        'profilePhoto': build_photo_url_full_1x(profile_photo),
+        'maxCapacity': unit.maxCapacity,
+        'price': 150,
+        'resortName': unit.resortName,
+        'photos': serialize_photos(photos),
+        'bedSetup': unit.bedSetup,
+        'numBedroom': unit.numBedroom,
+        'numBathroom': unit.numBathroom,
+        'kitchen': unit.kitchen,
+        'kitchenette': unit.kitchenette,
+        'privateBath': unit.privateBath,
         }
 
 
@@ -212,11 +239,14 @@ def serialize_photos(photos):
 
 
 def serialize_photo(photo):
+    if not photo:
+        return None
     return {
         # 'resortName': photo.resortName,
         'photoUrl': build_photo_url_full_1x(photo),
         'alt': photo.alt,
-        'group': photo.group
+        'group': photo.group,
+        'unitGroup': photo.unitGroup,
     }
 
 
