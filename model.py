@@ -21,14 +21,11 @@ class ResortInfo(object):
     def set_profile_photo(self, profile_photo):
         self.profile_photo = profile_photo
 
-
     def set_photos(self, photos):
         self.photos = photos
 
-
     def set_units(self, units):
         self.units = units
-
 
     def serialize_resort_summary(self, resort, profile_photo):
         if resort is None:
@@ -41,7 +38,6 @@ class ResortInfo(object):
             'price': 150,
             'desc': ''
         }
-
 
     def serialize_resort_info(self):
         resort = self.resort
@@ -64,99 +60,110 @@ class ResortInfo(object):
         }
 
 
-class ResortsList(object):
-    def __init__(self):
-        logging.info("Loading Resorts Data..........................................")
-        # load data from file
-        self.resorts = data.resorts()
-        self.units = data.units()
-        self.photos = data.photos()
+class UnitInfo(object):
+    def __init__(self, unit):
+        self.unit = unit
+        self.profile_photo = None
+        self.photos = None
 
-        # initialize dictionary for units: { resortname, list of UnitRecord }
-        logging.info("Loading dictionary for units...")
-        self.units_by_resort_dict = self.init_units_by_resort_dict()
-        log_dictionary(self.units_by_resort_dict)
+    def set_profile_photo(self, profile_photo):
+        self.profile_photo = profile_photo
 
-        # initialize dictionary for photos : { resortname, list of photos }
-        logging.info("Loading dictionary for photos...")
-        self.photos_by_resort_dict = self.init_photos_by_resort_dict()
-        log_dictionary(self.photos_by_resort_dict)
+    # @staticmethod
+    # def serialize_units_summary(units):
+    #     units_json = []
+    #     for unit in units:
+    #         units_json.append(serialize_unit_summary(unit))
+    #     return units_json
 
-        # initialize dictionary for profile-photos : { resortname, list of profile-photos }
-        logging.info("Loading dictionary for profile-photos...")
-        self.profile_photo_dict = self.init_profile_photo_dict()
-        log_dictionary(self.profile_photo_dict)
+    @staticmethod
+    def serialize_unit_summary(unit):
+        return {
+            'displayName': unit.displayName,
+            'profilePhoto': get_mock_unit_profile_photo(),
+            'maxCapacity': unit.maxCapacity,
+            'price': 150
+        }
 
-        logging.info("................................ Resorts Data Successfully Loaded")
-
-
-    def find_all_resorts(self):
-        return self.resorts
-
-
-    def find_resort_by_name(self, resortname):
-        for resort in self.resorts:
-            if resort.name == resortname:
-                return resort
-        return None
+    @staticmethod
+    def serialize_unit_detail(unit):
+        return {
+            'displayName': unit.displayName,
+            'profilePhoto': get_mock_unit_profile_photo(),
+            'maxCapacity': unit.maxCapacity,
+            'price': 150
+            }
 
 
-    def find_units_by_resort_name(self, resortname):
-        return self.units_by_resort_dict[resortname]
+def serialize_resorts(resorts):
+    json = []
+    # resort_instance = Resort()
+    for resort in resorts:
+        resort_info = ResortInfo(resort)
+        # json.append(resortInfo.serialize_resort_summary(resort))
+        profile_photo = find_profile_photo_by_resort_name(resort.name)
+        json.append(resort_info.serialize_resort_summary(resort, profile_photo))
+    return json
+
+def serialize_resort_detail(resort):
+    return ResortInfo().serialize_resort_detail(resort)
 
 
-    def find_profile_photo_by_resort_name(self, resortname):
-        profile_photos = self.profile_photo_dict[resortname]
-        return get_first_element(profile_photos)
+
+def find_all_resorts():
+    return data.ResortData.resorts
 
 
-    def find_photos_by_resort_name(self, resortname):
-        return self.photos_by_resort_dict[resortname]
+def find_resort_by_name(resortname):
+    for resort in data.ResortData.resorts:
+        if resort.name == resortname:
+            return resort
+    return None
 
 
-    def init_units_by_resort_dict(self):
-        units_by_resort = defaultdict(list)
-        for unit in self.units:
-            if unit.resortName in RESORT_NAME_LIST:
-                units_by_resort[unit.resortName].append(unit)
-        return units_by_resort
+def find_units_by_resort_name(resortname):
+    return data.DictionaryData.units_by_resort_dict[resortname]
 
 
-    def init_photos_by_resort_dict(self):
-        photos_by_resort = defaultdict(list)
-        for photo in self.photos:
-            if photo.resortName in RESORT_NAME_LIST:
-                # if photo.group value is empty, do not add
-                if photo.group:
-                    photos_by_resort[photo.resortName].append(photo)
-        # now loop thru dictionary (each resort), sort photos by group
-        for resort_name, photo_list in photos_by_resort.iteritems():
-            photo_list.sort(key=lambda tup: tup[2])
-        return photos_by_resort
+def find_unit_by_name(name):
+    for unit in data.ResortData.units:
+        if unit.typeName == name:
+            return unit
+    return None
 
 
-    def init_profile_photo_dict(self):
-        profile_photo_dict = defaultdict(list)
-        for photo in self.photos:
-            # group is '0' for profile photo
-            if (photo.group == '0') and (photo.resortName in RESORT_NAME_LIST):
-                profile_photo_dict[photo.resortName].append(photo)
-        return profile_photo_dict
+def find_profile_photo_by_resort_name(resortname):
+    profile_photos = data.DictionaryData.profile_photo_dict[resortname]
+    return get_first_element(profile_photos)
 
 
-    def serialize_resorts(self, resorts):
-        json = []
-        # resort_instance = Resort()
-        for resort in resorts:
-            resort_info = ResortInfo(resort)
-            # json.append(resortInfo.serialize_resort_summary(resort))
-            profile_photo = self.find_profile_photo_by_resort_name(resort.name)
-            json.append(resort_info.serialize_resort_summary(resort, profile_photo))
-        return json
+def find_photos_by_resort_name(resortname):
+    return data.DictionaryData.photos_by_resort_dict[resortname]
 
-    def serialize_resort_detail(self, resort):
-        return ResortInfo().serialize_resort_detail(resort)
 
+def find_photos_by_unit_type(typename):
+    return data.DictionaryData.photos_by_unit_dict[typename]
+
+
+def find_profile_photo_for_unit_type(typename):
+    return data.DictionaryData.photos_by_unit_dict[typename]
+
+
+def find_profile_photo_by_resort_name(resortname):
+    profile_photos = data.DictionaryData.profile_photo_dict[resortname]
+    return get_first_element(profile_photos)
+
+
+def find_photos_by_resort_name(resortname):
+    return data.DictionaryData.photos_by_resort_dict[resortname]
+
+
+def find_photos_by_unit_type(unittype):
+    return data.DictionaryData.photos_by_unit_dict[unittype]
+
+
+def find_profile_photo_for_unit_type(typename):
+    return data.DictionaryData.photos_by_unit_dict[typename]
 
 
 def get_first_element(list):
@@ -189,7 +196,6 @@ def serialize_units_summary(units):
 
 
 def serialize_unit_summary(unit):
-    # print unit
     return {
         'displayName': unit.displayName,
         'profilePhoto': get_mock_unit_profile_photo(),
@@ -284,6 +290,7 @@ def get_mock_desc():
     return "Located just a 40 minute drive south of La Paz on the Sea of Cortez in Baja lies one of Mexico's most beautiful secrets..."
 
 
+
 def get_mock_unit_profile_photo():
     thumbUrl = "https://dl.dropboxusercontent.com/u/122147773/showcase/search-result/thumbnail-sleep-full-05.png"
     photoUrl = "https://dl.dropboxusercontent.com/u/122147773/showcase/search-result/thumbnail-sleep-full-05.png"
@@ -297,8 +304,5 @@ def get_mock_unit_profile_photo():
     }
 
 
-def log_dictionary(dict):
-        for key, value in dict.items():
-            logging.info(key)
-        logging.info("...... %d dictionary items loaded." % len(dict))
+
 
