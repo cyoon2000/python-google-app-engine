@@ -149,7 +149,7 @@ def photos_by_resort_dict():
     return photos_by_resort
 
 
-# populate dictionary  (key = resortname, value = PhotoRecord)
+# populate dictionary  (key = resortName, value = PhotoRecord)
 def profile_photo_dict():
     logging.info("Loading dictionary for profile-photos...")
     profile_photo_dict = defaultdict(list)
@@ -162,16 +162,16 @@ def profile_photo_dict():
     return profile_photo_dict
 
 
-# populate dictionary (key = unittype, value = PhotoRecord)
+# populate dictionary (key = typeName, value = PhotoRecord)
 def photos_by_unit_dict():
     logging.info("Loading dictionary for photos of unit types..")
     photos_by_unit = defaultdict(list)
     for photo in ResortData.photos:
-        # TODO -
-        #if photo.unitType in UNIT_NAME_LIST:
-        # do not add if unitGroup is empty
-        if photo.unitGroup:
-            photos_by_unit[photo.unitType].append(photo)
+        # TODO - add validation
+        # if photo.unitType in units():
+            # do not add if unitGroup is empty
+            if photo.unitGroup:
+                photos_by_unit[photo.unitType].append(photo)
 
     # sort photos by 'unitGroup'
     # first photo is profile photo for the unit type
@@ -183,9 +183,12 @@ def photos_by_unit_dict():
 
 
 class DictionaryData():
+    logging.info("Loading Dictionary Data..........................................")
     units_by_resort_dict = units_by_resort_dict()
     photos_by_resort_dict = photos_by_resort_dict()
     profile_photo_dict = profile_photo_dict()
     photos_by_unit_dict = photos_by_unit_dict()
+    logging.info("..................................Finished loading Dictionary Data.")
+
 
 
