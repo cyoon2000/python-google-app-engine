@@ -15,9 +15,9 @@ RESORT_NAME_LIST = ["bj", "kirk", "dw", "kirt", "plp", "pelican", "vp", "vbay", 
 
 # parse instruction for Resort CSV file
 fields = ("name", "displayName", "wifi", "parking", "communalKitchen", "privateBeach", "freeBreakfast", "noteOnFood",
-          "lessonKite", "rentKite", "lessonWindsurf", "rentWindsurf", "mtnbike", "rentPerformanceMtnBike", "fishingTrip", "scubaDivingTrip",
-          "yoga", "massage","noteOnActivity",
-          "checkIn", "checkOut", "cc", "extraPersonCharge", "pets", "minimumStay", "cancelPolicy", "profilePhoto", "photos")
+          "swimPool", "lessonKite", "rentKite", "lessonWindsurf", "rentWindsurf", "mtnbike", "rentPerformanceMtnBike",
+          "fishingTrip", "scubaDivingTrip", "yoga", "massage","noteOnActivity",
+          "checkIn", "checkOut", "cc", "extraPersonCharge", "pets", "minimumStay", "cancelPolicy")
 class ResortRecord(namedtuple('ResortRecord_', fields)):
 
     @classmethod
@@ -46,7 +46,6 @@ class UnitRecord(namedtuple('UnitRecord_', fields)):
 
 
 # parse instruction for Photo CSV file
-#fields = ("resortName", "tag", "group", "fileName", "ext", "alt")
 fields = ("fileName", "resortName", "unitType", "group", "unitGroup", "tag", "ext", "alt")
 class PhotoRecord(namedtuple('PhotoRecord_', fields)):
 

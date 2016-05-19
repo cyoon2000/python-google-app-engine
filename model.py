@@ -51,6 +51,7 @@ class ResortInfo(object):
             'price': 150,
             # TODO - replace with real!
             'desc': get_mock_desc(),
+            'highlight': serialize_section_highlight(resort),
             'generalSection': serialize_section_general(resort),
             'foodSection': serialize_section_food(resort),
             'activitySection': serialize_section_activity(resort),
@@ -263,6 +264,19 @@ def serialize_profile_photo(photo):
     }
 
 
+def serialize_section_highlight(resort):
+    data = []
+    if resort.wifi == 'Y':
+        data.append('Free Wifi')
+    if resort.privateBeach == 'Y':
+        data.append('Beach Front')
+    if resort.swimPool == 'Y':
+        data.append('Swimming Pool')
+    if resort.lessonKite == 'Y':
+        data.append('Kite School')
+    return data
+
+
 def serialize_section_general(resort):
     data = []
     if resort.wifi == 'Y':
@@ -278,11 +292,17 @@ def serialize_section_food(resort):
     data = []
     if resort.freeBreakfast == 'Y':
         data.append('Free Breakfast')
+    if resort.communalKitchen == 'Y':
+        data.append('Communal Kitchen')
+    if resort.noteOnFood:
+        data.append(resort.noteOnFood)
     return data
 
 
 def serialize_section_activity(resort):
     data = []
+    if resort.swimPool == 'Y':
+        data.append('Swimming Pool')
     if resort.lessonKite == 'Y':
         data.append('Kiteboarding Lesson')
     if resort.rentKite == 'Y':
@@ -291,12 +311,16 @@ def serialize_section_activity(resort):
         data.append('Windsurfing Lesson')
     if resort.rentWindsurf == 'Y':
         data.append('Windsurfing Gear Rental')
-    if resort.rentPerformanceMtnBike == 'Y':
-        data.append('Performance Bike Rental')
     if resort.fishingTrip == 'Y':
         data.append('Fishing Trip')
     if resort.scubaDivingTrip == 'Y':
         data.append('Scuba Diving Trip')
+    if resort.rentPerformanceMtnBike == 'Y':
+        data.append('Performance Bike Rental')
+    if resort.mtnbike == 'Y':
+        data.append('Free Mountain/Cruiser Bike Rental')
+    if resort.noteOnActivity:
+        data.append(resort.noteOnActivity)
     if resort.yoga == 'Y':
         data.append('Yoga')
     if resort.massage == 'Y':
