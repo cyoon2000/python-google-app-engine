@@ -51,7 +51,7 @@ class ResortInfo(object):
             'price': 150,
             # TODO - replace with real!
             'desc': get_mock_desc(),
-            'highlight': serialize_section_highlight(resort),
+            'highlight': serialize_resort_highlight(resort),
             'generalSection': serialize_section_general(resort),
             'foodSection': serialize_section_food(resort),
             'activitySection': serialize_section_activity(resort),
@@ -210,28 +210,6 @@ def serialize_unit_summary(unit):
         }
 
 
-#typeName,resortName,displayName,type,maxCapacity,bedSetup,numBedroom,numBathroom,kitchen,kitchenette,privateBath,ac,patio,seaview,profilePhoto,photos
-def serialize_unit_detail(unit):
-    profile_photo = find_profile_photo_for_unit_type(unit.typeName)
-    photos = find_photos_by_unit_type(unit.typeName)
-    return {
-        'unitType': unit.typeName,
-        'type': unit.type,
-        'displayName': unit.displayName,
-        'profilePhoto': build_photo_url_full_1x(profile_photo),
-        'maxCapacity': unit.maxCapacity,
-        'price': 150,
-        'resortName': unit.resortName,
-        'photos': serialize_photos(photos),
-        'bedSetup': unit.bedSetup,
-        'numBedroom': unit.numBedroom,
-        'numBathroom': unit.numBathroom,
-        'kitchen': unit.kitchen,
-        'kitchenette': unit.kitchenette,
-        'privateBath': unit.privateBath,
-        }
-
-
 def serialize_photos(photos):
     json = []
     for photo in photos:
@@ -264,7 +242,7 @@ def serialize_profile_photo(photo):
     }
 
 
-def serialize_section_highlight(resort):
+def serialize_resort_highlight(resort):
     data = []
     if resort.wifi == 'Y':
         data.append('Free Wifi')
@@ -344,19 +322,67 @@ def get_mock_desc():
     return "Located just a 40 minute drive south of La Paz on the Sea of Cortez in Baja lies one of Mexico's most beautiful secrets..."
 
 
-
-def get_mock_unit_profile_photo():
-    thumbUrl = "https://dl.dropboxusercontent.com/u/122147773/showcase/search-result/thumbnail-sleep-full-05.png"
-    photoUrl = "https://dl.dropboxusercontent.com/u/122147773/showcase/search-result/thumbnail-sleep-full-05.png"
+"""
+    Serialize Unit Detail
+"""
+# highlight: type, maxCapacity, numBedroom, numBathroom
+# space: type,maxCapacity,bedSetup,numBedroom,numBathroom (privateBath is redundant here)
+# amenities: kitchen,kitchenette, ac,patio,seaview
+def serialize_unit_detail(unit):
+    profile_photo = find_profile_photo_for_unit_type(unit.typeName)
+    photos = find_photos_by_unit_type(unit.typeName)
     return {
-        'thumbUrl': thumbUrl,
-        'thumbUrl2x': "",
-        'thumbUrl3x': "",
-        'photoUrl': photoUrl,
-        'photoUrl2x': "",
-        'photoUrl3x': ""
+        'unitType': unit.typeName,
+        'displayName': unit.displayName,
+        'profilePhoto': build_photo_url_full_1x(profile_photo),
+        'price': 150,
+        'resortName': unit.resortName,
+        'photos': serialize_photos(photos),
+        'highlight': serialize_unit_highlight(unit),
+        'space': serialize_unit_space(unit),
+        'amenity': serialize_unit_amenity(unit)
     }
 
 
+def serialize_unit_highlight(unit):
+    highlight = []
+    highlight.append(serialize_unit_type(unit))
+    highlight.append(unit.numBedroom + ' Bedrooms')
+    highlight.append(unit.numBathroom + ' Bathrooms')
+    if ( unit.type == 'ROOM' or unit.type == 'BUNGALOW')  and unit.numBathroom >= '1':
+        highlight.append('Private Bath')
+    return highlight
 
+def serialize_unit_space(unit):
+    return {
+        'Accommodates': unit.maxCapacity,
+        'Bedrooms': unit.numBedroom,
+        'Bathrooms': unit.numBathroom,
+        'Unit Type': unit.type,
+        'Bed Setup': unit.bedSetup
+    }
+
+def serialize_unit_amenity(unit):
+    amenity = []
+    if unit.kitchen == 'Y':
+        amenity.append('Kitchen')
+    if unit.kitchenette:
+        amenity.append('Kitchenette')
+    if unit.ac:
+        amenity.append('AC')
+    if unit.patio:
+        amenity.append('Patio')
+    if unit.seaview:
+        amenity.append('Seaview')
+    return amenity
+
+def serialize_unit_type(unit):
+    if unit.type == 'CASA' or unit.type == 'CASITA':
+        return "Entire home/apt"
+    elif unit.type == 'BUNGALOW':
+        return 'Standalone bungalow'
+    elif unit.type == 'ROOM':
+        return 'Room'
+        # else:
+        #     return 'Unknown'
 
