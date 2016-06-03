@@ -329,14 +329,16 @@ def get_mock_desc():
 # space: type,maxCapacity,bedSetup,numBedroom,numBathroom (privateBath is redundant here)
 # amenities: kitchen,kitchenette, ac,patio,seaview
 def serialize_unit_detail(unit):
+    resort = find_resort_by_name(unit.resortName)
     profile_photo = find_profile_photo_for_unit_type(unit.typeName)
     photos = find_photos_by_unit_type(unit.typeName)
     return {
         'unitType': unit.typeName,
         'displayName': unit.displayName,
-        'profilePhoto': build_photo_url_full_1x(profile_photo),
+        'profilePhoto': serialize_profile_photo(profile_photo),
         'price': 150,
         'resortName': unit.resortName,
+        'resortDisplayName': resort.displayName,
         'photos': serialize_photos(photos),
         'highlight': serialize_unit_highlight(unit),
         'space': serialize_unit_space(unit),
@@ -349,30 +351,30 @@ def serialize_unit_highlight(unit):
     highlight.append(serialize_unit_type(unit))
     highlight.append(unit.numBedroom + ' Bedrooms')
     highlight.append(unit.numBathroom + ' Bathrooms')
-    if ( unit.type == 'ROOM' or unit.type == 'BUNGALOW')  and unit.numBathroom >= '1':
+    if (unit.type == 'ROOM' or unit.type == 'BUNGALOW') and unit.numBathroom >= '1':
         highlight.append('Private Bath')
     return highlight
 
 def serialize_unit_space(unit):
     return {
-        'Accommodates': unit.maxCapacity,
-        'Bedrooms': unit.numBedroom,
-        'Bathrooms': unit.numBathroom,
-        'Unit Type': unit.type,
-        'Bed Setup': unit.bedSetup
+        'maxCapacity': unit.maxCapacity,
+        'numBedroom': unit.numBedroom,
+        'numBathroom': unit.numBathroom,
+        'type': unit.type,
+        'bedSetup': unit.bedSetup
     }
 
 def serialize_unit_amenity(unit):
     amenity = []
     if unit.kitchen == 'Y':
         amenity.append('Kitchen')
-    if unit.kitchenette:
+    if unit.kitchenette == 'Y':
         amenity.append('Kitchenette')
-    if unit.ac:
+    if unit.ac == 'Y':
         amenity.append('AC')
-    if unit.patio:
+    if unit.patio == 'Y':
         amenity.append('Patio')
-    if unit.seaview:
+    if unit.seaview == 'Y':
         amenity.append('Seaview')
     return amenity
 
