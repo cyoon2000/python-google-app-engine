@@ -48,10 +48,13 @@ class ResortInfo(object):
             'displayName': resort.displayName,
             'profilePhoto': serialize_profile_photo(self.profile_photo),
             'beachFront': resort.privateBeach,
+            'wifi': resort.wifi,
+            'pool': resort.swimPool,
+            'kiteSchool': resort.lessonKite,
             'price': 150,
             # TODO - replace with real!
             'desc': get_mock_desc(),
-            'highlight': serialize_resort_highlight(resort),
+            # 'highlight': serialize_resort_highlight(resort),
             'generalSection': serialize_section_general(resort),
             'foodSection': serialize_section_food(resort),
             'activitySection': serialize_section_activity(resort),
@@ -242,17 +245,17 @@ def serialize_profile_photo(photo):
     }
 
 
-def serialize_resort_highlight(resort):
-    data = []
-    if resort.wifi == 'Y':
-        data.append('Free Wifi')
-    if resort.privateBeach == 'Y':
-        data.append('Beach Front')
-    if resort.swimPool == 'Y':
-        data.append('Swimming Pool')
-    if resort.lessonKite == 'Y':
-        data.append('Kite School')
-    return data
+# def serialize_resort_highlight(resort):
+#     data = []
+#     if resort.wifi == 'Y':
+#         data.append('WIFI')
+#     if resort.privateBeach == 'Y':
+#         data.append('BEACHFRONT')
+#     if resort.swimPool == 'Y':
+#         data.append('POOL')
+#     if resort.lessonKite == 'Y':
+#         data.append('KITE')
+#     return data
 
 
 def serialize_section_general(resort):
@@ -261,19 +264,18 @@ def serialize_section_general(resort):
         data.append('Free Wifi')
     if resort.parking == 'Y':
         data.append('Free Parking')
-    if resort.communalKitchen == 'Y':
-        data.append('Communal Kitchen')
     return data
 
 
 def serialize_section_food(resort):
     data = []
-    if resort.freeBreakfast == 'Y':
-        data.append('Free Breakfast')
     if resort.communalKitchen == 'Y':
         data.append('Communal Kitchen')
+    if resort.freeBreakfast == 'Y':
+        data.append('Free Breakfast')
     if resort.noteOnFood:
-        data.append(resort.noteOnFood)
+        # data.append(resort.noteOnFood)
+        data.extend(x.lstrip() for x in resort.noteOnFood.split(","))
     return data
 
 
@@ -298,7 +300,8 @@ def serialize_section_activity(resort):
     if resort.mtnbike == 'Y':
         data.append('Free Mountain/Cruiser Bike Rental')
     if resort.noteOnActivity:
-        data.append(resort.noteOnActivity)
+        # data.append(resort.noteOnActivity)
+        data.extend(x.lstrip() for x in resort.noteOnActivity.split(","))
     if resort.yoga == 'Y':
         data.append('Yoga')
     if resort.massage == 'Y':
@@ -342,7 +345,10 @@ def serialize_unit_detail(unit):
         'photos': serialize_photos(photos),
         'highlight': serialize_unit_highlight(unit),
         'space': serialize_unit_space(unit),
-        'amenity': serialize_unit_amenity(unit)
+        'amenity': serialize_unit_amenity(unit),
+        'resortPolicy': serialize_section_policy(resort),
+        'resortGeneral': serialize_section_general(resort),
+        'resortFood': serialize_section_food(resort)
     }
 
 

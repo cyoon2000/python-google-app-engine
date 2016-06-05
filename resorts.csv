@@ -1,10 +1,10 @@
 name,displayName,wifi,parking,communalKitchen,privateBeach,freeBreakfast,noteOnFood,swimPool,lessonKite,rentKite,lessonWindsurf,rentWindsurf,mtnbike,rentPerformanceMtnBike,fishingTrip,scubaDivingTrip,yoga,massage,noteOnActivity,checkIn,checkOut,cc,extraPersonCharge,pets,minimumStay,cancelPolicy
-bj,Baja Joe's,Y,Y,Y,Y,,"Coffee Bar, Bar on Property",,Y,Y,,Y,Y,,,,,,,,,Y,,Y or N,,
-kirk,Captain Kirk's,Y,Y,Y,Y,Y,"Free Coffee, Lunch/Dinner available upon Request",,Y,Y,,Y,Y,Y,Y,Y,Y,Y,"SUP Rental, Free Canoe Rental",Anytime 24/7,,Y,USD 30 per person per night,,,
+bj,Baja Joe's,Y,Y,Y,Y,,"Coffee Bar, Bar on Property",,Y,Y,,Y,Y,,,,,,,,,Y,,N,,
+kirk,Captain Kirk's,Y,Y,Y,Y,Y,"Free Coffee, Lunch/Dinner available upon Request",,Y,Y,,Y,Y,Y,Y,Y,Y,Y,"SUP Rental, Free Canoe Rental",Flexible,Flexible,Y,USD 30 per person per night,,,All reservation payments are non-refundable unless we can re-rent the same property for the same period of time. Reservations that are re-rented are subject to a $200.00 fee. Reservations may be re-scheduled (Same property and number of nights) up to 60 days prior to scheduled arrival date subject to a $100.00 re-scheduling fee.
 dw,Downwinder Inn,Y,Y,Y,,,,,,,,,,,Y,Y,,,,,,,,,,
-kirt,Kirt'n Marina,Y,Y,Y,Y,,BBQ Grill,,,,,,,,,,,,,,,,,,,
+kirt,Kirt'n Marina,Y,Y,Y,Y,,BBQ Grill,,,,,,,,,,,,Kite School Nearby,,,,,,,
 plp,Palapas Ventana,Y,Y,,Y,,Restaurant on Property,Y,Y,,Y,,,,Y,Y,,Y,SUP Rental,,,,,,,
-pelican,Pelican Reef,Y,Y,Y,Y,,"Catering Available, BBQ Grill",,Y,,,,Y,Y,Y,Y,Y,Y,"SUP Rental, Free Canoe Rental",,,,,,,
+pelican,Pelican Reef,Y,Y,Y,Y,,"Catering Available, BBQ Grill",,Y,,,,Y,Y,Y,Y,Y,Y,"SUP Rental, Free Canoe Rental",Flexible,Flexible,,,,,
 vp,Villa Paraiso,Y,Y,Y,Y,,,Y,Y,,,,,,,,,,,3PM-10PM,1AM-2PM,Y,USD 30 per person per night,N,,
-vbay,Ventana Bay Resort,Y,Y,,Y,,Restaurant on Property,,Y,,,,,,,,,,,2:00 PM,8AM-11AM,Y,,N,,
-vwind,Ventana Windsports,Y,Y,,Y,,"Breakfast/Lunch pkg, Restaurant on Property",,Y,Y,Y,Y,Y,Y,Y,Y,,Y,SUP Rental Included in Room Package,,,Y,Y,N,,
+vbay,Ventana Bay Resort,Y,Y,,Y,,Restaurant on Property,,Y,Y,,,,Y,,,,,,After 2 PM,8AM-11AM,Y,,N,,
+vwind,Ventana Windsports,Y,Y,,Y,,"Breakfast/Lunch pkg, Restaurant on Property",,Y,Y,Y,Y,Y,Y,Y,Y,,Y,SUP Rental Included in room pkg,,,Y,,N,,
