@@ -8,6 +8,8 @@ BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 CSV_PATH = BASE_PATH + '/resorts.csv'
 CSV_PATH_UNIT = BASE_PATH + '/units.csv'
 CSV_PATH_PHOTO = BASE_PATH + '/photos.csv'
+CSV_PATH_PRICE = BASE_PATH + '/prices.csv'
+CSV_PATH_PRICE2 = BASE_PATH + '/prices2.csv'
 # reader = csv.DictReader(open(BASE_PATH + '/resorts.csv'))
 
 # resort-names - used as resort ID
@@ -55,6 +57,29 @@ class PhotoRecord(namedtuple('PhotoRecord_', fields)):
         return klass(*row)
 
 
+# parse instruction for Price CSV file
+#beginDate	endDate	kirk-casita	kirk-cardon	kirk-1bd-1	kirk-1bd-2	kirk-2bd	kirk-4bd
+fields = ("beginDate", "resortName", "kirk_casita", "kirk_cardon", "kirk_1bd_1", "kirk_1bd_2", "kirk_2bd", "kirk_4bd", "pelican_villa")
+class PriceRecord(namedtuple('PriceRecord_', fields)):
+
+    @classmethod
+    def parse(klass, row):
+        row = list(row)                                # Make row mutable
+        return klass(*row)
+
+
+# parse instruction for Price CSV file
+#typeName	resortName	peakBeginDate1	peakEndDate1	peakPrice1	peakBeginDate2	peakEndDate2	peakPrice2
+# highBeginDate	highEndDate	highPrice	lowBeginDate	lowEndDate	lowPrice	promoBeginDate	promoEndDate	promoPrice
+fields = ("typeName", "resortName", "peakBeginDate1", "peakEndDate1", "peakPrice1", "peakBeginDate2", "peakEndDate2", "peakPrice2", "highBeginDate", "highEndDate", "highPrice", "lowBeginDate", "lowEndDate", "lowPrice", "promoBeginDate", "promoEndDate", "promoPrice")
+class PriceRecord2(namedtuple('PriceRecord2_', fields)):
+
+    @classmethod
+    def parse(klass, row):
+        row = list(row)                                # Make row mutable
+        return klass(*row)
+
+
 def read_data_resorts():
     logging.info('...reading file : loading Resort data........')
     with open(CSV_PATH, 'rU') as data:
@@ -82,6 +107,23 @@ def read_data_photos():
         for row in map(PhotoRecord.parse, reader):
             yield row
 
+def read_data_prices():
+    logging.info('...reading file : loading Price data........')
+    with open(CSV_PATH_PRICE, 'rU') as data:
+        data.readline()            # Skip the header
+        reader = csv.reader(data)  # Create a regular tuple reader
+        for row in map(PriceRecord.parse, reader):
+            yield row
+
+
+def read_data_prices2():
+    logging.info('...reading file : loading Price2 data........')
+    with open(CSV_PATH_PRICE2, 'rU') as data:
+        data.readline()            # Skip the header
+        reader = csv.reader(data)  # Create a regular tuple reader
+        for row in map(PriceRecord2.parse, reader):
+            yield row
+
 
 def resorts():
     result = []
@@ -104,11 +146,26 @@ def photos():
     return result
 
 
+def prices():
+    result = []
+    for row in read_data_prices():
+        result.append(row)
+    return result
+
+def prices2():
+    result = []
+    for row in read_data_prices2():
+        result.append(row)
+    return result
+
+
 class ResortData():
     logging.info("Loading Resorts Data..........................................")
     resorts = resorts()
     units = units()
     photos = photos()
+    prices = prices()
+    prices2 = prices2()
     logging.info("..................................Finished loading Resorts Data.")
 
 

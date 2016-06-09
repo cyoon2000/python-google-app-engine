@@ -2,6 +2,7 @@ import data
 import logging
 
 from collections import defaultdict
+from datetime import datetime
 
 # resort-names - used as resort ID
 RESORT_NAME_LIST = ["bj", "kirk", "dw", "kirt", "plp", "pelican", "vp", "vbay", "vwind"]
@@ -170,6 +171,58 @@ def find_profile_photo_for_unit_type(typename):
     return get_first_element(data.DictionaryData.photos_by_unit_dict[typename])
 
 
+def find_price_data_for_unit(unitname):
+    for price_data in data.ResortData.prices2:
+        if price_data.typeName == unitname:
+            return price_data
+    return None
+
+
+def find_prices_for_date_range(typename, begin_date, end_date):
+    price_data = find_price_data_for_unit(typename)
+
+    if not begin_date:
+        if price_data.lowPrice:
+            return price_data.lowPrice
+        # TODO - throw Error if there is no lowPrice
+        else:
+            return 150
+
+    if not end_date:
+        return find_price_for_date(price_data, begin_date)
+
+    # TODO - calcuate AVG price for date range
+    return find_price_for_date(price_data, begin_date)
+
+
+def find_price_for_date(price_data, date):
+    if price_data.promoBeginDate and is_in_range(date, price_data.promoBeginDate, price_data.promoEndDate):
+        return price_data.promoPrice
+    elif price_data.peakBeginDate1 and is_in_range(date, price_data.peakBeginDate1, price_data.peakEndDate1):
+        return price_data.peakPrice1
+    elif price_data.peakBeginDate2 and is_in_range(date, price_data.peakBeginDate2, price_data.peakEndDate2):
+        return price_data.peakPrice2
+    elif price_data.highBeginDate and is_in_range(date, price_data.highBeginDate, price_data.highEndDate):
+        return price_data.highPrice
+    else:
+        return price_data.lowPrice
+
+
+def is_in_range(date_str, begin_date_str, end_date_str):
+    logging.info(convert_string_to_date(begin_date_str))
+    logging.info(convert_string_to_date(date_str))
+    logging.info(convert_string_to_date(end_date_str))
+
+    if convert_string_to_date(begin_date_str) <= convert_string_to_date(date_str) <= convert_string_to_date(end_date_str):
+        return True
+    return False
+
+
+# assume always ISO date
+def convert_string_to_date(date_string):
+    return datetime.strptime(date_string, '%Y-%m-%d')
+
+
 def get_first_element(list):
     return list[0] if list else None
 
@@ -331,15 +384,16 @@ def get_mock_desc():
 # highlight: type, maxCapacity, numBedroom, numBathroom
 # space: type,maxCapacity,bedSetup,numBedroom,numBathroom (privateBath is redundant here)
 # amenities: kitchen,kitchenette, ac,patio,seaview
-def serialize_unit_detail(unit):
+def serialize_unit_detail(unit, begin_date, end_date):
     resort = find_resort_by_name(unit.resortName)
     profile_photo = find_profile_photo_for_unit_type(unit.typeName)
     photos = find_photos_by_unit_type(unit.typeName)
+    price = find_prices_for_date_range(unit.typeName, begin_date, end_date)
     return {
         'unitType': unit.typeName,
         'displayName': unit.displayName,
         'profilePhoto': serialize_profile_photo(profile_photo),
-        'price': 150,
+        'price': price,
         'resortName': unit.resortName,
         'resortDisplayName': resort.displayName,
         'photos': serialize_photos(photos),
