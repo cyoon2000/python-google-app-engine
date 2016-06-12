@@ -1,7 +1,12 @@
 import data
+import sys
 import logging
+import json
 
 from collections import defaultdict
+from datetime import timedelta, datetime, date
+
+DATE_ISO_FORMAT = '%Y-%m-%d'
 
 # resort-names - used as resort ID
 RESORT_NAME_LIST = ["bj", "kirk", "dw", "kirt", "plp", "pelican", "vp", "vbay", "vwind"]
@@ -30,12 +35,20 @@ class ResortInfo(object):
     def serialize_resort_summary(self, resort, profile_photo):
         if resort is None:
             return {}
+
+        units = find_units_by_resort_name(resort.name)
+        list = []
+        # find today's price for now
+        for unit in units:
+            list.append(find_min_price_for_unit(unit, None, None))
+
         return {
             'name': resort.name,
             'displayName': resort.displayName,
             'profilePhoto': serialize_profile_photo(profile_photo),
             'beachFront': resort.privateBeach,
-            'price': 150,
+            'price': min(list),
+            'maxPrice': max(list),
             'desc': ''
         }
 
@@ -98,6 +111,24 @@ class UnitInfo(object):
     #         'price': 150
     #         }
 
+class PriceInfo(object):
+    def __init__(self, unit, date, price):
+        self.unit = unit
+        self.date = date
+        self.price = price
+
+    def __str__(self):
+        return unicode(self).encode('utf-8')
+
+    def serialize_price_info(self):
+        unit = self.unit
+        if unit is None:
+            return {}
+        return {
+            'name': self.unit,
+            'date': self.date,
+            'price': self.price if self.price else 0
+        }
 
 def serialize_resorts(resorts):
     json = []
@@ -170,6 +201,92 @@ def find_profile_photo_for_unit_type(typename):
     return get_first_element(data.DictionaryData.photos_by_unit_dict[typename])
 
 
+def daterange(start_date, end_date):
+    for n in range(int ((end_date - start_date).days)):
+        yield start_date + timedelta(n)
+
+
+def find_prices_for_unit(unitname, begin_date, end_date):
+
+    # if begin_date is null, show price for today
+    if not begin_date:
+        return find_price_for_date(unitname, datetime.today())
+
+    # if end_date is null, show price for begin date
+    if not end_date:
+        return find_price_for_date(unitname, convert_string_to_date(begin_date))
+
+    # TODO - calculate AVG price for date range
+    return find_price_for_date(unitname, convert_string_to_date(begin_date))
+
+
+def build_price_list_for_unit(unitname, begin_date, end_date):
+    list = []
+    # if begin_date is null, show price for today
+    if not begin_date:
+        begin_date = datetime.today()
+        # return list.append(PriceInfo(unitname, date, find_price_for_date(unitname, date)))
+
+    # if end_date is null, show price for begin date
+    if not end_date:
+        end_date = begin_date + timedelta(days=1)
+        # date = convert_string_to_date(begin_date)
+        # return list.append(PriceInfo(unitname, date, find_price_for_date(unitname, date)))
+
+    # add PriceInfo for each date
+    for single_date in daterange(begin_date, end_date):
+        list.append(PriceInfo(unitname, convert_date_to_string(single_date), find_price_for_date(unitname, single_date)))
+    return list
+
+
+def find_price_data_for_unit(unitname):
+    for price_data in data.ResortData.prices2:
+        if price_data.typeName == unitname:
+            return price_data
+    return None
+
+
+def find_price_for_date(unitname, date):
+    price_data = find_price_data_for_unit(unitname)
+
+    if price_data.promoBeginDate and is_in_range(date, price_data.promoBeginDate, price_data.promoEndDate):
+        return convert_price_string_to_number(price_data.promoPrice)
+    elif price_data.peakBeginDate1 and is_in_range(date, price_data.peakBeginDate1, price_data.peakEndDate1):
+        return convert_price_string_to_number(price_data.peakPrice1)
+    elif price_data.peakBeginDate2 and is_in_range(date, price_data.peakBeginDate2, price_data.peakEndDate2):
+        return convert_price_string_to_number(price_data.peakPrice2)
+    elif price_data.highBeginDate and is_in_range(date, price_data.highBeginDate, price_data.highEndDate):
+        return convert_price_string_to_number(price_data.highPrice)
+    else:
+        return convert_price_string_to_number(price_data.lowPrice)
+
+
+def find_min_price_for_unit(unit, begin_date, end_date):
+    list = build_price_list_for_unit(unit.typeName, begin_date, end_date)
+    min_price = min(list, key=lambda x: x.price).price
+    return min_price
+
+def is_in_range(date, begin_date_str, end_date_str):
+    if convert_string_to_date(begin_date_str) <= date <= convert_string_to_date(end_date_str):
+        return True
+    return False
+
+
+def convert_price_string_to_number(price_string):
+    if not price_string:
+        return None
+    return int(price_string)
+
+
+# assume always ISO date
+def convert_string_to_date(date_string):
+    return datetime.strptime(date_string, DATE_ISO_FORMAT)
+
+
+def convert_date_to_string(date):
+    return date.strftime(DATE_ISO_FORMAT)
+
+
 def get_first_element(list):
     return list[0] if list else None
 
@@ -203,14 +320,17 @@ def serialize_units_summary(units):
 
 def serialize_unit_summary(unit):
     profile_photo = find_profile_photo_for_unit_type(unit.typeName)
+    # use default begin-date and end-date
+
     return {
         'unitType': unit.typeName,
         'type': unit.type,
         'displayName': unit.displayName,
         'profilePhoto': build_photo_url_full_1x(profile_photo),
         'maxCapacity': unit.maxCapacity,
-        'price': 150,
-        }
+        # use default begin-date and end-date for now
+        'price': find_min_price_for_unit(unit, None, None)
+    }
 
 
 def serialize_photos(photos):
@@ -331,15 +451,16 @@ def get_mock_desc():
 # highlight: type, maxCapacity, numBedroom, numBathroom
 # space: type,maxCapacity,bedSetup,numBedroom,numBathroom (privateBath is redundant here)
 # amenities: kitchen,kitchenette, ac,patio,seaview
-def serialize_unit_detail(unit):
+def serialize_unit_detail(unit, begin_date, end_date):
     resort = find_resort_by_name(unit.resortName)
     profile_photo = find_profile_photo_for_unit_type(unit.typeName)
     photos = find_photos_by_unit_type(unit.typeName)
+    price = find_prices_for_unit(unit.typeName, begin_date, end_date)
     return {
         'unitType': unit.typeName,
         'displayName': unit.displayName,
         'profilePhoto': serialize_profile_photo(profile_photo),
-        'price': 150,
+        'price': price,
         'resortName': unit.resortName,
         'resortDisplayName': resort.displayName,
         'photos': serialize_photos(photos),

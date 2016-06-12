@@ -4,6 +4,7 @@ import model
 import logging
 
 # Import the Flask Framework
+from flask import request
 from flask import jsonify
 from flask import Flask
 from flask.ext.cors import CORS #, cross_origin
@@ -67,11 +68,15 @@ def show_resort_by_name(resortname):
 
 @app.route('/resorts/<resortname>/<typename>')
 def show_unit_detail(resortname, typename):
+
+    begin_date = request.args.get('begin')
+    end_date = request.args.get('end')
+
     unit = model.find_unit_by_name(typename)
 
     if not unit:
         return 'Sorry, Invalid Request', 400
 
     # unit_info = model.UnitInfo(unit)
-    results = model.serialize_unit_detail(unit)
+    results = model.serialize_unit_detail(unit, begin_date, end_date)
     return jsonify(results=results)
