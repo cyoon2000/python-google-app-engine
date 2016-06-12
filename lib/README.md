@@ -7,7 +7,17 @@ cd <project_directoy>
 pip install flask_cors -t lib
 ```
 
-To run locally
+To run locally :
 ```
 dev_appserver.py app.yaml
+```
+
+To deploy goole-app-engine :
+```
+appcfg.py update -A <gokitebaja-app-name> -V v99 .
+```
+
+To set the default version when multiple versions exists :
+```
+appcfg.py set_default_version -V v99 -A <gokitebaja-app-name> 
 ```
