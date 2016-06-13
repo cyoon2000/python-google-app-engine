@@ -1,16 +1,32 @@
-from application import model
+from application import model, get_model
 
 # Import the Flask Framework
 from flask import request
 from flask import jsonify
 
-from flask import current_app, Blueprint
+from flask import current_app, Blueprint, redirect, render_template, request, url_for
 api = Blueprint('api', __name__)
 
 # @api.route('/')
 # def hello():
 #     """Return a friendly HTTP greeting."""
 #     return 'Hello World!'
+
+
+# [START list]
+@api.route("/")
+def list():
+    token = request.args.get('page_token', None)
+    if token:
+        token = token.encode('utf-8')
+
+    books, next_page_token = get_model().list(cursor=token)
+
+    return render_template(
+        "list.html",
+        books=books,
+        next_page_token=next_page_token)
+# [END list]
 
 
 @api.route('/resorts')
