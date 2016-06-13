@@ -5,11 +5,11 @@ from collections import namedtuple
 from collections import defaultdict
 
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
-CSV_PATH = BASE_PATH + '/resorts.csv'
-CSV_PATH_UNIT = BASE_PATH + '/units.csv'
-CSV_PATH_PHOTO = BASE_PATH + '/photos.csv'
-CSV_PATH_PRICE = BASE_PATH + '/prices.csv'
-CSV_PATH_PRICE2 = BASE_PATH + '/prices2.csv'
+CSV_PATH = BASE_PATH + '/csv/resorts.csv'
+CSV_PATH_UNIT = BASE_PATH + '/csv/units.csv'
+CSV_PATH_PHOTO = BASE_PATH + '/csv/photos.csv'
+CSV_PATH_PRICE = BASE_PATH + '/csv/prices.csv'
+CSV_PATH_PRICE2 = BASE_PATH + '/csv/prices2.csv'
 # reader = csv.DictReader(open(BASE_PATH + '/resorts.csv'))
 
 # resort-names - used as resort ID
