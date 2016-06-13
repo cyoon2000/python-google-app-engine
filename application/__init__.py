@@ -1,19 +1,6 @@
 from flask import current_app, Flask, redirect, url_for
 from flask.ext.cors import CORS
 
-# app = Flask(__name__)
-# app.config.from_object('config')
-
-
-
-# import content.views
-
-# def create_app(cfg=None):
-#     app = Flask(__name__)
-#     from api.views import api
-#     app.register_blueprint(api)
-#     return app
-
 def create_app(config, debug=False, testing=False, config_overrides=None):
     app = Flask(__name__)
     CORS(app)
@@ -36,7 +23,7 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
 
     # Register the Bookshelf CRUD blueprint.
     #from .crud import crud
-    from content.views import api
+    from application.views import api
     from .views import api
     app.register_blueprint(api, url_prefix='/content')
 

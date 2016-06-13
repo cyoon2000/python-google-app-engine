@@ -1,5 +1,5 @@
 """`main` is the top level module for your Flask application."""
-import content
+import application
 import config
 
 # from flask import Flask
@@ -13,10 +13,10 @@ import config
 #CORS(app)
 
 
-app = content.create_app(config)
+app = application.create_app(config)
 
 
 # This is only used when running locally. When running live, gunicorn runs
 # the application.
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    application.run(host='127.0.0.1', port=8080, debug=True)

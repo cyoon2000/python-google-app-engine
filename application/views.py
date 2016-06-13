@@ -1,4 +1,4 @@
-from content import model
+from application import model
 
 # Import the Flask Framework
 from flask import request
