@@ -35,10 +35,10 @@ PROJECT_ID = 'gokitebaja-flask'
 # SQLAlchemy configuration
 # Replace user, pass, host, and database with the respective values of your
 # Cloud SQL instance.
-# SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://pythonapp:kite123@173.194.86.223/sample-bookshelf:libaray'
-SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root@104.198.198.22/booking-db'
-# SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root@localhost/booking-db'
-    # 'mysql+pymysql://user:password@104.198.198.22/booking-db'
+SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://pythonapp:kite123@173.194.86.223/guestbook'
+# SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root@104.198.198.22/booking-db'
+# SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root@104.198.198.22/booking-db?unix_socket=/cloudsql/gokitebaja-flask:us-central1:booking-db'
+#  SQLALCHEMY_DATABASE_URI =  'mysql+pymysql://user:password@104.198.198.22/booking-db'
 
 
 # Mongo configuration

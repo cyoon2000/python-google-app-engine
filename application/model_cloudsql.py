@@ -14,7 +14,7 @@
 
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
-
+# from flask_sqlalchemy import SQLAlchemy
 
 builtin_list = list
 
@@ -35,39 +35,34 @@ def from_sql(row):
 
 
 # [START model]
-class Book(db.Model):
-    __tablename__ = 'books'
+class Entry(db.Model):
+    __tablename__ = 'entries'
 
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(255))
-    author = db.Column(db.String(255))
-    publishedDate = db.Column(db.String(255))
-    imageUrl = db.Column(db.String(255))
-    description = db.Column(db.String(255))
-    createdBy = db.Column(db.String(255))
-    createdById = db.Column(db.String(255))
+    guestName = db.Column(db.String(255))
+    content = db.Column(db.String(255))
 
     def __repr__(self):
-        return "<Book(title='%s', author=%s)" % (self.title, self.author)
+        return "<Entry(guestName='%s', content=%s)" % (self.guestName, self.content)
 # [END model]
 
 
 # [START list]
 def list(limit=10, cursor=None):
     cursor = int(cursor) if cursor else 0
-    query = (Book.query
-             .order_by(Book.title)
+    query = (Entry.query
+             .order_by(Entry.guestName)
              .limit(limit)
              .offset(cursor))
-    books = builtin_list(map(from_sql, query.all()))
-    next_page = cursor + limit if len(books) == limit else None
-    return (books, next_page)
+    entries = builtin_list(map(from_sql, query.all()))
+    next_page = cursor + limit if len(entries) == limit else None
+    return (entries, next_page)
 # [END list]
 
 
 # [START read]
 def read(id):
-    result = Book.query.get(id)
+    result = Entry.query.get(id)
     if not result:
         return None
     return from_sql(result)
@@ -76,40 +71,89 @@ def read(id):
 
 # [START create]
 def create(data):
-    book = Book(**data)
+    book = Entry(**data)
     db.session.add(book)
     db.session.commit()
     return from_sql(book)
 # [END create]
 
 
-# [START update]
-def update(data, id):
-    book = Book.query.get(id)
-    for k, v in data.items():
-        setattr(book, k, v)
-    db.session.commit()
-    return from_sql(book)
-# [END update]
+# # [START model]
+# class Book(db.Model):
+#     __tablename__ = 'books'
+#
+#     id = db.Column(db.Integer, primary_key=True)
+#     title = db.Column(db.String(255))
+#     author = db.Column(db.String(255))
+#     publishedDate = db.Column(db.String(255))
+#     imageUrl = db.Column(db.String(255))
+#     description = db.Column(db.String(255))
+#     createdBy = db.Column(db.String(255))
+#     createdById = db.Column(db.String(255))
+#
+#     def __repr__(self):
+#         return "<Book(title='%s', author=%s)" % (self.title, self.author)
+# # [END model]
+#
+#
+# # [START list]
+# def list(limit=10, cursor=None):
+#     cursor = int(cursor) if cursor else 0
+#     query = (Book.query
+#              .order_by(Book.title)
+#              .limit(limit)
+#              .offset(cursor))
+#     books = builtin_list(map(from_sql, query.all()))
+#     next_page = cursor + limit if len(books) == limit else None
+#     return (books, next_page)
+# # [END list]
+#
+#
+# # [START read]
+# def read(id):
+#     result = Book.query.get(id)
+#     if not result:
+#         return None
+#     return from_sql(result)
+# # [END read]
+#
+#
+# # [START create]
+# def create(data):
+#     book = Book(**data)
+#     db.session.add(book)
+#     db.session.commit()
+#     return from_sql(book)
+# # [END create]
+#
+#
+# # [START update]
+# def update(data, id):
+#     book = Book.query.get(id)
+#     for k, v in data.items():
+#         setattr(book, k, v)
+#     db.session.commit()
+#     return from_sql(book)
+# # [END update]
+#
+#
+# def delete(id):
+#     Book.query.filter_by(id=id).delete()
+#     db.session.commit()
+#
+#
+# def _create_database():
+#     """
+#     If this script is run directly, create all the tables necessary to run the
+#     application.
+#     """
+#     app = Flask(__name__)
+#     app.config.from_pyfile('../config.py')
+#     init_app(app)
+#     with app.app_context():
+#         db.create_all()
+#     print("All tables created")
 
-
-def delete(id):
-    Book.query.filter_by(id=id).delete()
-    db.session.commit()
-
-
-def _create_database():
-    """
-    If this script is run directly, create all the tables necessary to run the
-    application.
-    """
-    app = Flask(__name__)
-    app.config.from_pyfile('../config.py')
-    init_app(app)
-    with app.app_context():
-        db.create_all()
-    print("All tables created")
-
-
-if __name__ == '__main__':
-    _create_database()
+#
+# if __name__ == '__main__':
+#     _create_database()
