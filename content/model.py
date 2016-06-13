@@ -5,6 +5,7 @@ import json
 
 from collections import defaultdict
 from datetime import timedelta, datetime, date
+from content import data
 
 DATE_ISO_FORMAT = '%Y-%m-%d'
 
