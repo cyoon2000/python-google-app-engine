@@ -1,17 +1,5 @@
-"""`main` is the top level module for your Flask application."""
 import application
 import config
-
-# from flask import Flask
-# from flask.ext.cors import CORS #, cross_origin
-
-#app = Flask(__name__)
-# Note: We don't need to call run() since our application is embedded within
-# the App Engine WSGI application server.
-
-# CORS support
-#CORS(app)
-
 
 app = application.create_app(config)
 

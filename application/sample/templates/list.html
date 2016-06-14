@@ -19,14 +19,14 @@
 {% block content %}
 
 <h3>Sampple App : Entries </h3>
-<a href="/content/add" class="btn btn-success btn-sm">
+<a href="/sample/add" class="btn btn-success btn-sm">
     <i class="glyphicon glyphicon-plus"></i>
     Add entry
 </a>
 
 {% for entry in entries %}
 <div class="media">
-    <a href="/content/{{entry.id}}">
+    <a href="/sample/{{entry.id}}">
         <div class="media-left">
             <img src="http://placekitten.com/g/128/192">
         </div>
