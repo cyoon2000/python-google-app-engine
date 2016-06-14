@@ -1,23 +1,7 @@
-# Copyright 2015 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
-# from flask_sqlalchemy import SQLAlchemy
 
 builtin_list = list
-
 
 db = SQLAlchemy()
 
@@ -34,7 +18,6 @@ def from_sql(row):
     return data
 
 
-# [START model]
 class Entry(db.Model):
     __tablename__ = 'entries'
 
@@ -44,10 +27,8 @@ class Entry(db.Model):
 
     def __repr__(self):
         return "<Entry(guestName='%s', content=%s)" % (self.guestName, self.content)
-# [END model]
 
 
-# [START list]
 def list(limit=10, cursor=None):
     cursor = int(cursor) if cursor else 0
     query = (Entry.query
@@ -57,90 +38,34 @@ def list(limit=10, cursor=None):
     entries = builtin_list(map(from_sql, query.all()))
     next_page = cursor + limit if len(entries) == limit else None
     return (entries, next_page)
-# [END list]
 
 
-# [START read]
 def read(id):
     result = Entry.query.get(id)
     if not result:
         return None
     return from_sql(result)
-# [END read]
 
 
-# [START create]
 def create(data):
-    book = Entry(**data)
-    db.session.add(book)
+    entry = Entry(**data)
+    db.session.add(entry)
     db.session.commit()
-    return from_sql(book)
-# [END create]
+    return from_sql(entry)
 
 
-# # [START model]
-# class Book(db.Model):
-#     __tablename__ = 'books'
-#
-#     id = db.Column(db.Integer, primary_key=True)
-#     title = db.Column(db.String(255))
-#     author = db.Column(db.String(255))
-#     publishedDate = db.Column(db.String(255))
-#     imageUrl = db.Column(db.String(255))
-#     description = db.Column(db.String(255))
-#     createdBy = db.Column(db.String(255))
-#     createdById = db.Column(db.String(255))
-#
-#     def __repr__(self):
-#         return "<Book(title='%s', author=%s)" % (self.title, self.author)
-# # [END model]
-#
-#
-# # [START list]
-# def list(limit=10, cursor=None):
-#     cursor = int(cursor) if cursor else 0
-#     query = (Book.query
-#              .order_by(Book.title)
-#              .limit(limit)
-#              .offset(cursor))
-#     books = builtin_list(map(from_sql, query.all()))
-#     next_page = cursor + limit if len(books) == limit else None
-#     return (books, next_page)
-# # [END list]
-#
-#
-# # [START read]
-# def read(id):
-#     result = Book.query.get(id)
-#     if not result:
-#         return None
-#     return from_sql(result)
-# # [END read]
-#
-#
-# # [START create]
-# def create(data):
-#     book = Book(**data)
-#     db.session.add(book)
-#     db.session.commit()
-#     return from_sql(book)
-# # [END create]
-#
-#
-# # [START update]
-# def update(data, id):
-#     book = Book.query.get(id)
-#     for k, v in data.items():
-#         setattr(book, k, v)
-#     db.session.commit()
-#     return from_sql(book)
-# # [END update]
-#
-#
-# def delete(id):
-#     Book.query.filter_by(id=id).delete()
-#     db.session.commit()
-#
+def update(data, id):
+    entry = Entry.query.get(id)
+    for k, v in data.items():
+        setattr(entry, k, v)
+    db.session.commit()
+    return from_sql(entry)
+
+
+def delete(id):
+    Entry.query.filter_by(id=id).delete()
+    db.session.commit()
+
 #
 # def _create_database():
 #     """

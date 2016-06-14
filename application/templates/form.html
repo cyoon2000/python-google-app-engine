@@ -1,0 +1,49 @@
+{#
+# Copyright 2015 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#}
+
+{# [START form] #}
+{% extends "base.html" %}
+
+{% block content %}
+<h3>{{action}} entry</h3>
+
+<form method="POST" enctype="multipart/form-data">
+
+    <div class="form-group">
+        <label for="guestName">Guest Name</label>
+        <input type="text" name="guestName" id="guestName" value="{{entry.guestName}}" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label for="content">Content</label>
+        <input type="text" name="content" id="content" value="{{entry.content}}" class="form-control"/>
+    </div>
+
+    <!--<div class="form-group">-->
+        <!--<label for="publishedDate">Date Published</label>-->
+        <!--<input type="text" name="publishedDate" id="publishedDate" value="{{entry.publishedDate}}" class="form-control"/>-->
+    <!--</div>-->
+
+    <!--<div class="form-group">-->
+        <!--<label for="description">Description</label>-->
+        <!--<textarea name="description" id="description" class="form-control">{{entry.description}}</textarea>-->
+    <!--</div>-->
+
+    <button type="submit" class="btn btn-success">Save</button>
+</form>
+
+{% endblock %}
+{# [END form] #}
