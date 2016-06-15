@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block content %}
 
 <h3> Manage Bookings </h3>
@@ -12,17 +11,17 @@
 <div class="media">
     <a href="/bookings/{{booking.id}}">
         <!--<div class="media-left">-->
-            <!--<img src="http://placekitten.com/g/128/192">-->
+        <!--<img src="http://placekitten.com/g/128/192">-->
         <!--</div>-->
         <div class="media-body">
             <h4>{{booking.unit_name}}</h4>
-            <p>{{booking.begin_on}}</p>
-            <p>{{booking.end_on}}</p>
-            <p>{{booking.status}}</p>
-            <p>{{booking.first_name}}</p>
-            <p>{{booking.last_name}}</p>
-            <p>{{booking.email}}</p>
-            <p>{{booking.is_admin}}</p>
+            <p>Begin Date: {{booking.begin_on}}</p>
+            <p>End Date:{{booking.end_on}}</p>
+            <p>Status: {{booking.status}}</p>
+            <p>First Name: {{booking.first_name}}</p>
+            <p>Last Name: {{booking.last_name}}</p>
+            <p>Email: {{booking.email}}</p>
+            <p>Admin: {{booking.is_admin}}</p>
         </div>
     </a>
 </div>

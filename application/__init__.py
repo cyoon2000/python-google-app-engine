@@ -1,7 +1,7 @@
 from flask import current_app, Flask, redirect, url_for
 from flask.ext.cors import CORS
 #from application.sample import model_cloudsql
-from application.sample import get_model
+# from application.sample import get_model
 
 def create_app(config, debug=False, testing=False, config_overrides=None):
     app = Flask(__name__)
@@ -19,19 +19,21 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     #     logging.basicConfig(level=logging.INFO)
 
     with app.app_context():
-        from .sample import get_model
-        get_model().init_app(app)
+        # from .sample import get_model
+        # get_model().init_app(app)
+        # get_model().get_db().create_all()
         from .bookings import get_model
         get_model().init_app(app)
+        # get_model().get_db().create_all()
 
     from .contents.views import api
     app.register_blueprint(api, url_prefix='/content')
 
-    from .sample.views import sample
-    app.register_blueprint(sample, url_prefix='/sample')
+    # from .sample.views import sample
+    # app.register_blueprint(sample, url_prefix='/sample')
 
-    from .bookings.views import bookings
-    app.register_blueprint(bookings, url_prefix='/bookings')
+    from .bookings.views import bookings_api
+    app.register_blueprint(bookings_api, url_prefix='/bookings')
 
     @app.errorhandler(500)
     def server_error(e):
