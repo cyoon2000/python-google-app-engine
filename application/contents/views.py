@@ -1,10 +1,7 @@
-from application import model
-
-# Import the Flask Framework
-from flask import request
 from flask import jsonify
-
 from flask import current_app, Blueprint, redirect, render_template, request, url_for
+from application.contents import model
+
 api = Blueprint('api', __name__)
 
 @api.route('/resorts')

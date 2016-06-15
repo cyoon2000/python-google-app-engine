@@ -1,11 +1,10 @@
-import data
 import sys
 import logging
 import json
 
 from collections import defaultdict
 from datetime import timedelta, datetime, date
-from application import data
+from application.contents import data
 
 DATE_ISO_FORMAT = '%Y-%m-%d'
 

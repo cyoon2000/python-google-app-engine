@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3>Entry</h3>
+
+<div class="btn-group">
+    <a href="/bookings/{{booking.id}}/edit" class="btn btn-primary btn-sm">
+        <i class="glyphicon glyphicon-edit"></i>
+        Edit booking
+    </a>
+    <a href="/bookings/{{booking.id}}/delete" class="btn btn-danger btn-sm">
+        <i class="glyphicon glyphicon-trash"></i>
+        Delete booking
+    </a>
+</div>
+
+<div class="media">
+    <div class="media-left">
+        <img class="booking-image" src="http://placekitten.com/g/128/192">
+    </div>
+    <div class="media-body">
+        <h4 class="booking-title">
+            {{booking.unit_name}}
+            <small>{{booking.begin_on}}</small>
+            <small>{{booking.end_on}}</small>
+        </h4>
+        <h5 class="booking-status">{{booking.status}}</h5>
+        <p>{{booking.email}}</p>
+        <p>{{booking.first_name}}</p>
+        <p>{{booking.last_name}}</p>
+        <p>{{booking.email}}</p>
+        <p>{{booking.is_admin}}</p>
+    </div>
+</div>
+
+{% endblock %}

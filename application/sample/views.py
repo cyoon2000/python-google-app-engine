@@ -1,4 +1,4 @@
-from application import get_model
+from . import get_model
 
 # Import the Flask Framework
 from flask import current_app, Blueprint, redirect, render_template, request, url_for

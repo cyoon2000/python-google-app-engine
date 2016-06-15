@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h3>{{action}} booking</h3>
+
+<form method="POST" enctype="multipart/form-data">
+
+    <div class="form-group">
+        <label for="unit_name">Unit Name</label>
+        <input type="text" name="unit_name" id="unit_name" value="{{booking.unit_name}}" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label for="begin_on">Begin Date</label>
+        <input type="text" name="begin_on" id="begin_on" value="{{booking.begin_on}}" class="form-control"/>
+    </div>
+    <div class="form-group">
+        <label for="end_on">Begin Date</label>
+        <input type="text" name="end_on" id="end_on" value="{{booking.end_on}}" class="form-control"/>
+    </div>
+    <div class="form-group">
+        <label for="unit_name">Status</label>
+        <input type="text" name="status" id="status" value="{{booking.status}}" class="form-control"/>
+    </div>
+    <div class="form-group">
+        <label for="first_name">Status</label>
+        <input type="text" name="first_name" id="first_name" value="{{booking.first_name}}" class="form-control"/>
+    </div>
+    <div class="form-group">
+        <label for="last_name">Last Name</label>
+        <input type="text" name="last_name" id="last_name" value="{{booking.last_name}}" class="form-control"/>
+    </div>
+    <div class="form-group">
+        <label for="last_name">Email</label>
+        <input type="text" name="email" id="email" value="{{booking.email}}" class="form-control"/>
+    </div>
+    <button type="submit" class="btn btn-success">Save</button>
+</form>
+
+{% endblock %}
+
+
+

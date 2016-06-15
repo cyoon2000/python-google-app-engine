@@ -19,16 +19,19 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     #     logging.basicConfig(level=logging.INFO)
 
     with app.app_context():
-        model = get_model()
-        model.init_app(app)
+        from .sample import get_model
+        get_model().init_app(app)
+        from .bookings import get_model
+        get_model().init_app(app)
 
-    from application.views import api
-    from .views import api
+    from .contents.views import api
     app.register_blueprint(api, url_prefix='/content')
 
-    from application.sample.views import sample
-    from sample.views import sample
+    from .sample.views import sample
     app.register_blueprint(sample, url_prefix='/sample')
+
+    from .bookings.views import bookings
+    app.register_blueprint(bookings, url_prefix='/bookings')
 
     @app.errorhandler(500)
     def server_error(e):

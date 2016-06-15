@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h3> Manage Bookings </h3>
+<a href="/bookings/add" class="btn btn-success btn-sm">
+    <i class="glyphicon glyphicon-plus"></i>
+    Add booking
+</a>
+
+{% for booking in bookings %}
+<div class="media">
+    <a href="/bookings/{{booking.id}}">
+        <!--<div class="media-left">-->
+            <!--<img src="http://placekitten.com/g/128/192">-->
+        <!--</div>-->
+        <div class="media-body">
+            <h4>{{booking.unit_name}}</h4>
+            <p>{{booking.begin_on}}</p>
+            <p>{{booking.end_on}}</p>
+            <p>{{booking.status}}</p>
+            <p>{{booking.first_name}}</p>
+            <p>{{booking.last_name}}</p>
+            <p>{{booking.email}}</p>
+            <p>{{booking.is_admin}}</p>
+        </div>
+    </a>
+</div>
+{% else %}
+<p>No bookings found</p>
+{% endfor %}
+
+{% if next_page_token %}
+<nav>
+    <ul class="pager">
+        <li><a href="?page_token={{next_page_token}}">More</a></li>
+    </ul>
+</nav>
+{% endif %}
+
+{% endblock %}
