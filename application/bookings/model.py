@@ -29,7 +29,7 @@ class Base(db.Model):
 
 
 class Booking(Base):
-    __tablename__ = 'bookings'
+    __tablename__ = 'booking'
 
     id = db.Column(db.Integer, primary_key=True)
     #unit_id = db.Column(db.Integer, db.ForeignKey('units.unit_id'))
@@ -44,7 +44,8 @@ class Booking(Base):
     #transaction_id = db.Column(db.String(255), unique=True)
 
     def __repr__(self):
-        return "<Booking(begin_on='%s', end_on=%s)" % (self.begin_on, self.end_on)
+        # return "<Booking(begin_on='%s', end_on=%s)" % (self.begin_on, self.end_on)
+        return '<Booking(begin_on = %r, end_on = %r)>' % (self.begin_on, self.end_on)
 
 
 def list(limit=10, cursor=None):

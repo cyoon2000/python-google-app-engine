@@ -7,6 +7,7 @@ from collections import defaultdict
 BASE_PATH = os.path.dirname(os.path.realpath(__file__))
 CSV_PATH = BASE_PATH + '/csv/resorts.csv'
 CSV_PATH_UNIT = BASE_PATH + '/csv/units.csv'
+CSV_PATH_UNITNAME = BASE_PATH + '/csv/unitnames.csv'
 CSV_PATH_PHOTO = BASE_PATH + '/csv/photos.csv'
 CSV_PATH_PRICE = BASE_PATH + '/csv/prices.csv'
 CSV_PATH_PRICE2 = BASE_PATH + '/csv/prices2.csv'
@@ -40,6 +41,16 @@ fields = ("typeName", "resortName", "displayName", "type", "maxCapacity", "bedSe
           "numBedroom", "numBathroom", "kitchen", "kitchenette", "privateBath",
           "ac", "patio", "seaview", "profilePhoto", "photos")
 class UnitRecord(namedtuple('UnitRecord_', fields)):
+
+    @classmethod
+    def parse(klass, row):
+        row = list(row)                                # Make row mutable
+        return klass(*row)
+
+
+# parse instruction for Unit CSV file
+fields = ("name", "displayName", "groupName", "gcalId")
+class UnitNameRecord(namedtuple('UnitNameRecord_', fields)):
 
     @classmethod
     def parse(klass, row):
@@ -96,6 +107,15 @@ def read_data_units():
         data.readline()            # Skip the header
         reader = csv.reader(data)  # Create a regular tuple reader
         for row in map(UnitRecord.parse, reader):
+            yield row
+
+
+def read_data_unitnames():
+    logging.info('...reading file : loading UnitName data........')
+    with open(CSV_PATH_UNITNAME, 'rU') as data:
+        data.readline()            # Skip the header
+        reader = csv.reader(data)  # Create a regular tuple reader
+        for row in map(UnitNameRecord.parse, reader):
             yield row
 
 
