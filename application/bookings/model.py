@@ -1,13 +1,11 @@
 from datetime import datetime
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
+from database import db
+from application.contents.data import read_data_resorts, read_data_units, read_data_unitnames
 
 builtin_list = list
 
-db = SQLAlchemy()
-
-# def get_db():
-#     return db
 
 def init_app(app):
     db.init_app(app)
@@ -28,11 +26,88 @@ class Base(db.Model):
     #updated_by = db.Column(db.String(64), default=lambda: current_user.username)
 
 
+class Resort(Base):
+    __tablename__ = 'resort'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(30), nullable=False, unique=True)
+    display_name = db.Column(db.String(30), nullable=False)
+    active = db.Column(db.Boolean, default=True)
+    # relationships
+    unitgroups = db.relationship("Unitgroup", backref='resort')
+
+    # def __init__(self, name, display_name):
+    #     self.name = name
+    #     self.display_name = display_name
+    # def _init__(self, **kwargs):
+    #     self.name = kwargs.pop('name', None)
+    #     self.displayName = kwargs.pop('displayName', None)
+    # def __init__(self, **kwargs):
+    #     super(User, self).__init__(**kwargs)
+    #     # do custom initialization here
+    def __init__(self, resort_tuple):
+        self.name = resort_tuple.name
+        self.display_name = resort_tuple.displayName
+
+    def __repr__(self):
+        return '<Resort (%r %r)>' % (self.name, self.display_name)
+
+
+# fields = ("typeName", "resortName", "displayName", "type", "maxCapacity", "bedSetup",
+#           "numBedroom", "numBathroom", "kitchen", "kitchenette", "privateBath",
+#           "ac", "patio", "seaview", "profilePhoto", "photos")
+class Unitgroup(Base):
+    __tablename__ = 'unitgroup'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(30), nullable=False, unique=True)
+    display_name = db.Column(db.String(30), nullable=False)
+    active = db.Column(db.Boolean, default=True)
+    resort_id = db.Column(db.Integer, db.ForeignKey('resort.id'))
+    # relationship
+    units = db.relationship("Unit", backref='unitgroup', lazy='dynamic')
+
+    # input is named tuple UnitRecord
+    def __init__(self, row):
+        resort = Resort.query.filter(Resort.name == row.resortName).one()
+        self.name = row.typeName
+        self.display_name = row.displayName
+        self.resort_id = resort.id
+
+
+    def __repr__(self):
+        return '<Unitgroup (%r %r)>' % (self.name, self.display_name)
+
+
+class Unit(Base):
+    __tablename__ = 'unit'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(30), nullable=False)
+    display_name = db.Column(db.String(30))
+    active = db.Column(db.Boolean, default=True)
+    unitgroup_id = db.Column(db.Integer, db.ForeignKey('unitgroup.id'))
+    # relationships
+    availabilities = db.relationship('Availability', backref='unit', lazy='dynamic')
+    bookings = db.relationship('Booking', backref='unit', lazy='dynamic')
+
+    # input is named tuple UnitNameRecord
+    def __init__(self, row):
+        print row
+        unitgroup = Unitgroup.query.filter(Unitgroup.name == row.groupName).one()
+        self.name = row.name
+        self.display_name = row.displayName
+        self.unitgroup_id = unitgroup.id
+
+    def __repr__(self):
+        return '<Unit (%r %r)>' % (self.name, self.display_name)
+
+
 class Booking(Base):
     __tablename__ = 'booking'
 
     id = db.Column(db.Integer, primary_key=True)
-    #unit_id = db.Column(db.Integer, db.ForeignKey('units.unit_id'))
+    # TODO - remove unitname
     unit_name = db.Column(db.String(30))
     begin_on = db.Column(db.DateTime, nullable=False)
     end_on = db.Column(db.DateTime, nullable=False)
@@ -42,10 +117,27 @@ class Booking(Base):
     email = db.Column(db.String(60))
     is_admin = db.Column(db.Boolean, default=False)
     #transaction_id = db.Column(db.String(255), unique=True)
+    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
+    availabilities = db.relationship('Availability', backref='booking', lazy='dynamic')
 
-    def __repr__(self):
+
+def __repr__(self):
         # return "<Booking(begin_on='%s', end_on=%s)" % (self.begin_on, self.end_on)
         return '<Booking(begin_on = %r, end_on = %r)>' % (self.begin_on, self.end_on)
+
+
+class Availability(Base):
+    __tablename__ = 'availability'
+
+    id = db.Column(db.Integer, primary_key=True)
+    date_slot = db.Column(db.Date, nullable=False)
+    status = db.Column(db.Integer, default=1)    #available=1, unavailable=0, blocked=-1
+    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
+    booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
+
+    def __repr__(self):
+        return '<Availability(unit_id = %r, date = %r, status = %)>' % (self.unit_id, self.date, self.status)
+
 
 
 def list(limit=10, cursor=None):
@@ -84,6 +176,42 @@ def update(data, id):
 def delete(id):
     Booking.query.filter_by(id=id).delete()
     db.session.commit()
+
+
+def create_entity(entity):
+    db.session.add(entity)
+    db.session.commit()
+    return from_sql(entity)
+
+
+# def list_calendar(limit=14, cursor=None):
+#     cursor = int(cursor) if cursor else 0
+#     query = (UnitCalendar.query
+#              .order_by(UnitCalendar.date_slot)
+#              .limit(limit)
+#              .offset(cursor))
+#     days = builtin_list(map(from_sql, query.all()))
+#     next_page = cursor + limit if len(days) == limit else None
+#     return (days, next_page)
+
+
+    # run only once
+def init_db():
+    print 'Creating all tables...................'
+    db.create_all()
+    print 'Populating data in tables.............'
+    populate_csv_data()
+    print '..................................Done'
+
+
+def populate_csv_data():
+    for row in read_data_resorts():
+        create_entity(Resort(row))
+    for row in read_data_units():
+        create_entity(Unitgroup(row))
+    for row in read_data_unitnames():
+        print row
+        create_entity(Unit(row))
 
 
 def _create_database():
