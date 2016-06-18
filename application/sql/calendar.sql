@@ -4,18 +4,9 @@ create table calendar
     date_       date        primary key
 );
 
-drop table if exists unit_calendar;
-create table unit_calendar
-(
-    date_slot      	date        references calendar(date_),
-    unit_id         int         references unit(id),
-    booking_id		int			references booking(id),
-    status			tinyint(3) NOT NULL DEFAULT '1'  -- available=1, unavailable=0, blocked=-1
-);
-
 
 -- stored procedure : insert data to calendar
-drop procedure fill_calendar;
+drop procedure if exists fill_calendar;
 delimiter $$
 create procedure fill_calendar(start_date date, end_date date)
 begin
@@ -28,22 +19,34 @@ begin
 end $$
 delimiter ;
 
-call fill_calendar('2016-07-01', '2017-08-01');
+call fill_calendar('2016-07-01', '2016-09-01');
 
 
--- stored procedure : insert to data to unit_calendar for given unit_id
-drop procedure if exists fill_unit_calendar;
+---- NOTE : This has been migrated to SQLAlchemy
+--drop table if exists availability;
+--create table availability
+--(
+--    date_slot      	date        references calendar(date_),
+--    unit_id         int         references unit(id),
+--    booking_id		int			references booking(id),
+--    status			tinyint(3) NOT NULL DEFAULT '1'  -- available=1, unavailable=0, blocked=-1
+--);
+
+
+---- stored procedure : insert to data to unit_calendar for given unit_id
+drop procedure if exists fill_availability;
 delimiter $$
-create procedure fill_unit_calendar(unit_id int, start_date date, end_date date)
+create procedure fill_availability(unit_id int, start_date date, end_date date)
 begin
   declare date_ date;
   set date_=start_date;
 
   while date_ < end_date do
-    	insert into unit_calendar values(date_, unit_id, NULL, 1);
+        -- created_on, updated_on, id, date_slot, status, unit_id, booking_id
+    	insert into availability values(NOW(), NOW(), NULL, date_, 1, unit_id, NULL);
     	set date_ = adddate(date_, interval 1 day);
 	end while;
 end $$
 delimiter ;
 
-call fill_unit_calendar(277, '2016-07-01', '2016-07-31');
+call fill_availability(10, '2016-07-01', '2016-07-20');
