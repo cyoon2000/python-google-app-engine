@@ -25,7 +25,7 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
         from .bookings import get_model
         get_model().init_app(app)
         # run ONLY ONCE - create tables, populate data
-        get_model().init_db()
+        #get_model().init_db()
 
 
     from .contents.views import api
@@ -36,6 +36,9 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
 
     from .bookings.views import bookings_api
     app.register_blueprint(bookings_api, url_prefix='/bookings')
+
+    from .bookings.views_appointment import example_api
+    app.register_blueprint(example_api, url_prefix='/example')
 
     @app.errorhandler(500)
     def server_error(e):

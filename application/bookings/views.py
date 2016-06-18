@@ -1,7 +1,13 @@
+import json
 from . import get_model
+from . import model
 
 # Import the Flask Framework
 from flask import current_app, Blueprint, redirect, render_template, request, url_for
+from flask import jsonify
+
+from flask_wtf import Form
+#from wtforms.fields.html5 import DateField
 
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
@@ -56,4 +62,25 @@ def edit(id):
 def delete(id):
     get_model().delete(id)
     return redirect(url_for('.list'))
+
+# Returns JSON
+@bookings_api.route("/resorts")
+def list_resort():
+    resorts = model.list_resorts()
+    for resort in resorts:
+        print resort.name
+    return "OK"
+
+# Returns JSON
+@bookings_api.route("/resorts/<id>/unitgroups")
+def list_unitgroups(id):
+    results = model.list_unitgroups(id)
+    return jsonify(results=results)
+
+# Returns JSON
+@bookings_api.route("/resorts/<id>/units")
+def list_units(id):
+    results = model.list_units(id)
+    return jsonify(results=results)
+
 

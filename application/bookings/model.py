@@ -184,15 +184,28 @@ def create_entity(entity):
     return from_sql(entity)
 
 
-# def list_calendar(limit=14, cursor=None):
-#     cursor = int(cursor) if cursor else 0
-#     query = (UnitCalendar.query
-#              .order_by(UnitCalendar.date_slot)
-#              .limit(limit)
-#              .offset(cursor))
-#     days = builtin_list(map(from_sql, query.all()))
-#     next_page = cursor + limit if len(days) == limit else None
-#     return (days, next_page)
+def list_resorts():
+    return Resort.query.all()
+
+
+def list_unitgroups(resort_id_):
+    results = Unitgroup.query.filter_by(resort_id=resort_id_)
+    for result in results:
+        print result.name, result.display_name
+    return "OK"
+
+
+def list_units(resort_id_):
+    #results = Unitgroup.query.join(Resort, Unitgroup.resort_id == Resort.unitgroup_id)
+    # results = Unit.query.join(Unitgroup, Unitgroup.id == Unit.unitgroup_id).group_by(Unit.display_name)
+    query = (Unit.query
+                .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
+                .filter(Unitgroup.resort_id == resort_id_)
+                .group_by(Unit.display_name))
+    for result in query.all():
+        print result.name, result.display_name
+    return "OK"
+
 
 
     # run only once
