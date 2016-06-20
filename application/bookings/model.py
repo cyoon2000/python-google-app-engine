@@ -1,5 +1,4 @@
 from datetime import datetime
-from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from database import db
 from application.contents.data import read_data_resorts, read_data_units, read_data_unitnames
@@ -120,8 +119,7 @@ class Booking(Base):
     unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
     availabilities = db.relationship('Availability', backref='booking', lazy='dynamic')
 
-
-def __repr__(self):
+    def __repr__(self):
         # return "<Booking(begin_on='%s', end_on=%s)" % (self.begin_on, self.end_on)
         return '<Booking(begin_on = %r, end_on = %r)>' % (self.begin_on, self.end_on)
 
@@ -136,8 +134,7 @@ class Availability(Base):
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
 
     def __repr__(self):
-        return '<Availability(unit_id = %r, date = %r, status = %)>' % (self.unit_id, self.date, self.status)
-
+        return '<Availability (unit_id = %r date = %r status = %r)>' % (self.unit_id, self.date_slot, self.status)
 
 
 def list(limit=10, cursor=None):
@@ -206,6 +203,22 @@ def list_units(resort_id_):
         print result.name, result.display_name
     return "OK"
 
+
+def list_availability(unit_id_, begin_date, end_date):
+    query = (Availability.query
+                .filter(Availability.unit_id == unit_id_)
+                .filter(Availability.status == 1)
+                .filter(Availability.date_slot.between(begin_date, end_date))
+    )
+    return query.all()
+
+
+def read_availability(id):
+    result = Availability.query.get(id)
+    print result
+    if not result:
+        return None
+    return from_sql(result)
 
 
     # run only once

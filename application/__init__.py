@@ -1,11 +1,13 @@
 from flask import current_app, Flask, redirect, url_for
 from flask.ext.cors import CORS
+from flask.ext.triangle import Triangle
 #from application.sample import model_cloudsql
-# from application.sample import get_model
+#from application.sample import get_model
 
 def create_app(config, debug=False, testing=False, config_overrides=None):
     app = Flask(__name__)
     CORS(app)
+    Triangle(app)
     app.config.from_object(config)
 
     app.debug = debug
@@ -37,7 +39,7 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     from .bookings.views import bookings_api
     app.register_blueprint(bookings_api, url_prefix='/bookings')
 
-    from .bookings.views_appointment import example_api
+    from .bookings.views_example import example_api
     app.register_blueprint(example_api, url_prefix='/example')
 
     @app.errorhandler(500)
