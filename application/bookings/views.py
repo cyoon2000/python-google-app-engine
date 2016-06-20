@@ -107,19 +107,19 @@ def list_availability(id):
     return jsonify(data=results)
 
 
-@bookings_api.route('/availability/<id>/edit', methods=['GET', 'POST'])
+@bookings_api.route('/availability/<id>', methods=['POST'])
 def edit_availability(id):
-    avail = model.read_availability(id)
+    input = json.loads(request.data)
+    new_status = -1 if input['booked'] is True else 1
+
     # TODO - 400 for invalid id
+    avail = model.Availability.query.get(input['id'])
+    avail.status = new_status
+    print avail
 
-    if request.method == 'POST':
-        avail.unit_id = request.json.get('unit_id')
-        avail.date_slot = request.json.get('date_slot')
-        avail.status = request.json.get('status')
-        avail = model.update(avail, id)
+    # TODO - save
 
-    return jsonify(data=serialize_availability(avail))
-
+    return "OK"
 
 
 def serialize_availability(availability):
