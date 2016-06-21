@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 from database import db
@@ -134,7 +135,16 @@ class Availability(Base):
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
 
     def __repr__(self):
-        return '<Availability (unit_id = %r date = %r status = %r)>' % (self.unit_id, self.date_slot, self.status)
+        return '<Availability (id = %r unit_id = %r date = %r status = %r)>' % (self.id, self.unit_id, self.date_slot, self.status)
+
+
+class Calendar(db.Model):
+    __tablename__ = 'calendar'
+
+    date_ = db.Column(db.Date, primary_key=True)
+
+    def __repr__(self):
+        return '<Calendar (id = %r)>' % self.date_
 
 
 def list(limit=10, cursor=None):
@@ -174,7 +184,7 @@ def delete(id):
     Booking.query.filter_by(id=id).delete()
     db.session.commit()
 
-
+# TODO - refactor with save_entity() below
 def create_entity(entity):
     db.session.add(entity)
     db.session.commit()
@@ -204,24 +214,35 @@ def list_units(resort_id_):
     return "OK"
 
 
-def list_availability(unit_id_, begin_date, end_date):
+def save_entity(entity):
+    db.session.add(entity)
+    db.session.commit()
+    logging.info(entity)
+    return entity
+
+
+def get_calendar_date(date):
+    return Calendar.query.get(date)
+
+
+def get_calendar_dates(begin, end):
+    return Calendar.query.filter(Calendar.date_.between(begin, end)).all()
+
+
+def get_availabilities(unit_id_, begin_date, end_date):
     query = (Availability.query
                 .filter(Availability.unit_id == unit_id_)
-                .filter(Availability.status == 1)
                 .filter(Availability.date_slot.between(begin_date, end_date))
     )
     return query.all()
 
 
-def read_availability(id):
-    result = Availability.query.get(id)
-    print result
-    if not result:
-        return None
-    return from_sql(result)
 
 
-    # run only once
+
+# IMPORTANT :
+# RUN ONLY ONCE - which should happen in local DEV, not in PROD server. (invoked from __init___)
+# read CSV data and populate db.
 def init_db():
     print 'Creating all tables...................'
     db.create_all()
@@ -240,14 +261,14 @@ def populate_csv_data():
         create_entity(Unit(row))
 
 
-def _create_database():
-    app = Flask(__name__)
-    app.config.from_pyfile('../../config.py')
-    init_app(app)
-    with app.app_context():
-        db.create_all()
-    print("All tables created")
-
-
-if __name__ == '__main__':
-    _create_database()
+# def _create_database():
+#     app = Flask(__name__)
+#     app.config.from_pyfile('../../config.py')
+#     init_app(app)
+#     with app.app_context():
+#         db.create_all()
+#     print("All tables created")
+#
+#
+# if __name__ == '__main__':
+#     _create_database()
