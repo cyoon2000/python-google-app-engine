@@ -15,6 +15,7 @@
 
 <hr>
 
+
 <!--TODO : iterate over all units-->
 <div class="container" ng-controller="mainController" unitid="11">
     <div class="time-slot" ng-repeat="data in documents.data">
@@ -28,5 +29,15 @@
         {% endraw %}
     </div>
 </div>
+
+<hr>
+
+<!--TODO : get/set current date -->
+<div class="container" ng-controller="dateNavController">
+    <button ng-click="prev()">Previous</button>
+    <button ng-click="next()">Next</button>
+</div>
+
+
 
 {% endblock %}

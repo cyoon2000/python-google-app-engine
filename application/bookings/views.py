@@ -105,6 +105,7 @@ def get_units(id):
     return jsonify(data=data)
 
 
+# input datestr is iso format string
 @bookings_api.route("/calendar/<datestr>")
 def get_calendar_date(datestr):
     date = datetime.strptime(datestr, "%Y-%m-%d")
@@ -128,10 +129,12 @@ def get_calendar_dates():
     else:
         end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
+    return get_calendar_date_range(begin_date, end_date)
+
+
+# input date is date
+def get_calendar_date_range(begin_date, end_date):
     dates = model.get_calendar_dates(begin_date, end_date)
-    # TODO - handle 400
-    # if not dates:
-    #     return "400"
 
     data = [serialize_calendar_date(r.date_) for r in dates]
     return jsonify(data=data)
