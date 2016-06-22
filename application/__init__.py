@@ -29,7 +29,6 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
         # run ONLY ONCE - create tables, populate data
         #get_model().init_db()
 
-
     from .contents.views import api
     app.register_blueprint(api, url_prefix='/content')
 

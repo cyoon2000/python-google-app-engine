@@ -6,6 +6,10 @@ from collections import defaultdict
 from datetime import timedelta, datetime, date
 from application.contents import data
 
+from . import get_resort_data
+from . import get_dictionary_data
+
+
 DATE_ISO_FORMAT = '%Y-%m-%d'
 
 # resort-names - used as resort ID
@@ -146,59 +150,59 @@ def serialize_resort_detail(resort):
 
 
 def find_all_resorts():
-    return data.ResortData.resorts
+    return get_resort_data().resorts
 
 
 def find_resort_by_name(resortname):
-    for resort in data.ResortData.resorts:
+    for resort in get_resort_data().resorts:
         if resort.name == resortname:
             return resort
     return None
 
 
 def find_units_by_resort_name(resortname):
-    return data.DictionaryData.units_by_resort_dict[resortname]
+    return get_dictionary_data().units_by_resort_dict[resortname]
 
 
 def find_unit_by_name(name):
-    for unit in data.ResortData.units:
+    for unit in get_resort_data().units:
         if unit.typeName == name:
             return unit
     return None
 
 
 def find_profile_photo_by_resort_name(resortname):
-    profile_photos = data.DictionaryData.profile_photo_dict[resortname]
+    profile_photos = get_dictionary_data().profile_photo_dict[resortname]
     return get_first_element(profile_photos)
 
 
 def find_photos_by_resort_name(resortname):
-    return data.DictionaryData.photos_by_resort_dict[resortname]
+    return get_dictionary_data().photos_by_resort_dict[resortname]
 
 
 def find_photos_by_unit_type(typename):
-    return data.DictionaryData.photos_by_unit_dict[typename]
+    return get_dictionary_data().photos_by_unit_dict[typename]
 
 
 def find_profile_photo_for_unit_type(typename):
-    return data.DictionaryData.photos_by_unit_dict[typename]
+    return get_dictionary_data().photos_by_unit_dict[typename]
 
 
 def find_profile_photo_by_resort_name(resortname):
-    profile_photos = data.DictionaryData.profile_photo_dict[resortname]
+    profile_photos = get_dictionary_data().profile_photo_dict[resortname]
     return get_first_element(profile_photos)
 
 
 def find_photos_by_resort_name(resortname):
-    return data.DictionaryData.photos_by_resort_dict[resortname]
+    return get_dictionary_data().photos_by_resort_dict[resortname]
 
 
 def find_photos_by_unit_type(typename):
-    return data.DictionaryData.photos_by_unit_dict[typename]
+    return get_dictionary_data().photos_by_unit_dict[typename]
 
 
 def find_profile_photo_for_unit_type(typename):
-    return get_first_element(data.DictionaryData.photos_by_unit_dict[typename])
+    return get_first_element(get_dictionary_data().photos_by_unit_dict[typename])
 
 
 def daterange(start_date, end_date):
@@ -240,7 +244,7 @@ def build_price_list_for_unit(unitname, begin_date, end_date):
 
 
 def find_price_data_for_unit(unitname):
-    for price_data in data.ResortData.prices2:
+    for price_data in get_resort_data().prices2:
         if price_data.typeName == unitname:
             return price_data
     return None

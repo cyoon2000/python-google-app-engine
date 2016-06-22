@@ -1,6 +1,5 @@
 'use strict';
 var myApp = angular.module('myApp', ['ngRoute']);
-//angular.module('myApp', ['ngRoute'])
 myApp.controller('mainController', function($scope, $attrs, $http) {
     $scope.documents = [];
     $scope.success = false;

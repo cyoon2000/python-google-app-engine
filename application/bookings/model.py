@@ -251,7 +251,6 @@ def populate_csv_data():
     for row in read_data_units():
         create_entity(Unitgroup(row))
     for row in read_data_unitnames():
-        print row
         create_entity(Unit(row))
 
 
