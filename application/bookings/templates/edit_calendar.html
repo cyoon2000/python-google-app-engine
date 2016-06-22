@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="page-header text-center">
+    <h2>Manage Calendar</h2>
+</div>
+
+<!--TODO : get resortid from session (user login)-->
+<div class="container" ng-controller="resortController" resortid="2">
+    <div ng-repeat="data in units.data">
+        {{data.display_name | angular}} (id = {{data.id | angular}})
+    </div>
+</div>
+
+<hr>
+
+<!--TODO : iterate over all units-->
+<div class="container" ng-controller="mainController" unitid="11">
+    <div class="time-slot" ng-repeat="data in documents.data">
+        {% raw %}
+        <!--<input type="checkbox" id="{{ data.date_slot }}-{{ $index }}" ng-model="data.status" ng-disabled="data.status">-->
+        <input type="checkbox" id="{{ data.date_slot }}-{{ $index }}" ng-click='updateAvailability(data)' ng-model="data.booked">
+        <label for="{{ data.date_slot }}-{{ $index }}">{{ data.day }}
+            <!--<span ng-if="data.booked">Blocked</span>-->
+            <!--<span ng-if="!data.booked">Available</span>-->
+        </label>
+        {% endraw %}
+    </div>
+</div>
+
+{% endblock %}

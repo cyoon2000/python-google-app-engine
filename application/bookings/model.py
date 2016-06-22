@@ -191,27 +191,23 @@ def create_entity(entity):
     return from_sql(entity)
 
 
-def list_resorts():
+def get_resorts():
     return Resort.query.all()
 
 
-def list_unitgroups(resort_id_):
-    results = Unitgroup.query.filter_by(resort_id=resort_id_)
-    for result in results:
-        print result.name, result.display_name
-    return "OK"
+def get_unitgroups(resort_id_):
+    return Unitgroup.query.filter_by(resort_id=resort_id_).all()
 
 
-def list_units(resort_id_):
+def get_active_units(resort_id):
     #results = Unitgroup.query.join(Resort, Unitgroup.resort_id == Resort.unitgroup_id)
     # results = Unit.query.join(Unitgroup, Unitgroup.id == Unit.unitgroup_id).group_by(Unit.display_name)
     query = (Unit.query
                 .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
-                .filter(Unitgroup.resort_id == resort_id_)
-                .group_by(Unit.display_name))
-    for result in query.all():
-        print result.name, result.display_name
-    return "OK"
+                .filter(Unitgroup.resort_id == resort_id)
+                .filter(Unit.active == 1)
+                .group_by(Unit.unitgroup_id))
+    return query.all()
 
 
 def save_entity(entity):
@@ -232,10 +228,8 @@ def get_calendar_dates(begin, end):
 def get_availabilities(unit_id_, begin_date, end_date):
     query = (Availability.query
                 .filter(Availability.unit_id == unit_id_)
-                .filter(Availability.date_slot.between(begin_date, end_date))
-    )
+                .filter(Availability.date_slot.between(begin_date, end_date)))
     return query.all()
-
 
 
 

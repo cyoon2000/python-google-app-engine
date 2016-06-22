@@ -67,35 +67,44 @@ def delete(id):
     return redirect(url_for('.list'))
 
 
-# Returns JSON
-@bookings_api.route("/resorts")
-def list_resort():
-    resorts = model.list_resorts()
-    for resort in resorts:
-        print resort.name
-    return "OK"
+# @bookings_api.route('/view-calendar')
+# def view_calendar():
+#     # TODO - determine which resort from login
+#     unit_id = 11;
+#     return render_template("examples/angular_http.html")
 
 
-@bookings_api.route("/index")
-def index():
-    return jsonify({'resorts': model.Resort.query.all()})
+@bookings_api.route('/edit-calendar/<resort_id>')
+def edit_calendar(resort_id):
+    return render_template("edit_calendar.html", resort_id=resort_id)
 
 
-# Returns JSON
-@bookings_api.route("/resorts/<id>/unitgroups")
-def list_unitgroups(id):
-    results = model.list_unitgroups(id)
-    return jsonify(results=results)
+# Not Used
+# @bookings_api.route("/resorts")
+# def get_resort():
+#     resorts = model.list_resorts()
+#     for resort in resorts:
+#         print resort.id, resort.name
+#     return "OK"
 
 
-# Returns JSON
+# Not Used
+# @bookings_api.route("/resorts/<id>/unitgroups")
+# def get_unitgroups(id):
+#     results = model.list_unitgroups(id)
+#     return jsonify(results=results)
+
+
 @bookings_api.route("/resorts/<id>/units")
-def list_units(id):
-    results = model.list_units(id)
-    return jsonify(results=results)
+def get_units(id):
+    results = model.get_active_units(id)
+    for r in results:
+        print r
+
+    data = [serialize_unit(r) for r in results]
+    return jsonify(data=data)
 
 
-# input datestr is iso format string
 @bookings_api.route("/calendar/<datestr>")
 def get_calendar_date(datestr):
     date = datetime.strptime(datestr, "%Y-%m-%d")
@@ -124,8 +133,8 @@ def get_calendar_dates():
     # if not dates:
     #     return "400"
 
-    results = [serialize_calendar_date(r.date_) for r in dates]
-    return jsonify(data=results)
+    data = [serialize_calendar_date(r.date_) for r in dates]
+    return jsonify(data=data)
 
 
 # Return JSON
@@ -143,9 +152,9 @@ def get_availabilities(id):
     else:
         end_date = datetime.strptime(end_date, "%Y-%m-%d")
 
-    c = model.get_availabilities(id, begin_date, end_date)
-    results = [serialize_availability(r) for r in c]
-    return jsonify(data=results)
+    results = model.get_availabilities(id, begin_date, end_date)
+    data = [serialize_availability(r) for r in results]
+    return jsonify(data=data)
 
 
 @bookings_api.route('/availability/<id>', methods=['POST'])
@@ -159,6 +168,15 @@ def update_availability(id):
     logging.info(serialize_availability(avail))
 
     return jsonify(data=serialize_availability(avail))
+
+
+def serialize_unit(unit):
+    return {
+        'id': unit.id,
+        'name': unit.name,
+        'display_name': unit.display_name,
+        'unitgroup_id': unit.unitgroup_id
+    }
 
 
 def serialize_availability(availability):
