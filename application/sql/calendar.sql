@@ -19,7 +19,7 @@ begin
 end $$
 delimiter ;
 
-call fill_calendar('2016-07-01', '2016-09-01');
+call fill_calendar('2016-07-01', '2017-06-30');
 
 
 ---- NOTE : This has been migrated to SQLAlchemy
@@ -33,6 +33,7 @@ call fill_calendar('2016-07-01', '2016-09-01');
 --);
 
 
+---- NOTE : This has been migrated to SQLAlchemy
 ---- stored procedure : insert to data to unit_calendar for given unit_id
 drop procedure if exists fill_availability;
 delimiter $$
@@ -49,4 +50,4 @@ begin
 end $$
 delimiter ;
 
-call fill_availability(10, '2016-07-01', '2016-07-20');
+call fill_availability(10, '2016-07-01', '2017-07-01');

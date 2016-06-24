@@ -1,4 +1,5 @@
 import logging
+import utils
 from datetime import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 from database import db
@@ -6,6 +7,8 @@ from application.contents.data import read_data_resorts, read_data_units, read_d
 
 builtin_list = list
 
+CALENDAR_BEGIN_DATE = '2016-07-01'
+CALENDAR_END_DATE = '2017-06-30'
 
 def init_app(app):
     db.init_app(app)
@@ -50,7 +53,7 @@ class Resort(Base):
         self.display_name = resort_tuple.displayName
 
     def __repr__(self):
-        return '<Resort (%r %r)>' % (self.name, self.display_name)
+        return '<Resort (%r %r %r)>' % (self.id, self.name, self.display_name)
 
 
 # fields = ("typeName", "resortName", "displayName", "type", "maxCapacity", "bedSetup",
@@ -76,7 +79,7 @@ class Unitgroup(Base):
 
 
     def __repr__(self):
-        return '<Unitgroup (%r %r)>' % (self.name, self.display_name)
+        return '<Unitgroup (%r %r %r)>' % (self.id, self.name, self.display_name)
 
 
 class Unit(Base):
@@ -100,7 +103,7 @@ class Unit(Base):
         self.unitgroup_id = unitgroup.id
 
     def __repr__(self):
-        return '<Unit (%r %r)>' % (self.name, self.display_name)
+        return '<Unit (%r %r %r)>' % (self.id, self.name, self.display_name)
 
 
 class Booking(Base):
@@ -122,7 +125,7 @@ class Booking(Base):
 
     def __repr__(self):
         # return "<Booking(begin_on='%s', end_on=%s)" % (self.begin_on, self.end_on)
-        return '<Booking(begin_on = %r, end_on = %r)>' % (self.begin_on, self.end_on)
+        return '<Booking (begin_on = %r, end_on = %r)>' % (self.begin_on, self.end_on)
 
 
 class Availability(Base):
@@ -133,6 +136,11 @@ class Availability(Base):
     status = db.Column(db.Integer, default=1)    #available=1, unavailable=0, blocked=-1
     unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
+
+    def __init__(self, unit_id, date_slot):
+        self.unit_id = unit_id
+        self.date_slot = date_slot
+        self.status = 1
 
     def __repr__(self):
         return '<Availability (id = %r unit_id = %r date = %r status = %r)>' % (self.id, self.unit_id, self.date_slot, self.status)
@@ -199,6 +207,10 @@ def get_unitgroups(resort_id_):
     return Unitgroup.query.filter_by(resort_id=resort_id_).all()
 
 
+def get_units():
+    return Unit.query.all()
+
+
 def get_active_units(resort_id):
     #results = Unitgroup.query.join(Resort, Unitgroup.resort_id == Resort.unitgroup_id)
     # results = Unit.query.join(Unitgroup, Unitgroup.id == Unit.unitgroup_id).group_by(Unit.display_name)
@@ -240,18 +252,45 @@ def get_availabilities(unit_id_, begin_date, end_date):
 def init_db():
     print 'Creating all tables...................'
     db.create_all()
-    print 'Populating data in tables.............'
     populate_csv_data()
+
+    # this takes too long.  use stored procedure
+    #populate_availability_all()
     print '..................................Done'
 
 
+# create Resort, Unit, Unitgroup records
 def populate_csv_data():
+    print 'Populating data in Resort, Unitgroup and Unit tables.............'
     for row in read_data_resorts():
         create_entity(Resort(row))
     for row in read_data_units():
         create_entity(Unitgroup(row))
     for row in read_data_unitnames():
         create_entity(Unit(row))
+
+
+# create availability records for given unit_id for default date range
+def populate_availability_all():
+    print 'Populating Availability table.............'
+    for unit in get_units():
+        print unit.id
+        populate_availability(unit.id)
+    print 'Done'
+
+
+# create availability records for all units for default date range
+def populate_availability(unit_id):
+    print '(for unit_id = %r)' % unit_id
+    for calendar in get_calendar_dates(CALENDAR_BEGIN_DATE, CALENDAR_END_DATE):
+        create_entity(Availability(unit_id, calendar.date_))
+
+    # params = {'unit_id': unit_id,
+    #             'start': CALENDAR_BEGIN_DATE,
+    #             'end': CALENDAR_END_DATE}
+    # results = db.session.execute('fill_availability ?, ?, ?', params)
+    # results = db.session.execute('fill_availability @unit_id=:unit_id, @start_date=:start, @end_date=:end', params)
+    # print results
 
 
 # def _create_database():
