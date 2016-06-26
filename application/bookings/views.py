@@ -1,11 +1,12 @@
+import flask
 import json
 import logging
 from . import get_model
-from . import model
+from . import model, forms
 
 from datetime import datetime
 from datetime import timedelta
-from flask import current_app, Blueprint, redirect, render_template, request, url_for
+from flask import current_app, Blueprint, session, redirect, render_template, request, url_for, flash
 from flask import jsonify, json
 from flask_wtf import Form
 #from wtforms.fields.html5 import DateField
@@ -13,6 +14,24 @@ from flask_wtf import Form
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
 DEFAULT_NEXT_DAYS = 14
+
+
+@bookings_api.before_request
+def before_request():
+    # TODO - save resort_id in session upon login
+    session['resort_id'] = 4
+
+
+# @bookings_api.before_request
+def before_request2():
+    g.user = None
+    g.resort = None
+
+    # if 'user_id' in session:
+    #     g.user = model.User.query.get(session['user_id'])
+    if 'resort_id' in session:
+        g.resort = model.Resort.query.get(session['resort_id'])
+
 
 @bookings_api.route("/")
 def list():
@@ -37,28 +56,57 @@ def view(id):
 
 @bookings_api.route('/add', methods=['GET', 'POST'])
 def add():
-    if request.method == 'POST':
+
+    # if request.method == 'POST':
+    #     data = request.form.to_dict(flat=True)
+    #     booking = get_model().create(data)
+    #
+    #     return redirect(url_for('.view', id=booking['id']))
+    # return render_template("form.html", action="Add", booking={})
+
+    form = forms.BookingForm()
+    units = model.get_units_by_resort(session['resort_id'])
+    form.unit_id.choices = [(r.id, r.display_name) for r in units]
+
+    if form.validate_on_submit():
         data = request.form.to_dict(flat=True)
-
+        data.pop("csrf_token", None)
         booking = get_model().create(data)
-
         return redirect(url_for('.view', id=booking['id']))
 
-    return render_template("form.html", action="Add", booking={})
+    return render_template('form.html', action="add", form=form)
 
 
 @bookings_api.route('/<id>/edit', methods=['GET', 'POST'])
 def edit(id):
     booking = get_model().read(id)
 
-    if request.method == 'POST':
+    # if request.method == 'POST':
+    #     data = request.form.to_dict(flat=True)
+    #
+    #     booking = get_model().update(data, id)
+    #
+    #     return redirect(url_for('.view', id=booking['id']))
+
+    form = forms.BookingForm(obj=booking)
+    units = model.get_units_by_resort(session['resort_id'])
+    form.unit_id.choices = [(r.id, r.display_name) for r in units]
+
+    # pre-populate form with booking data
+    form.unit_id.default = booking['unit_id']
+    form.begin_on.data = booking['begin_on']
+    form.end_on.data = booking['end_on']
+    form.first_name.data = booking['first_name']
+    form.last_name.data = booking['last_name']
+    form.email.data = booking['email']
+
+    if form.validate_on_submit():
         data = request.form.to_dict(flat=True)
-
+        data.pop("csrf_token", None)
         booking = get_model().update(data, id)
-
         return redirect(url_for('.view', id=booking['id']))
 
-    return render_template("form.html", action="Edit", booking=booking)
+    return render_template("form.html", action="edit", booking=booking, form=form)
 
 
 @bookings_api.route('/<id>/delete')
@@ -67,13 +115,7 @@ def delete(id):
     return redirect(url_for('.list'))
 
 
-# @bookings_api.route('/view-calendar')
-# def view_calendar():
-#     # TODO - determine which resort from login
-#     unit_id = 11;
-#     return render_template("examples/angular_http.html")
-
-
+# TODO - determine which resort from login
 @bookings_api.route('/edit-calendar/<resort_id>')
 def edit_calendar(resort_id):
     return render_template("edit_calendar.html", resort_id=resort_id)
@@ -97,10 +139,7 @@ def edit_calendar(resort_id):
 
 @bookings_api.route("/resorts/<id>/units")
 def get_units(id):
-    results = model.get_active_units(id)
-    for r in results:
-        print r
-
+    results = model.get_units_by_resort(id)
     data = [serialize_unit(r) for r in results]
     return jsonify(data=data)
 

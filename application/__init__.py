@@ -9,6 +9,8 @@ def create_app(config, debug=False, testing=False, config_overrides=None):
     CORS(app)
     Triangle(app)
     app.config.from_object(config)
+    # app.config['SECRET_KEY'] = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+    app.secret_key = 'some_secret'
 
     app.debug = debug
     app.testing = testing

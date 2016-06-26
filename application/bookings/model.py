@@ -96,7 +96,6 @@ class Unit(Base):
 
     # input is named tuple UnitNameRecord
     def __init__(self, row):
-        print row
         unitgroup = Unitgroup.query.filter(Unitgroup.name == row.groupName).one()
         self.name = row.name
         self.display_name = row.displayName
@@ -119,13 +118,12 @@ class Booking(Base):
     last_name = db.Column(db.String(30))
     email = db.Column(db.String(60))
     is_admin = db.Column(db.Boolean, default=False)
-    #transaction_id = db.Column(db.String(255), unique=True)
     unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
     availabilities = db.relationship('Availability', backref='booking', lazy='dynamic')
+    #transaction_id = db.Column(db.String(255), unique=True)
 
     def __repr__(self):
-        # return "<Booking(begin_on='%s', end_on=%s)" % (self.begin_on, self.end_on)
-        return '<Booking (begin_on = %r, end_on = %r)>' % (self.begin_on, self.end_on)
+        return '<Booking (id = %r, unit_id = %, begin_on = %r, end_on = %r)>' % (self.id, self.unit_id, self.begin_on, self.end_on)
 
 
 class Availability(Base):
@@ -203,22 +201,22 @@ def get_resorts():
     return Resort.query.all()
 
 
-def get_unitgroups(resort_id_):
-    return Unitgroup.query.filter_by(resort_id=resort_id_).all()
+def get_unitgroups(resort_id):
+    return Unitgroup.query.filter_by(resort_id=resort_id).all()
 
 
 def get_units():
     return Unit.query.all()
 
 
-def get_active_units(resort_id):
+def get_units_by_resort(resort_id):
     #results = Unitgroup.query.join(Resort, Unitgroup.resort_id == Resort.unitgroup_id)
     # results = Unit.query.join(Unitgroup, Unitgroup.id == Unit.unitgroup_id).group_by(Unit.display_name)
     query = (Unit.query
                 .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
                 .filter(Unitgroup.resort_id == resort_id)
                 .filter(Unit.active == 1)
-                .group_by(Unit.unitgroup_id))
+            )
     return query.all()
 
 
@@ -270,7 +268,7 @@ def populate_csv_data():
         create_entity(Unit(row))
 
 
-# create availability records for given unit_id for default date range
+# create availability records for all units for default date range
 def populate_availability_all():
     print 'Populating Availability table.............'
     for unit in get_units():
@@ -279,12 +277,13 @@ def populate_availability_all():
     print 'Done'
 
 
-# create availability records for all units for default date range
+# create availability records for given unit for default date range
 def populate_availability(unit_id):
     print '(for unit_id = %r)' % unit_id
     for calendar in get_calendar_dates(CALENDAR_BEGIN_DATE, CALENDAR_END_DATE):
         create_entity(Availability(unit_id, calendar.date_))
 
+    # run stored procedure - this should be faster. but the code does not work yet.
     # params = {'unit_id': unit_id,
     #             'start': CALENDAR_BEGIN_DATE,
     #             'end': CALENDAR_END_DATE}
