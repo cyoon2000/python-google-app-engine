@@ -71,6 +71,9 @@ def add():
     if form.validate_on_submit():
         data = request.form.to_dict(flat=True)
         data.pop("csrf_token", None)
+        # populate unit_name from unit_id
+        print model.Unit.query.get(data['unit_id'])
+        data['unit_name'] = model.Unit.query.get(data['unit_id']).display_name
         booking = get_model().create(data)
         return redirect(url_for('.view', id=booking['id']))
 
@@ -103,6 +106,9 @@ def edit(id):
     if form.validate_on_submit():
         data = request.form.to_dict(flat=True)
         data.pop("csrf_token", None)
+        # populate unit_name from unit_id
+        print model.Unit.query.get(data['unit_id'])
+        data['unit_name'] = model.Unit.query.get(data['unit_id']).display_name
         booking = get_model().update(data, id)
         return redirect(url_for('.view', id=booking['id']))
 

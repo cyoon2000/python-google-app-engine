@@ -105,11 +105,13 @@ class Unit(Base):
         return '<Unit (%r %r %r)>' % (self.id, self.name, self.display_name)
 
 
+# TODO - add note field, transaction_id(UUID), payment_id (payment table does not exist yet)
+# unit_name is captured as a snapshot(convenience field). source of truth is unit_id.
+# Validation rule upon save : each date should be available
 class Booking(Base):
     __tablename__ = 'booking'
 
     id = db.Column(db.Integer, primary_key=True)
-    # TODO - remove unitname
     unit_name = db.Column(db.String(30))
     begin_on = db.Column(db.DateTime, nullable=False)
     end_on = db.Column(db.DateTime, nullable=False)
@@ -197,6 +199,13 @@ def create_entity(entity):
     return from_sql(entity)
 
 
+def save_entity(entity):
+    db.session.add(entity)
+    db.session.commit()
+    logging.info(entity)
+    return entity
+
+
 def get_resorts():
     return Resort.query.all()
 
@@ -218,13 +227,6 @@ def get_units_by_resort(resort_id):
                 .filter(Unit.active == 1)
             )
     return query.all()
-
-
-def save_entity(entity):
-    db.session.add(entity)
-    db.session.commit()
-    logging.info(entity)
-    return entity
 
 
 def get_calendar_date(date):
