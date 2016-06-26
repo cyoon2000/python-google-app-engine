@@ -77,7 +77,7 @@ def add():
         booking = get_model().create(data)
         return redirect(url_for('.view', id=booking['id']))
 
-    return render_template('form.html', action="add", form=form)
+    return render_template('form.html', action="Add", form=form)
 
 
 @bookings_api.route('/<id>/edit', methods=['GET', 'POST'])
@@ -104,6 +104,8 @@ def edit(id):
     form.email.data = booking['email']
 
     if form.validate_on_submit():
+        # TODO - This does not work
+        # form.populate_obj(booking)
         data = request.form.to_dict(flat=True)
         data.pop("csrf_token", None)
         # populate unit_name from unit_id
@@ -112,7 +114,7 @@ def edit(id):
         booking = get_model().update(data, id)
         return redirect(url_for('.view', id=booking['id']))
 
-    return render_template("form.html", action="edit", booking=booking, form=form)
+    return render_template("form.html", action="Edit", booking=booking, form=form)
 
 
 @bookings_api.route('/<id>/delete')

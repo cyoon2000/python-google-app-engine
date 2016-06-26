@@ -1,5 +1,5 @@
 import datetime
-import model, views
+import model, views, utils
 
 from flask_wtf import Form
 from wtforms import StringField, IntegerField, DateField, SelectField
@@ -31,5 +31,17 @@ class BookingForm(Form):
         rv = Form.validate(self)
         if not rv:
             return False
+
+        print 'Checking availability...........................'
+        # TODO - FIX THIS. user input does not change these values once instantiate the form
+        print self.begin_on.data
+        print self.end_on.data
+        for calendar in model.get_calendar_dates(self.begin_on.data, self.end_on.data):
+            if model.is_available(self.unit_id.data, calendar.date_) is False:
+                self.end_on.errors.append('Not available on %r' % utils.convert_date_to_string(calendar.date_))
+
+        if self.end_on.errors:
+            return False
+
         return True
 
