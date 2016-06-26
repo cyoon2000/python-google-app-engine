@@ -96,7 +96,7 @@ def edit(id):
     form.unit_id.choices = [(r.id, r.display_name) for r in units]
 
     # pre-populate form with booking data
-    form.unit_id.default = booking['unit_id']
+    form.unit_id.data = booking['unit_id']
     form.begin_on.data = booking['begin_on']
     form.end_on.data = booking['end_on']
     form.first_name.data = booking['first_name']
