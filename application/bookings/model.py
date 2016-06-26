@@ -237,12 +237,23 @@ def get_calendar_dates(begin, end):
     return Calendar.query.filter(Calendar.date_.between(begin, end)).all()
 
 
-def get_availabilities(unit_id_, begin_date, end_date):
+def get_availabilities(unit_id, begin_date, end_date):
     query = (Availability.query
-                .filter(Availability.unit_id == unit_id_)
+                .filter(Availability.unit_id == unit_id)
                 .filter(Availability.date_slot.between(begin_date, end_date)))
     return query.all()
 
+
+def get_availability(unit_id, date):
+    query = (Availability.query
+             .filter(Availability.unit_id == unit_id)
+             .filter(Availability.date_slot == date))
+    return query.one()
+
+
+def is_available(unit_id, date):
+    availability = get_availability(unit_id, date)
+    return True if (availability.status == 1) else False
 
 
 

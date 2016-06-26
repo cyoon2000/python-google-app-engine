@@ -2,19 +2,18 @@ import flask
 import json
 import logging
 from . import get_model
-from . import model, forms
+from . import model, forms, utils
 
-from datetime import datetime
 from datetime import timedelta
 from flask import current_app, Blueprint, session, redirect, render_template, request, url_for, flash
 from flask import jsonify, json
 from flask_wtf import Form
-#from wtforms.fields.html5 import DateField
 
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
 DEFAULT_NEXT_DAYS = 14
 
+#throwaway = datetime.strptime('2011-01-01','%Y-%m-%d')
 
 @bookings_api.before_request
 def before_request():
@@ -47,6 +46,7 @@ def list():
         next_page_token=next_page_token)
     except TemplateNotFound:
         abort(404)
+
 
 @bookings_api.route('/<id>')
 def view(id):
@@ -153,7 +153,8 @@ def get_units(id):
 # input datestr is iso format string
 @bookings_api.route("/calendar/<datestr>")
 def get_calendar_date(datestr):
-    date = datetime.strptime(datestr, "%Y-%m-%d")
+    # date = datetime.strptime(datestr, "%Y-%m-%d")
+    date = utils.convert_string_to_date(datestr)
     calendar = model.get_calendar_date(date)
     # TODO - handle 400
     if not calendar:
@@ -168,11 +169,14 @@ def get_calendar_date(datestr):
 def get_calendar_dates():
     begin_date = request.args.get('begin')
     end_date = request.args.get('end')
-    begin_date = datetime.strptime(begin_date, "%Y-%m-%d")
+    # begin_date = datetime.strptime(begin_date, "%Y-%m-%d")
+    begin_date = utils.convert_string_to_date(begin_date)
+
     if not end_date:
         end_date = begin_date + timedelta(days=DEFAULT_NEXT_DAYS - 1)
     else:
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        #end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = utils.convert_string_to_date(end_date)
 
     return get_calendar_date_range(begin_date, end_date)
 
@@ -193,12 +197,13 @@ def get_availabilities(id):
     end_date = request.args.get('end')
     if not begin_date:
         begin_date = '2016-07-01'
-    begin_date = datetime.strptime(begin_date, "%Y-%m-%d")
+    # begin_date = datetime.strptime(begin_date, "%Y-%m-%d")
+    begin_date = utils.convert_string_to_date(begin_date)
 
     if not end_date:
         end_date = begin_date + timedelta(days=DEFAULT_NEXT_DAYS - 1)
     else:
-        end_date = datetime.strptime(end_date, "%Y-%m-%d")
+        end_date = utils.convert_string_to_date(begin_date)
 
     results = model.get_availabilities(id, begin_date, end_date)
     data = [serialize_availability(r) for r in results]
