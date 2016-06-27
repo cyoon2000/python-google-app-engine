@@ -11,11 +11,6 @@ class ExampleForm(Form):
     dt = DateField('DatePicker', format='%Y-%m-%d')
 
 
-class SelectForm(Form):
-    unitnames = ['Casa 1', 'Casa 2']
-    unit_name = SelectField(u'Unit Name', validators=[DataRequired()], choices=[(r, r) for r in unitnames])
-
-
 class BookingForm(Form):
     unit_id = SelectField('Unit', coerce=int, validators=[InputRequired()])
     begin_on = DateField('Begin Date', format='%Y-%m-%d', validators=[DataRequired()])
@@ -33,7 +28,7 @@ class BookingForm(Form):
             return False
 
         print 'Checking availability...........................'
-        # TODO - FIX THIS. user input does not change these values once instantiate the form
+        # TODO - FIXME - user input does not change these values once instantiate the form
         print self.begin_on.data
         print self.end_on.data
         for calendar in model.get_calendar_dates(self.begin_on.data, self.end_on.data):

@@ -13,8 +13,6 @@ bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
 DEFAULT_NEXT_DAYS = 14
 
-#throwaway = datetime.strptime('2011-01-01','%Y-%m-%d')
-
 @bookings_api.before_request
 def before_request():
     # TODO - save resort_id in session upon login
@@ -72,7 +70,6 @@ def add():
         data = request.form.to_dict(flat=True)
         data.pop("csrf_token", None)
         # populate unit_name from unit_id
-        print model.Unit.query.get(data['unit_id'])
         data['unit_name'] = model.Unit.query.get(data['unit_id']).display_name
         booking = get_model().create(data)
         return redirect(url_for('.view', id=booking['id']))
@@ -104,12 +101,11 @@ def edit(id):
     form.email.data = booking['email']
 
     if form.validate_on_submit():
-        # TODO - This does not work
+        # TODO - FIXME - This does not work
         # form.populate_obj(booking)
         data = request.form.to_dict(flat=True)
         data.pop("csrf_token", None)
         # populate unit_name from unit_id
-        print model.Unit.query.get(data['unit_id'])
         data['unit_name'] = model.Unit.query.get(data['unit_id']).display_name
         booking = get_model().update(data, id)
         return redirect(url_for('.view', id=booking['id']))
@@ -124,9 +120,12 @@ def delete(id):
 
 
 # TODO - determine which resort from login
-@bookings_api.route('/edit-calendar/<resort_id>')
-def edit_calendar(resort_id):
-    return render_template("edit_calendar.html", resort_id=resort_id)
+@bookings_api.route('/edit-calendar')
+def edit_calendar():
+    resort = model.Resort.query.get(session['resort_id'])
+    units = model.get_units_by_resort(resort.id)
+    print resort
+    return render_template("edit_calendar.html", resort=resort, units=units)
 
 
 # Not Used
@@ -171,13 +170,11 @@ def get_calendar_date(datestr):
 def get_calendar_dates():
     begin_date = request.args.get('begin')
     end_date = request.args.get('end')
-    # begin_date = datetime.strptime(begin_date, "%Y-%m-%d")
-    begin_date = utils.convert_string_to_date(begin_date)
 
+    begin_date = utils.convert_string_to_date(begin_date)
     if not end_date:
         end_date = begin_date + timedelta(days=DEFAULT_NEXT_DAYS - 1)
     else:
-        #end_date = datetime.strptime(end_date, "%Y-%m-%d")
         end_date = utils.convert_string_to_date(end_date)
 
     return get_calendar_date_range(begin_date, end_date)
@@ -199,9 +196,8 @@ def get_availabilities(id):
     end_date = request.args.get('end')
     if not begin_date:
         begin_date = '2016-07-01'
-    # begin_date = datetime.strptime(begin_date, "%Y-%m-%d")
-    begin_date = utils.convert_string_to_date(begin_date)
 
+    begin_date = utils.convert_string_to_date(begin_date)
     if not end_date:
         end_date = begin_date + timedelta(days=DEFAULT_NEXT_DAYS - 1)
     else:
