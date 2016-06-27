@@ -145,6 +145,9 @@ class Availability(Base):
     def __repr__(self):
         return '<Availability (id = %r unit_id = %r date = %r status = %r)>' % (self.id, self.unit_id, self.date_slot, self.status)
 
+    def is_available(self):
+        return True if self.status == 1 else False
+
 
 class Calendar(db.Model):
     __tablename__ = 'calendar'
@@ -174,10 +177,26 @@ def read(id):
 
 
 def create(data):
-    entry = Booking(**data)
-    db.session.add(entry)
-    db.session.commit()
-    return from_sql(entry)
+    booking = Booking(**data)
+    # db.session.add(booking)
+    # db.session.commit()
+    # db.session.begin()
+    try:
+        db.session.add(booking)
+        db.session.flush()
+        availabilities = get_availabilities(booking.unit_id, booking.begin_on, booking.end_on)
+        for availability in availabilities:
+            if availability.is_available() is False:
+                raise Exception("Cannot create booking")
+            availability.status = 0
+            availability.booking_id = booking.id
+            db.session.add(availability)
+
+        db.session.commit()
+    except:
+        db.session.rollback()
+
+    return from_sql(booking)
 
 
 def update(data, id):

@@ -107,7 +107,7 @@ def edit(id):
         data.pop("csrf_token", None)
         # populate unit_name from unit_id
         data['unit_name'] = model.Unit.query.get(data['unit_id']).display_name
-        booking = get_model().update(data, id)
+        booking = model.update(data, id)
         return redirect(url_for('.view', id=booking['id']))
 
     return render_template("form.html", action="Edit", booking=booking, form=form)

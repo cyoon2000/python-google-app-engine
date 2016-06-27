@@ -31,9 +31,9 @@ class BookingForm(Form):
         # TODO - FIXME - user input does not change these values once instantiate the form
         print self.begin_on.data
         print self.end_on.data
-        for calendar in model.get_calendar_dates(self.begin_on.data, self.end_on.data):
-            if model.is_available(self.unit_id.data, calendar.date_) is False:
-                self.end_on.errors.append('Not available on %r' % utils.convert_date_to_string(calendar.date_))
+        for availability in model.get_availabilities(self.unit_id.data, self.begin_on.data, self.end_on.data):
+            if availability.is_available() is False:
+                self.end_on.errors.append('Not available on %r' % utils.convert_date_to_string(availability.date_slot))
 
         if self.end_on.errors:
             return False
