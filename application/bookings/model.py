@@ -191,6 +191,8 @@ def create(data):
             availability.status = 0
             availability.booking_id = booking.id
             db.session.add(availability)
+            print 'saving availability: with booking id %r' % booking.id
+            print availability
 
         db.session.commit()
     except:
@@ -270,10 +272,14 @@ def get_availability(unit_id, date):
     return query.one()
 
 
-def is_available(unit_id, date):
-    availability = get_availability(unit_id, date)
-    return True if (availability.status == 1) else False
-
+# TODO - implement "See More..." button if there are more than N bookings
+def get_bookings(begin_date, end_date):
+    query = (Booking.query
+             .filter(Booking.begin_on.between(begin_date, end_date))
+             .order_by(Booking.begin_on, Booking.unit_id)
+             # .limit())
+    )
+    return query.all()
 
 
 # IMPORTANT :

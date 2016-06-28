@@ -13,19 +13,35 @@
     <!--</div>-->
 <!--</div>-->
 
+<!--TODO : get/set current date -->
+<div class="container" ng-controller="dateNavController">
+    <button ng-click="prev()">Previous</button>
+    <button ng-click="next()">Next</button>
+</div>
+
+<div class="container">
+<div class="time-slot"> Unit names </div>
+
+{% for date in dates %}
+<div class="time-slot">
+    {{ date.date_.strftime("%b %d") }} <br>
+    {{ date.date_.strftime("%a") }}
+</div>
+{% endfor %}
+</div>
 
 {% for unit in units %}
-<div>
-    {{ unit.display_name }}
-    <small> unit id = {{ unit.id }} </small>
+<div class="time-slot">
+    {{ unit.display_name }} <br/>
+    <small> ( unit id = {{ unit.id }} ) </small>
 </div>
 
 <div class="container" ng-controller="mainController" unitid={{unit.id}}>
     <div class="time-slot" ng-repeat="data in documents.data">
         {% raw %}
         <!--<input type="checkbox" id="{{ data.date_slot }}-{{ $index }}" ng-model="data.status" ng-disabled="data.status">-->
-        <input type="checkbox" id="{{ data.date_slot }}-{{ $index }}" ng-click='updateAvailability(data)' ng-model="data.booked">
-        <label for="{{ data.date_slot }}-{{ $index }}">{{ data.day }}
+        <input type="checkbox" id="{{ data.date_slot }}-{{ data.id }}" ng-click='updateAvailability(data)' ng-model="data.booked">
+        <label for="{{ data.date_slot }}-{{ data.id }}">{{ data.day }}
             <!--<span ng-if="data.booked">Blocked</span>-->
             <!--<span ng-if="!data.booked">Available</span>-->
         </label>
@@ -35,13 +51,17 @@
 {% endfor %}
 
 <hr>
-
-<!--TODO : get/set current date -->
-<div class="container" ng-controller="dateNavController">
-    <button ng-click="prev()">Previous</button>
-    <button ng-click="next()">Next</button>
-</div>
-
-
+<h2> Summary of Bookings </h2>
+{% for booking in bookings %}
+    <p>
+    ( id = {{ booking.id }} ),
+    {{ booking.begin_on.strftime("%B %d %a") }} - {{ booking.end_on.strftime("%B %d %a") }},
+    ( unit_id = {{ booking.unit_id  }} ),
+    unit_name = {{ booking.unit_name  }},
+    status = {{ booking.status }},
+    name = {{ booking.first_name }} {{ booking.last_name }},
+    email = {{ booking.email }}
+    </p>
+{% endfor %}
 
 {% endblock %}
