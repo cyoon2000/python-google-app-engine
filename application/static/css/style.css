@@ -1,5 +1,10 @@
 /* checkbox - each time slot */
-.time-slot               {  }
+.time-slot           {
+  float: left;
+      /* overflow: hidden; */
+  margin: 5px;
+      /* width: 300px; */
+}
 
 /* hide the checkbox itself - the label will be styled */
 .time-slot input     {
