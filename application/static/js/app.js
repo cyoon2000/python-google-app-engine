@@ -18,7 +18,7 @@ myApp.controller('mainController', function($scope, $attrs, $http) {
     $scope.urlGet = "http://localhost:8080/bookings/availability/unit/" + $attrs.unitid;
 
     $scope.updateAvailability = function(data) {
-        console.log("REQUEST updateAvailability (" + data.date_slot + ") id = " + data.id + " booked = " + data.booked);
+        // console.log("REQUEST updateAvailability (" + data.date_slot + ") id = " + data.id + " booked = " + data.booked);
         var json = {
                 id: data.id,
                 booked: data.booked
@@ -28,7 +28,7 @@ myApp.controller('mainController', function($scope, $attrs, $http) {
                 function(json, status) {
                     //console.log("SUCCESS");
                     $scope.responsePOST = json.data;
-                    console.log("RESPONSE updateAvailability (" + data.date_slot + ") id = " + data.id + " booked = " + data.booked);
+                    console.log("RESPONSE updateAvailability (" + data.date_slot + ") for unit_id = " + data.unit_id + " : id = " + data.id + " booked = " + data.booked);
                 }
             )
     }
