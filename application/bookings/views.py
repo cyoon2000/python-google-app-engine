@@ -4,14 +4,12 @@ import logging
 from . import get_model
 from . import model, forms, utils
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 from flask import current_app, Blueprint, session, redirect, render_template, request, url_for, flash
 from flask import jsonify, json
 from flask_wtf import Form
 
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
-
-DEFAULT_NEXT_DAYS = 14
 
 @bookings_api.before_request
 def before_request():
@@ -119,13 +117,19 @@ def delete(id):
     return redirect(url_for('.list'))
 
 
-# TODO - determine which resort from login
+# TODO - add calendar navigation prev/next
 @bookings_api.route('/edit-calendar')
 def edit_calendar():
     resort = model.Resort.query.get(session['resort_id'])
     units = model.get_units_by_resort(resort.id)
-    print resort
-    return render_template("edit_calendar.html", resort=resort, units=units)
+
+    # TODO - take parameter later
+    begin_date = utils.get_default_begin_date()
+    end_date = utils.get_default_end_date(begin_date)
+    dates = model.get_calendar_dates(begin_date, end_date)
+    bookings = model.get_bookings(begin_date, end_date)
+
+    return render_template("edit_calendar.html", resort=resort, units=units, dates=dates, bookings=bookings)
 
 
 # Not Used
@@ -166,26 +170,25 @@ def get_calendar_date(datestr):
 
 # input datestr is iso format string
 # begin and end
-@bookings_api.route("/calendar")
-def get_calendar_dates():
-    begin_date = request.args.get('begin')
-    end_date = request.args.get('end')
-
-    begin_date = utils.convert_string_to_date(begin_date)
-    if not end_date:
-        end_date = begin_date + timedelta(days=DEFAULT_NEXT_DAYS - 1)
-    else:
-        end_date = utils.convert_string_to_date(end_date)
-
-    return get_calendar_date_range(begin_date, end_date)
+# @bookings_api.route("/calendar")
+# def get_calendar_dates():
+#     begin_date = request.args.get('begin')
+#     end_date = request.args.get('end')
+#
+#     begin_date = utils.convert_string_to_date(begin_date)
+#     if not end_date:
+#         end_date = utils.get_default_end_date(begin_date)
+#     else:
+#         end_date = utils.convert_string_to_date(end_date)
+#
+#     return get_calendar_dates(begin_date, end_date)
 
 
 # input date is date
-def get_calendar_date_range(begin_date, end_date):
-    dates = model.get_calendar_dates(begin_date, end_date)
-
-    data = [serialize_calendar_date(r.date_) for r in dates]
-    return jsonify(data=data)
+# def get_calendar_dates(begin_date, end_date):
+#     dates = model.get_calendar_dates(begin_date, end_date)
+#     data = [serialize_calendar_date(r.date_) for r in dates]
+#     return jsonify(data=data)
 
 
 # Return JSON
@@ -195,11 +198,11 @@ def get_availabilities(id):
     begin_date = request.args.get('begin')
     end_date = request.args.get('end')
     if not begin_date:
-        begin_date = '2016-07-01'
-
-    begin_date = utils.convert_string_to_date(begin_date)
+        begin_date = utils.get_default_begin_date()
+    else:
+        begin_date = utils.convert_string_to_date(begin_date)
     if not end_date:
-        end_date = begin_date + timedelta(days=DEFAULT_NEXT_DAYS - 1)
+        end_date = utils.get_default_end_date(begin_date)
     else:
         end_date = utils.convert_string_to_date(begin_date)
 
@@ -233,6 +236,7 @@ def serialize_unit(unit):
 def serialize_availability(availability):
     return {
         'id': availability.id,
+        'unit_id': availability.unit_id,
         'date_slot': availability.date_slot.isoformat(),
         'month': availability.date_slot.month,
         'day': availability.date_slot.day,
