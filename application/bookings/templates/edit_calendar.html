@@ -40,8 +40,8 @@
     <div class="time-slot" ng-repeat="data in documents.data">
         {% raw %}
         <!--<input type="checkbox" id="{{ data.date_slot }}-{{ $index }}" ng-model="data.status" ng-disabled="data.status">-->
-        <input type="checkbox" id="{{ data.date_slot }}-{{ data.id }}" ng-click='updateAvailability(data)' ng-model="data.booked">
-        <label for="{{ data.date_slot }}-{{ data.id }}">{{ data.day }}
+        <input type="checkbox" id="{{ data.date_slot }}-{{ data.unit_id }}" ng-click='updateAvailability(data)' ng-model="data.booked">
+        <label for="{{ data.date_slot }}-{{ data.unit_id }}">{{ data.day }}
             <!--<span ng-if="data.booked">Blocked</span>-->
             <!--<span ng-if="!data.booked">Available</span>-->
         </label>
