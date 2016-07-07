@@ -69,9 +69,8 @@ class ResortInfo(object):
             'pool': resort.swimPool,
             'kiteSchool': resort.lessonKite,
             'price': 150,
-            # TODO - replace with real!
-            'desc': get_mock_desc(),
-            # 'highlight': serialize_resort_highlight(resort),
+            'desc': resort.about,
+            'highlight': serialize_resort_highlight(resort),
             'generalSection': serialize_section_general(resort),
             'foodSection': serialize_section_food(resort),
             'activitySection': serialize_section_activity(resort),
@@ -253,7 +252,10 @@ def find_price_data_for_unit(unitname):
 def find_price_for_date(unitname, date):
     price_data = find_price_data_for_unit(unitname)
 
-    if price_data.promoBeginDate and is_in_range(date, price_data.promoBeginDate, price_data.promoEndDate):
+    if price_data is None:
+        return None
+
+    if price_data and price_data.promoBeginDate and is_in_range(date, price_data.promoBeginDate, price_data.promoEndDate):
         return convert_price_string_to_number(price_data.promoPrice)
     elif price_data.peakBeginDate1 and is_in_range(date, price_data.peakBeginDate1, price_data.peakEndDate1):
         return convert_price_string_to_number(price_data.peakPrice1)
@@ -369,17 +371,17 @@ def serialize_profile_photo(photo):
     }
 
 
-# def serialize_resort_highlight(resort):
-#     data = []
-#     if resort.wifi == 'Y':
-#         data.append('WIFI')
-#     if resort.privateBeach == 'Y':
-#         data.append('BEACHFRONT')
-#     if resort.swimPool == 'Y':
-#         data.append('POOL')
-#     if resort.lessonKite == 'Y':
-#         data.append('KITE')
-#     return data
+def serialize_resort_highlight(resort):
+    data = []
+    if resort.wifi == 'Y':
+        data.append('WIFI')
+    if resort.privateBeach == 'Y':
+        data.append('BEACHFRONT')
+    if resort.swimPool == 'Y':
+        data.append('POOL')
+    if resort.lessonKite == 'Y':
+        data.append('KITE')
+    return data
 
 
 def serialize_section_general(resort):
@@ -445,13 +447,7 @@ def serialize_section_policy(resort):
     }
 
 
-def get_mock_desc():
-    return "Located just a 40 minute drive south of La Paz on the Sea of Cortez in Baja lies one of Mexico's most beautiful secrets..."
 
-
-"""
-    Serialize Unit Detail
-"""
 # highlight: type, maxCapacity, numBedroom, numBathroom
 # space: type,maxCapacity,bedSetup,numBedroom,numBathroom (privateBath is redundant here)
 # amenities: kitchen,kitchenette, ac,patio,seaview
@@ -510,7 +506,7 @@ def serialize_unit_amenity(unit):
     return amenity
 
 def serialize_unit_type(unit):
-    if unit.type == 'CASA' or unit.type == 'CASITA':
+    if unit.type == 'CASA' or unit.type == 'CASITA' or unit.type == 'HOUSE':
         return "Entire home/apt"
     elif unit.type == 'BUNGALOW':
         return 'Standalone bungalow'

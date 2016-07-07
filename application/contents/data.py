@@ -17,10 +17,10 @@ CSV_PATH_PRICE2 = BASE_PATH + '/csv/prices2.csv'
 RESORT_NAME_LIST = ["bj", "kirk", "dw", "kirt", "plp", "pelican", "vp", "vbay", "vwind"]
 
 # parse instruction for Resort CSV file
-fields = ("name", "displayName", "wifi", "parking", "communalKitchen", "privateBeach", "freeBreakfast", "noteOnFood",
+fields = ("name", "displayName", "email", "wifi", "parking", "communalKitchen", "privateBeach", "freeBreakfast", "noteOnFood",
           "swimPool", "lessonKite", "rentKite", "lessonWindsurf", "rentWindsurf", "mtnbike", "rentPerformanceMtnBike",
           "fishingTrip", "scubaDivingTrip", "yoga", "massage","noteOnActivity",
-          "checkIn", "checkOut", "cc", "extraPersonCharge", "pets", "minimumStay", "cancelPolicy")
+          "checkIn", "checkOut", "cc", "extraPersonCharge", "pets", "minimumStay", "cancelPolicy", "about")
 class ResortRecord(namedtuple('ResortRecord_', fields)):
 
     @classmethod
@@ -39,7 +39,7 @@ class ResortRecord(namedtuple('ResortRecord_', fields)):
 # parse instruction for Unit CSV file
 fields = ("typeName", "resortName", "displayName", "type", "maxCapacity", "bedSetup",
           "numBedroom", "numBathroom", "kitchen", "kitchenette", "privateBath",
-          "ac", "patio", "seaview", "profilePhoto", "photos")
+          "ac", "patio", "seaview", "notes")
 class UnitRecord(namedtuple('UnitRecord_', fields)):
 
     @classmethod
