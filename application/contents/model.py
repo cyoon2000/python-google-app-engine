@@ -53,7 +53,7 @@ class ResortInfo(object):
             'beachFront': resort.privateBeach,
             'price': min(list),
             'maxPrice': max(list),
-            'desc': serialize_resort_highlight(resort)
+            'highlights': serialize_resort_highlight(resort)
         }
 
     def serialize_resort_info(self):
@@ -70,7 +70,7 @@ class ResortInfo(object):
             'kiteSchool': resort.lessonKite,
             'price': 150,
             'desc': resort.about,
-            'highlight': serialize_resort_highlight(resort),
+            'highlights': serialize_resort_highlight(resort),
             'generalSection': serialize_section_general(resort),
             'foodSection': serialize_section_food(resort),
             'activitySection': serialize_section_activity(resort),
@@ -373,18 +373,16 @@ def serialize_profile_photo(photo):
 
 def serialize_resort_highlight(resort):
     highlight = []
-    # if resort.wifi == 'Y':
-    #     highlight.append('WIFI')
     if resort.privateBeach == 'Y':
-        highlight.append('BEACHFRONT')
+        highlight.append('Beachfront')
     if resort.swimPool == 'Y':
-        highlight.append('POOL')
+        highlight.append('Pool')
     if resort.lessonKite == 'Y':
-        highlight.append('KITE SCHOOL')
-    # convert list to string
-    highlight_str = '  '.join(highlight)
+        highlight.append('Kite school')
+    if resort.wifi == 'Y':
+        highlight.append('Wifi')
 
-    return highlight_str
+    return highlight
 
 
 def serialize_section_general(resort):
