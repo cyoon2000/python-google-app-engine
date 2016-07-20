@@ -36,27 +36,6 @@ class ResortInfo(object):
     def set_units(self, units):
         self.units = units
 
-    def serialize_resort_summary(self, resort, profile_photo):
-        if resort is None:
-            return {}
-
-        units = find_units_by_resort_name(resort.name)
-        list = []
-        # find today's price for now
-        for unit in units:
-            list.append(find_avg_price_for_unit(unit, None, None))
-
-        return {
-            'name': resort.name,
-            'displayName': resort.displayName,
-            'profilePhoto': serialize_profile_photo(profile_photo),
-            'beachFront': resort.privateBeach,
-            'price': min(list),
-            'maxPrice': max(list),
-            'highlights': serialize_resort_highlight(resort)
-        }
-
-
     def serialize_resort_summary(self, resort, profile_photo, begin_on, end_on):
         if resort is None:
             return {}
@@ -77,8 +56,7 @@ class ResortInfo(object):
             'highlights': serialize_resort_highlight(resort)
         }
 
-
-    def serialize_resort_info(self):
+    def serialize_resort_info(self, begin_date, end_date):
         resort = self.resort
         if resort is None:
             return {}
@@ -90,14 +68,14 @@ class ResortInfo(object):
             'wifi': resort.wifi,
             'pool': resort.swimPool,
             'kiteSchool': resort.lessonKite,
-            'price': 150,
+            # 'price': 150,
             'desc': resort.about,
             'highlights': serialize_resort_highlight(resort),
             'generalSection': serialize_section_general(resort),
             'foodSection': serialize_section_food(resort),
             'activitySection': serialize_section_activity(resort),
             'policySection': serialize_section_policy(resort),
-            'unitTypes': serialize_units_summary(self.units),
+            'unitTypes': serialize_units_summary(self.units, begin_date, end_date),
             'photos': serialize_photos(self.photos)
         }
 
@@ -155,18 +133,32 @@ class PriceInfo(object):
             'price': self.price if self.price else 0
         }
 
+
+def populate_resort_info(resortname):
+    resort = find_resort_by_name(resortname)
+
+    if not resort:
+        return {}
+
+    resort_info = ResortInfo(resort)
+
+    units = find_units_by_resort_name(resortname)
+    resort_info.set_units(units)
+
+    profile_photo = find_profile_photo_by_resort_name(resortname)
+    resort_info.set_profile_photo(profile_photo)
+
+    photos = find_photos_by_resort_name(resortname)
+    resort_info.set_photos(photos)
+
+    return resort_info
+
+
 def serialize_resorts(resorts):
-    json = []
-    # resort_instance = Resort()
-    for resort in resorts:
-        resort_info = ResortInfo(resort)
-        # json.append(resortInfo.serialize_resort_summary(resort))
-        profile_photo = find_profile_photo_by_resort_name(resort.name)
-        json.append(resort_info.serialize_resort_summary(resort, profile_photo))
-    return json
+    return serialize_resorts_search(resorts, None, None)
 
 
-def serialize_resorts(resorts, begin_on, end_on):
+def serialize_resorts_search(resorts, begin_on, end_on):
     json = []
     # resort_instance = Resort()
     for resort in resorts:
@@ -261,13 +253,11 @@ def build_price_list_for_unit(unitname, begin_date, end_date):
     # if begin_date is null, show price for today
     if not begin_date:
         begin_date = datetime.today()
-        # return list.append(PriceInfo(unitname, date, find_price_for_date(unitname, date)))
 
     # if end_date is null, show price for begin date
     if not end_date:
         end_date = begin_date + timedelta(days=1)
         # date = convert_string_to_date(begin_date)
-        # return list.append(PriceInfo(unitname, date, find_price_for_date(unitname, date)))
 
     # add PriceInfo for each date
     for single_date in daterange(begin_date, end_date):
@@ -302,7 +292,13 @@ def find_price_for_date(unitname, date):
 
 def find_avg_price_for_unit(unit, begin_date, end_date):
     list = build_price_list_for_unit(unit.typeName, begin_date, end_date)
+    return find_avg_price(list)
 
+
+# input is list of PriceInfo objects
+def find_avg_price(list):
+    if not list:
+        return None
     # if price does not exist, just return 0
     if not list[0].price:
         return None
@@ -310,7 +306,6 @@ def find_avg_price_for_unit(unit, begin_date, end_date):
     if not sum_val:
         return None
     avg_price = sum_val / float(len(list))
-
     return int(avg_price)
 
 
@@ -359,16 +354,16 @@ def build_photo_url_full_2x(photo):
     return build_photo_url (PHOTO_PATH_2X, photo)
 
 
-def serialize_units_summary(units):
+def serialize_units_summary(units, begin_date, end_date):
     units_json = []
     for unit in units:
-        units_json.append(serialize_unit_summary(unit))
+        units_json.append(serialize_unit_summary(unit, begin_date, end_date))
     return units_json
 
 
-def serialize_unit_summary(unit):
+def serialize_unit_summary(unit, begin_date, end_date):
     profile_photo = find_profile_photo_for_unit_type(unit.typeName)
-    # use default begin-date and end-date
+    price_info_list = build_price_list_for_unit(unit.typeName, begin_date, end_date)
 
     return {
         'unitType': unit.typeName,
@@ -376,9 +371,16 @@ def serialize_unit_summary(unit):
         'displayName': unit.displayName,
         'profilePhoto': build_photo_url_full_1x(profile_photo),
         'maxCapacity': unit.maxCapacity,
-        # use default begin-date and end-date for now
-        'price': find_avg_price_for_unit(unit, None, None)
+        'price': find_avg_price(price_info_list),
+        'priceMatrix': serialize_prices(price_info_list)
     }
+
+
+def serialize_prices(prices):
+    json = []
+    for price in prices:
+        json.append(PriceInfo.serialize_price_info(price))
+    return json
 
 
 def serialize_photos(photos):

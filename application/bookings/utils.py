@@ -20,12 +20,13 @@ def get_todays_date():
 
 
 def get_default_begin_date():
-    # begin_date = '2016-07-01'
-    # return convert_string_to_date(begin_date)
     return get_todays_date()
 
 
 def get_default_end_date(begin_date):
     return begin_date + timedelta(days=DEFAULT_INTERVAL - 1)
 
+
+def get_next_day(date_):
+    return date_ + timedelta(days=1)
 

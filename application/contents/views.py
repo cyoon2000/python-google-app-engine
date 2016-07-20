@@ -20,18 +20,9 @@ def show_resort_by_name(resortname):
     if not resort:
         return 'Sorry, Invalid Request', 400
 
-    resort_info = model.ResortInfo(resort)
+    resort_info = model.populate_resort_info(resortname)
 
-    units = model.find_units_by_resort_name(resortname)
-    resort_info.set_units(units)
-
-    profile_photo = model.find_profile_photo_by_resort_name(resortname)
-    resort_info.set_profile_photo(profile_photo)
-
-    photos = model.find_photos_by_resort_name(resortname)
-    resort_info.set_photos(photos)
-
-    results = resort_info.serialize_resort_info()
+    results = resort_info.serialize_resort_info(None, None)
     return jsonify(results=results)
 
 
