@@ -1,7 +1,7 @@
 import flask
 import json
 import logging
-from . import get_model
+from . import get_model, get_content_model
 from . import model, forms, utils
 
 from datetime import datetime, timedelta
@@ -222,6 +222,27 @@ def update_availability(id):
     logging.info(serialize_availability(avail))
 
     return jsonify(data=serialize_availability(avail))
+
+@bookings_api.route("/search")
+def search():
+    begin_date = request.args.get('from')
+    end_date = request.args.get('to')
+
+    if not begin_date:
+        begin_date = utils.get_default_begin_date()
+    else:
+        begin_date = utils.convert_string_to_date(begin_date)
+    if not end_date:
+        end_date = utils.get_default_end_date(begin_date)
+    else:
+        # TODO - minus 1 day
+        end_date = utils.convert_string_to_date(end_date)
+
+    # TODO - implement 'search'
+    # resorts = model.search(begin_date, end_date)
+    resorts = get_content_model().find_all_resorts()
+    results = get_content_model().serialize_resorts(resorts, begin_date, end_date)
+    return jsonify(results=results)
 
 
 def serialize_unit(unit):

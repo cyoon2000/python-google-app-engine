@@ -282,6 +282,11 @@ def get_bookings(begin_date, end_date):
     return query.all()
 
 
+# TODO - join with Availability
+def search(begin_date, end_date):
+    return Resort.query.all()
+
+
 # IMPORTANT :
 # RUN ONLY ONCE - which should happen in local DEV, not in PROD server. (invoked from __init___)
 # read CSV data and populate db.

@@ -20,8 +20,9 @@ def get_todays_date():
 
 
 def get_default_begin_date():
-    begin_date = '2016-07-01'
-    return convert_string_to_date(begin_date)
+    # begin_date = '2016-07-01'
+    # return convert_string_to_date(begin_date)
+    return get_todays_date()
 
 
 def get_default_end_date(begin_date):
