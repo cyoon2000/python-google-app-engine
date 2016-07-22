@@ -29,8 +29,8 @@ def show_resort_by_name(resortname):
 @api.route('/resorts/<resortname>/<typename>')
 def show_unit_detail(resortname, typename):
 
-    begin_date = request.args.get('begin')
-    end_date = request.args.get('end')
+    begin_date = request.args.get('from')
+    end_date = request.args.get('to')
 
     unit = model.find_unit_by_name(typename)
 
