@@ -228,6 +228,7 @@ def update_availability(id):
 def search():
     begin_date = request.args.get('from')
     end_date = request.args.get('to')
+    guests = request.args.get('guests')
     # use default if not provided
     if not begin_date:
         begin_date = utils.get_default_begin_date()
@@ -245,11 +246,12 @@ def search():
     return jsonify(results=results)
 
 
-# /search/resort=bj&from=2016-07-20&to=2016-07-22&guests=1
+# /search/resort/bj?from=2016-07-20&to=2016-07-22&guests=1
 @bookings_api.route('/search/resort/<resortname>')
 def search_resort(resortname):
     begin_date = request.args.get('from')
     end_date = request.args.get('to')
+    guests = request.args.get('guests')
     # use default if not provided
     if not begin_date:
         begin_date = utils.get_default_begin_date()
