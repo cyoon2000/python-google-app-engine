@@ -295,11 +295,13 @@ def search(begin_date, end_date):
             join unitgroup ug on ug.resort_id = r.id
             join unit u on u.unitgroup_id = ug.id
             where  not exists ( select 1 from availability a
-            where a.unit_id = u.id and a.date_slot >= '2016-07-04'and a.date_slot < '2016-07-14')
+            where a.unit_id = u.id and a.date_slot >= :begin and a.date_slot < :end)
             group by r.id
             '''
     resorts = db.session.execute(
-        text(cmd))
+        text(cmd),
+        {'begin': begin_date,
+         'end': end_date})
     return resorts
 
 
@@ -309,19 +311,19 @@ def search_by_resort(resortname, begin_date, end_date):
             select ug.id, ug.name, sum(
                 IF(exists
                     (select 1 from availability a
-                    where a.unit_id = u.id and a.date_slot >= '2016-07-04'and a.date_slot < '2016-07-14'),
+                    where a.unit_id = u.id and a.date_slot >= :begin and a.date_slot < :end),
                     0, 1))  as available
             from resort r
             join unitgroup ug on ug.resort_id = r.id
             join unit u on u.unitgroup_id = ug.id
-            where r.name = 'kirk'
+            where r.name = :resortname
             group by ug.id;
             '''
     units = db.session.execute(
-        text(cmd))
-
-    # for unit in units:
-    #     print unit
+        text(cmd),
+        {'resortname': resortname,
+         'begin': begin_date,
+         'end': end_date})
     return units
 
 

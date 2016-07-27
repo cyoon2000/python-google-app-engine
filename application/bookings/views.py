@@ -301,7 +301,6 @@ def search_resort(resortname):
     units = []
     for result in search_results:
         unit = get_content_model().find_unit_by_name(result.name)
-        print unit
         # TODO - set available
         units.append(unit)
 

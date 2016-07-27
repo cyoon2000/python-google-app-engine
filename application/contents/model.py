@@ -85,17 +85,32 @@ class UnitInfo(object):
         self.unit = unit
         self.profile_photo = None
         self.photos = None
+        self.price_info_list = []
+        self.available = 0
 
     def set_profile_photo(self, profile_photo):
         self.profile_photo = profile_photo
 
-    # @staticmethod
-    # def serialize_units_summary(units):
-    #     units_json = []
-    #     for unit in units:
-    #         units_json.append(serialize_unit_summary(unit))
-    #     return units_json
+    def serialize_unit_summary(self, begin_date, end_date):
+        unit = self.unit
+        if unit is None:
+            return {}
 
+        # profile_photo = find_profile_photo_for_unit_type(unit.typeName)
+        # price_info_list = build_price_list_for_unit(unit.typeName, begin_date, end_date)
+
+        self.profile_photo = find_profile_photo_for_unit_type(unit.typeName)
+        self.price_info_list = build_price_list_for_unit(unit.typeName, begin_date, end_date)
+
+        return {
+            'unitType': unit.typeName,
+            'type': unit.type,
+            'displayName': unit.displayName,
+            'profilePhoto': build_photo_url_full_1x(self.profile_photo),
+            'maxCapacity': unit.maxCapacity,
+            'price': find_avg_price(self.price_info_list),
+            'priceMatrix': serialize_prices(self.price_info_list)
+        }
     # @staticmethod
     # def serialize_unit_summary(unit):
     #     return {
@@ -357,23 +372,24 @@ def build_photo_url_full_2x(photo):
 def serialize_units_summary(units, begin_date, end_date):
     units_json = []
     for unit in units:
-        units_json.append(serialize_unit_summary(unit, begin_date, end_date))
+        # units_json.append(serialize_unit_summary(unit, begin_date, end_date))
+        units_json.append(UnitInfo(unit).serialize_unit_summary(begin_date, end_date))
     return units_json
 
 
-def serialize_unit_summary(unit, begin_date, end_date):
-    profile_photo = find_profile_photo_for_unit_type(unit.typeName)
-    price_info_list = build_price_list_for_unit(unit.typeName, begin_date, end_date)
-
-    return {
-        'unitType': unit.typeName,
-        'type': unit.type,
-        'displayName': unit.displayName,
-        'profilePhoto': build_photo_url_full_1x(profile_photo),
-        'maxCapacity': unit.maxCapacity,
-        'price': find_avg_price(price_info_list),
-        'priceMatrix': serialize_prices(price_info_list)
-    }
+# def serialize_unit_summary(unit, begin_date, end_date):
+#     profile_photo = find_profile_photo_for_unit_type(unit.typeName)
+#     price_info_list = build_price_list_for_unit(unit.typeName, begin_date, end_date)
+#
+#     return {
+#         'unitType': unit.typeName,
+#         'type': unit.type,
+#         'displayName': unit.displayName,
+#         'profilePhoto': build_photo_url_full_1x(profile_photo),
+#         'maxCapacity': unit.maxCapacity,
+#         'price': find_avg_price(price_info_list),
+#         'priceMatrix': serialize_prices(price_info_list)
+#     }
 
 
 def serialize_prices(prices):
