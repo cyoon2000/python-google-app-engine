@@ -216,17 +216,24 @@ def get_availabilities(id):
     return jsonify(data=data)
 
 
-@bookings_api.route('/availability/<id>', methods=['POST'])
-def update_availability(id):
+@bookings_api.route('/availability/<unit_id>', methods=['POST'])
+def update_availability(unit_id):
     input = json.loads(request.data)
+    if input['id']:
+        avail = model.Availability.query.get(input['id'])
+        avail = model.delete_entity(avail)
 
-    # TODO - 400 for invalid id
-    avail = model.Availability.query.get(input['id'])
-    avail.status = -1 if input['booked'] is True else 1
-    avail = model.save_entity(avail)
-    logging.info(serialize_availability(avail))
+    else:
+        #avail = model.Availability.query.get(input['id'])
+        #avail.status = -1 if input['booked'] is True else 1
+        #avail = model.save_entity(avail)
+        # 2=blocked
+        avail = model.Availability(input['unit_id'], input['date_slot'], 2)
+        avail = model.save_entity(avail)
+        logging.info(serialize_availability(avail))
 
     return jsonify(data=serialize_availability(avail))
+    # return jsonify(data="Success")
 
 
 @bookings_api.route('/search-static')
@@ -309,6 +316,7 @@ def search_resort(resortname):
     results = resort_info.serialize_resort_info(begin_date, end_date)
     return jsonify(results=results)
 
+
 def serialize_unit(unit):
     return {
         'id': unit.id,
@@ -326,7 +334,7 @@ def serialize_availability(availability):
         'month': availability.date_slot.month,
         'day': availability.date_slot.day,
         'weekday': availability.date_slot.weekday(), # Monday is 0 and Sunday is 6
-        'booked': False if availability.status == 1 else True,
+        'booked': False if availability.status == 0 else True,
         'status': availability.status,
         'booking_id': availability.booking_id
     }

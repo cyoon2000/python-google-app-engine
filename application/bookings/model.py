@@ -135,7 +135,7 @@ class Availability(Base):
 
     id = db.Column(db.Integer, primary_key=True)
     date_slot = db.Column(db.Date, nullable=False)
-    status = db.Column(db.Integer, default=1)    #available=1, unavailable=0, blocked=-1
+    status = db.Column(db.Integer, default=1)       # booked=1, blocked=2  ( OLD # available=1, unavailable=0, blocked=-1 )
     unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
 
@@ -146,9 +146,15 @@ class Availability(Base):
         self.date_slot = date_slot
         self.status = 1
 
+    def __init__(self, unit_id, date_slot, status):
+        self.unit_id = unit_id
+        self.date_slot = date_slot
+        self.status = status
+
     def __repr__(self):
         return '<Availability (id = %r unit_id = %r date = %r status = %r)>' % (self.id, self.unit_id, self.date_slot, self.status)
 
+    # FIXME - underlying design on Availability was changed on July 25
     def is_available(self):
         return True if self.status == 1 else False
 
@@ -232,6 +238,12 @@ def save_entity(entity):
     return entity
 
 
+def delete_entity(entity):
+    db.session.delete(entity)
+    db.session.commit()
+    logging.info(entity)
+    return entity
+
 def get_resorts():
     return Resort.query.all()
 
@@ -263,18 +275,43 @@ def get_calendar_dates(begin, end):
     return Calendar.query.filter(Calendar.date_.between(begin, end)).all()
 
 
+# 0 = avail, 1 = booked, 2= blocked
 def get_availabilities(unit_id, begin_date, end_date):
-    query = (Availability.query
-                .filter(Availability.unit_id == unit_id)
-                .filter(Availability.date_slot.between(begin_date, end_date)))
-    return query.all()
+    # query = (Availability.query
+    #             .filter(Availability.unit_id == unit_id)
+    #             .filter(Availability.date_slot.between(begin_date, end_date)))
+    # return query.all()
+    cmd = '''
+        select c.date_ as date_slot, u.id as unit_id, IFNULL( a.status ,0) as status, a.id as id, a.booking_id as booking_id
+            from calendar c
+            join unit u
+            left join availability a on  a.date_slot = c.date_ and a.unit_id = u.id
+            where c.date_ >= :begin and c.date_ < :end and u.id = :unit_id;
+        '''
+    availabilities = db.session.execute(
+        text(cmd),
+        {'unit_id': unit_id,
+         'begin': begin_date,
+         'end': end_date})
+    return availabilities
 
 
-def get_availability(unit_id, date):
-    query = (Availability.query
-             .filter(Availability.unit_id == unit_id)
-             .filter(Availability.date_slot == date))
-    return query.one()
+# 0 = avail, 1 = booked, 2= blocked
+def get_availability(unit_id, date_slot):
+    # query = (Availability.query
+    #          .filter(Availability.unit_id == unit_id)
+    #          .filter(Availability.date_slot == date))
+    # return query.one()
+    cmd = '''
+        select IFNULL((
+            select distinct status from  availability a
+                where a.date_slot = :date and unit_id = :unit_id), 0);
+        '''
+    availabilities = db.session.execute(
+        text(cmd),
+        {'unit_id': unit_id,
+         'date': date_slot})
+    return availabilities
 
 
 # TODO - implement "See More..." button if there are more than N bookings

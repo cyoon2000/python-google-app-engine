@@ -18,17 +18,19 @@ myApp.controller('mainController', function($scope, $attrs, $http) {
     $scope.urlGet = "http://localhost:8080/bookings/availability/unit/" + $attrs.unitid;
 
     $scope.updateAvailability = function(data) {
-        // console.log("REQUEST updateAvailability (" + data.date_slot + ") id = " + data.id + " booked = " + data.booked);
+        // console.log("REQUEST updateAvailability (" + data.date_slot + ") unit_id = " + data.unit_id + " id = " + data.id + " booked = " + data.booked);
         var json = {
+                unit_id: data.unit_id,
+                date_slot: data.date_slot,
                 id: data.id,
                 booked: data.booked
             }
-        $http.post('http://localhost:8080/bookings/availability/'+ data.id, json)
+        $http.post('http://localhost:8080/bookings/availability/'+ data.unit_id, json)
             .then(
                 function(json, status) {
                     //console.log("SUCCESS");
                     $scope.responsePOST = json.data;
-                    console.log("RESPONSE updateAvailability (" + data.date_slot + ") for unit_id = " + data.unit_id + " : id = " + data.id + " booked = " + data.booked);
+                    console.log("SUCCESS POST updateAvailability (" + data.date_slot + ") for unit_id = " + data.unit_id + " : id = " + data.id + " booked = " + data.booked);
                 }
             )
     }
@@ -36,13 +38,13 @@ myApp.controller('mainController', function($scope, $attrs, $http) {
     $http.get($scope.urlGet)
         .then(
             function(result) {
-                console.log("SUCCESS :  ", $scope.urlGet);
+                console.log("SUCCESS GET:  ", $scope.urlGet);
                 $scope.documents = result.data;
                 $scope.error = true;
             },
             // OnFailure function
             function(reason) {
-                console.log("ERROR : ", $scope.urlGet)
+                console.log("ERROR GET: ", $scope.urlGet)
                 console.log(reason)
                 $scope.somethingWrong = reason;
                 $scope.error = true;
