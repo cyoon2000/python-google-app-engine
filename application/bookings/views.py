@@ -17,6 +17,11 @@ def before_request():
     session['resort_id'] = 4
 
 
+@bookings_api.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
 # @bookings_api.before_request
 def before_request2():
     g.user = None
@@ -224,8 +229,8 @@ def update_availability(id):
     return jsonify(data=serialize_availability(avail))
 
 
-@bookings_api.route('/search')
-def search():
+@bookings_api.route('/search-static')
+def search_static():
     begin_date = request.args.get('from')
     end_date = request.args.get('to')
     guests = request.args.get('guests')
@@ -246,6 +251,35 @@ def search():
     return jsonify(results=results)
 
 
+@bookings_api.route('/search')
+def search():
+    begin_date = request.args.get('from')
+    end_date = request.args.get('to')
+    guests = request.args.get('guests')
+    # use default if not provided
+    if not begin_date:
+        begin_date = utils.get_default_begin_date()
+        end_date = utils.get_next_day(begin_date)
+        begin_date = utils.convert_date_to_string(begin_date)
+        end_date = utils.convert_date_to_string(end_date)
+
+    begin_date = utils.convert_string_to_date(begin_date)
+    end_date = utils.convert_string_to_date(end_date)
+
+    # 'search' returns availability by resorts (id, name, count(available # of units))
+    search_results = model.search(begin_date, end_date)
+
+    # for each resort entity, find/serialize resort content
+    resorts = []
+    for result in search_results:
+        resort = get_content_model().find_resort_by_name(result.name)
+        # TODO - set available
+        resorts.append(resort)
+    results = get_content_model().serialize_resorts_search(resorts, begin_date, end_date)
+
+    return jsonify(results=results)
+
+
 # /search/resort/bj?from=2016-07-20&to=2016-07-22&guests=1
 @bookings_api.route('/search/resort/<resortname>')
 def search_resort(resortname):
@@ -262,11 +296,19 @@ def search_resort(resortname):
     begin_date = utils.convert_string_to_date(begin_date)
     end_date = utils.convert_string_to_date(end_date)
 
-    # TODO - implement 'search'
+    # 'search' returns availability by unit groups (id, name, count(available # of units))
+    search_results = model.search_by_resort(resortname, begin_date, end_date)
+    units = []
+    for result in search_results:
+        unit = get_content_model().find_unit_by_name(result.name)
+        print unit
+        # TODO - set available
+        units.append(unit)
+
     resort_info = get_content_model().populate_resort_info(resortname)
+    resort_info.set_units(units)
     results = resort_info.serialize_resort_info(begin_date, end_date)
     return jsonify(results=results)
-
 
 def serialize_unit(unit):
     return {

@@ -2,6 +2,8 @@ import logging
 import utils
 from datetime import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
+from sqlalchemy import UniqueConstraint
+from sqlalchemy.sql import text
 from database import db
 from application.contents.data import read_data_resorts, read_data_units, read_data_unitnames
 
@@ -137,6 +139,8 @@ class Availability(Base):
     unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
     booking_id = db.Column(db.Integer, db.ForeignKey('booking.id'))
 
+    UniqueConstraint('date_slot', 'unit_id', name='uq_date_unit')
+
     def __init__(self, unit_id, date_slot):
         self.unit_id = unit_id
         self.date_slot = date_slot
@@ -186,9 +190,10 @@ def create(data):
         db.session.flush()
         availabilities = get_availabilities(booking.unit_id, booking.begin_on, booking.end_on)
         for availability in availabilities:
-            if availability.is_available() is False:
-                raise Exception("Cannot create booking")
-            availability.status = 0
+            # if availability.is_available() is False:
+            #    raise Exception("Cannot create booking")
+            # booked = 1, blocked = 2
+            availability.status = 1
             availability.booking_id = booking.id
             db.session.add(availability)
             print 'saving availability: with booking id %r' % booking.id
@@ -281,10 +286,43 @@ def get_bookings(begin_date, end_date):
     )
     return query.all()
 
-
-# TODO - join with Availability
+# returns resorts ( id, name, count )
 def search(begin_date, end_date):
-    return Resort.query.all()
+    # return Resort.query.all()
+    cmd = '''
+            select  r.id, r.name, count(1) as count
+            from resort r
+            join unitgroup ug on ug.resort_id = r.id
+            join unit u on u.unitgroup_id = ug.id
+            where  not exists ( select 1 from availability a
+            where a.unit_id = u.id and a.date_slot >= '2016-07-04'and a.date_slot < '2016-07-14')
+            group by r.id
+            '''
+    resorts = db.session.execute(
+        text(cmd))
+    return resorts
+
+
+# returns units (id, name, available)
+def search_by_resort(resortname, begin_date, end_date):
+    cmd = '''
+            select ug.id, ug.name, sum(
+                IF(exists
+                    (select 1 from availability a
+                    where a.unit_id = u.id and a.date_slot >= '2016-07-04'and a.date_slot < '2016-07-14'),
+                    0, 1))  as available
+            from resort r
+            join unitgroup ug on ug.resort_id = r.id
+            join unit u on u.unitgroup_id = ug.id
+            where r.name = 'kirk'
+            group by ug.id;
+            '''
+    units = db.session.execute(
+        text(cmd))
+
+    # for unit in units:
+    #     print unit
+    return units
 
 
 # IMPORTANT :
