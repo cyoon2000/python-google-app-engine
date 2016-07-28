@@ -120,7 +120,6 @@ class UnitInfo(object):
         for single_date in daterange(self.begin_date, self.end_date):
             unitname = self.unit.typeName
             price_info = PriceInfo(unitname, convert_date_to_string(single_date), find_price_for_date(unitname, single_date))
-            print price_info
             self.price_info_list.append(price_info)
 
     def build_avg_price(self):
