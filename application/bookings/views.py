@@ -290,6 +290,7 @@ def search():
 # /search/resort/bj?from=2016-07-20&to=2016-07-22&guests=1
 @bookings_api.route('/search/resort/<resortname>')
 def search_resort(resortname):
+    # parse parameter
     begin_date = request.args.get('from')
     end_date = request.args.get('to')
     guests = request.args.get('guests')
@@ -306,14 +307,19 @@ def search_resort(resortname):
     # 'search' returns availability by unit groups (id, name, count(available # of units))
     search_results = model.search_by_resort(resortname, begin_date, end_date)
     units = []
+    unit_info_list = []
     for result in search_results:
         unit = get_content_model().find_unit_by_name(result.name)
-        # TODO - set available
         units.append(unit)
+        unit_info = get_content_model().UnitInfo(unit, begin_date, end_date, result.available)
+        unit_info_list.append(unit_info)
 
-    resort_info = get_content_model().populate_resort_info(resortname)
+    resort = get_content_model().find_resort_by_name(resortname)
+    resort_info = get_content_model().ResortInfo(resort, begin_date, end_date)
     resort_info.set_units(units)
-    results = resort_info.serialize_resort_info(begin_date, end_date)
+    resort_info.set_unit_info_list(unit_info_list)
+
+    results = resort_info.serialize_resort_info()
     return jsonify(results=results)
 
 

@@ -16,13 +16,10 @@ def show_resorts():
 def show_resort_by_name(resortname):
 
     resort = model.find_resort_by_name(resortname)
-
     if not resort:
         return 'Sorry, Invalid Request', 400
 
-    resort_info = model.populate_resort_info(resortname)
-
-    results = resort_info.serialize_resort_info(None, None)
+    results = model.ResortInfo(resort, None, None).serialize_resort_info()
     return jsonify(results=results)
 
 
@@ -33,7 +30,6 @@ def show_unit_detail(resortname, typename):
     end_date = request.args.get('to')
 
     unit = model.find_unit_by_name(typename)
-
     if not unit:
         return 'Sorry, Invalid Request', 400
 

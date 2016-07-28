@@ -21,45 +21,55 @@ PHOTO_PATH_1X = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/
 PHOTO_PATH_2X = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
 
 class ResortInfo(object):
-    def __init__(self, resort):
+    def __init__(self, resort, begin_date, end_date):
         self.resort = resort
+        self.begin_date = begin_date
+        self.end_date = end_date
         self.profile_photo = None
         self.photos = None
         self.units = None
+        self.unit_info_list = []
 
-    def set_profile_photo(self, profile_photo):
-        self.profile_photo = profile_photo
+        self.build_profile_photo()
 
-    def set_photos(self, photos):
-        self.photos = photos
+    def build_profile_photo(self):
+        profile_photos = get_dictionary_data().profile_photo_dict[self.resort.name]
+        self.profile_photo = get_first_element(profile_photos)
 
     def set_units(self, units):
         self.units = units
 
-    def serialize_resort_summary(self, resort, profile_photo, begin_on, end_on):
-        if resort is None:
+    def set_unit_info_list(self, unit_info_list):
+        self.unit_info_list = unit_info_list
+
+    def serialize_resort_summary(self):
+        if self.resort is None:
             return {}
 
-        units = find_units_by_resort_name(resort.name)
-        list = []
-        # find today's price for now
+        # TODO - set unit data from /search
+        units = find_units_by_resort_name(self.resort.name)
+        price_list = []
         for unit in units:
-            list.append(find_avg_price_for_unit(unit, begin_on, end_on))
+            price_list.append(UnitInfo(unit, self.begin_date, self.end_date).avg_price)
 
         return {
-            'name': resort.name,
-            'displayName': resort.displayName,
-            'profilePhoto': serialize_profile_photo(profile_photo),
-            'beachFront': resort.privateBeach,
-            'price': min(list),
-            'maxPrice': max(list),
-            'highlights': serialize_resort_highlight(resort)
+            'name': self.resort.name,
+            'displayName': self.resort.displayName,
+            'profilePhoto': serialize_profile_photo(self.profile_photo),
+            'beachFront': self.resort.privateBeach,
+            'price': min(price_list),
+            'maxPrice': max(price_list),
+            'highlights': serialize_resort_highlight(self.resort)
         }
 
-    def serialize_resort_info(self, begin_date, end_date):
+    def serialize_resort_info(self):
         resort = self.resort
         if resort is None:
             return {}
+
+        self.units = find_units_by_resort_name(self.resort.name)
+        self.photos = find_photos_by_resort_name(self.resort.name)
+
         return {
             'name': resort.name,
             'displayName': resort.displayName,
@@ -68,39 +78,68 @@ class ResortInfo(object):
             'wifi': resort.wifi,
             'pool': resort.swimPool,
             'kiteSchool': resort.lessonKite,
-            # 'price': 150,
             'desc': resort.about,
             'highlights': serialize_resort_highlight(resort),
             'generalSection': serialize_section_general(resort),
             'foodSection': serialize_section_food(resort),
             'activitySection': serialize_section_activity(resort),
             'policySection': serialize_section_policy(resort),
-            'unitTypes': serialize_units_summary(self.units, begin_date, end_date),
+            'unitTypes': serialize_units_summary(self.units, self.begin_date, self.end_date),
             'photos': serialize_photos(self.photos)
         }
 
 
 class UnitInfo(object):
-    def __init__(self, unit):
+    def __init__(self, unit, begin_date, end_date, available=0):
         self.unit = unit
+        self.begin_date = begin_date
+        self.end_date = end_date
+        self.available = available
         self.profile_photo = None
         self.photos = None
         self.price_info_list = []
-        self.available = 0
+        self.avg_price = 0
 
-    def set_profile_photo(self, profile_photo):
-        self.profile_photo = profile_photo
+        self.build_price_info()
+        self.build_avg_price()
 
-    def serialize_unit_summary(self, begin_date, end_date):
+    def __repr__(self):
+        return "UnitName = %s : available = %s price = %i" % (self.unit.typeName, self.available, self.avg_price)
+
+    def build_price_info(self):
+        # if begin_date is null, show price for today
+        if not self.begin_date:
+            self.begin_date = datetime.today()
+
+        # if end_date is null, show price for begin date
+        if not self.end_date:
+            self.end_date = self.begin_date + timedelta(days=1)
+            # date = convert_string_to_date(begin_date)
+
+        # build PriceInfo for each date
+        for single_date in daterange(self.begin_date, self.end_date):
+            unitname = self.unit.typeName
+            price_info = PriceInfo(unitname, convert_date_to_string(single_date), find_price_for_date(unitname, single_date))
+            print price_info
+            self.price_info_list.append(price_info)
+
+    def build_avg_price(self):
+        if not self.price_info_list[0].price:
+            self.avg_price = None
+            return
+        sum_val = sum(p.price for p in self.price_info_list)
+        if not sum_val:
+            self.avg_price = None
+            return
+        avg_price = sum_val / float(len(self.price_info_list))
+        self.avg_price = int(avg_price)
+
+    def serialize_unit_summary(self):
         unit = self.unit
         if unit is None:
             return {}
 
-        # profile_photo = find_profile_photo_for_unit_type(unit.typeName)
-        # price_info_list = build_price_list_for_unit(unit.typeName, begin_date, end_date)
-
         self.profile_photo = find_profile_photo_for_unit_type(unit.typeName)
-        self.price_info_list = build_price_list_for_unit(unit.typeName, begin_date, end_date)
 
         return {
             'unitType': unit.typeName,
@@ -111,23 +150,7 @@ class UnitInfo(object):
             'price': find_avg_price(self.price_info_list),
             'priceMatrix': serialize_prices(self.price_info_list)
         }
-    # @staticmethod
-    # def serialize_unit_summary(unit):
-    #     return {
-    #         'displayName': unit.displayName,
-    #         'profilePhoto': get_mock_unit_profile_photo(),
-    #         'maxCapacity': unit.maxCapacity,
-    #         'price': 150
-    #     }
-    #
-    # @staticmethod
-    # def serialize_unit_detail(unit):
-    #     return {
-    #         'displayName': unit.displayName,
-    #         'profilePhoto': get_mock_unit_profile_photo(),
-    #         'maxCapacity': unit.maxCapacity,
-    #         'price': 150
-    #         }
+
 
 class PriceInfo(object):
     def __init__(self, unit, date, price):
@@ -135,8 +158,8 @@ class PriceInfo(object):
         self.date = date
         self.price = price
 
-    def __str__(self):
-        return unicode(self).encode('utf-8')
+    def __repr__(self):
+        return "(unit = %s : date = %s , price = %s)" % (self.unit, self.date, self.price)
 
     def serialize_price_info(self):
         unit = self.unit
@@ -149,43 +172,16 @@ class PriceInfo(object):
         }
 
 
-def populate_resort_info(resortname):
-    resort = find_resort_by_name(resortname)
-
-    if not resort:
-        return {}
-
-    resort_info = ResortInfo(resort)
-
-    units = find_units_by_resort_name(resortname)
-    resort_info.set_units(units)
-
-    profile_photo = find_profile_photo_by_resort_name(resortname)
-    resort_info.set_profile_photo(profile_photo)
-
-    photos = find_photos_by_resort_name(resortname)
-    resort_info.set_photos(photos)
-
-    return resort_info
-
-
 def serialize_resorts(resorts):
     return serialize_resorts_search(resorts, None, None)
 
 
-def serialize_resorts_search(resorts, begin_on, end_on):
+def serialize_resorts_search(resorts, begin_date, end_date):
     json = []
-    # resort_instance = Resort()
     for resort in resorts:
-        resort_info = ResortInfo(resort)
-        # json.append(resortInfo.serialize_resort_summary(resort))
-        profile_photo = find_profile_photo_by_resort_name(resort.name)
-        json.append(resort_info.serialize_resort_summary(resort, profile_photo, begin_on, end_on))
+        resort_info = ResortInfo(resort, begin_date, end_date)
+        json.append(resort_info.serialize_resort_summary())
     return json
-
-
-def serialize_resort_detail(resort):
-    return ResortInfo().serialize_resort_detail(resort)
 
 
 def find_all_resorts():
@@ -210,11 +206,6 @@ def find_unit_by_name(name):
     return None
 
 
-def find_profile_photo_by_resort_name(resortname):
-    profile_photos = get_dictionary_data().profile_photo_dict[resortname]
-    return get_first_element(profile_photos)
-
-
 def find_photos_by_resort_name(resortname):
     return get_dictionary_data().photos_by_resort_dict[resortname]
 
@@ -225,11 +216,6 @@ def find_photos_by_unit_type(typename):
 
 def find_profile_photo_for_unit_type(typename):
     return get_dictionary_data().photos_by_unit_dict[typename]
-
-
-def find_profile_photo_by_resort_name(resortname):
-    profile_photos = get_dictionary_data().profile_photo_dict[resortname]
-    return get_first_element(profile_photos)
 
 
 def find_photos_by_resort_name(resortname):
@@ -261,23 +247,6 @@ def find_prices_for_unit(unitname, begin_date, end_date):
 
     # TODO - calculate AVG price for date range
     return find_price_for_date(unitname, convert_string_to_date(begin_date))
-
-
-def build_price_list_for_unit(unitname, begin_date, end_date):
-    list = []
-    # if begin_date is null, show price for today
-    if not begin_date:
-        begin_date = datetime.today()
-
-    # if end_date is null, show price for begin date
-    if not end_date:
-        end_date = begin_date + timedelta(days=1)
-        # date = convert_string_to_date(begin_date)
-
-    # add PriceInfo for each date
-    for single_date in daterange(begin_date, end_date):
-        list.append(PriceInfo(unitname, convert_date_to_string(single_date), find_price_for_date(unitname, single_date)))
-    return list
 
 
 def find_price_data_for_unit(unitname):
@@ -362,8 +331,10 @@ def build_photo_url(file_path, photo):
 def build_photo_url_thumb(photo):
     return build_photo_url (PHOTO_PATH_THUMB, photo)
 
+
 def build_photo_url_full_1x(photo):
     return build_photo_url (PHOTO_PATH_1X, photo)
+
 
 def build_photo_url_full_2x(photo):
     return build_photo_url (PHOTO_PATH_2X, photo)
@@ -372,24 +343,8 @@ def build_photo_url_full_2x(photo):
 def serialize_units_summary(units, begin_date, end_date):
     units_json = []
     for unit in units:
-        # units_json.append(serialize_unit_summary(unit, begin_date, end_date))
-        units_json.append(UnitInfo(unit).serialize_unit_summary(begin_date, end_date))
+        units_json.append(UnitInfo(unit, begin_date, end_date).serialize_unit_summary())
     return units_json
-
-
-# def serialize_unit_summary(unit, begin_date, end_date):
-#     profile_photo = find_profile_photo_for_unit_type(unit.typeName)
-#     price_info_list = build_price_list_for_unit(unit.typeName, begin_date, end_date)
-#
-#     return {
-#         'unitType': unit.typeName,
-#         'type': unit.type,
-#         'displayName': unit.displayName,
-#         'profilePhoto': build_photo_url_full_1x(profile_photo),
-#         'maxCapacity': unit.maxCapacity,
-#         'price': find_avg_price(price_info_list),
-#         'priceMatrix': serialize_prices(price_info_list)
-#     }
 
 
 def serialize_prices(prices):
@@ -508,7 +463,6 @@ def serialize_section_policy(resort):
     }
 
 
-
 # highlight: type, maxCapacity, numBedroom, numBathroom
 # space: type,maxCapacity,bedSetup,numBedroom,numBathroom (privateBath is redundant here)
 # amenities: kitchen,kitchenette, ac,patio,seaview
@@ -543,6 +497,7 @@ def serialize_unit_highlight(unit):
         highlight.append('Private Bath')
     return highlight
 
+
 def serialize_unit_space(unit):
     return {
         'maxCapacity': unit.maxCapacity,
@@ -551,6 +506,7 @@ def serialize_unit_space(unit):
         'type': unit.type,
         'bedSetup': unit.bedSetup
     }
+
 
 def serialize_unit_amenity(unit):
     amenity = []
@@ -565,6 +521,7 @@ def serialize_unit_amenity(unit):
     if unit.seaview == 'Y':
         amenity.append('Seaview')
     return amenity
+
 
 def serialize_unit_type(unit):
     if unit.type == 'CASA' or unit.type == 'CASITA' or unit.type == 'HOUSE':
