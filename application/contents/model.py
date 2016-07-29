@@ -3,12 +3,12 @@ import logging
 import json
 
 from collections import defaultdict
-from datetime import timedelta, datetime, date
+from datetime import timedelta, datetime
+from application.common import utils
 from application.contents import data
 
 from . import get_resort_data
 from . import get_dictionary_data
-
 
 DATE_ISO_FORMAT = '%Y-%m-%d'
 
@@ -21,7 +21,7 @@ PHOTO_PATH_1X = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/
 PHOTO_PATH_2X = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
 
 class ResortInfo(object):
-    def __init__(self, resort, begin_date, end_date):
+    def __init__(self, resort, begin_date, end_date, count=None):
         self.resort = resort
         self.begin_date = begin_date
         self.end_date = end_date
@@ -29,8 +29,12 @@ class ResortInfo(object):
         self.photos = None
         self.units = None
         self.unit_info_list = []
+        self.count = count
 
         self.build_profile_photo()
+
+    def __repr__(self):
+        return "(resort name = %s : begin_date = %s end_date = %s count = %s)" % (self.resort.name, self.begin_date, self.end_date, self.count)
 
     def build_profile_photo(self):
         profile_photos = get_dictionary_data().profile_photo_dict[self.resort.name]
@@ -90,11 +94,11 @@ class ResortInfo(object):
 
 
 class UnitInfo(object):
-    def __init__(self, unit, begin_date, end_date, available=0):
+    def __init__(self, unit, begin_date, end_date, count=None):
         self.unit = unit
         self.begin_date = begin_date
         self.end_date = end_date
-        self.available = available
+        self.count = count
         self.profile_photo = None
         self.photos = None
         self.price_info_list = []
@@ -104,7 +108,7 @@ class UnitInfo(object):
         self.build_avg_price()
 
     def __repr__(self):
-        return "UnitName = %s : available = %s price = %i" % (self.unit.typeName, self.available, self.avg_price)
+        return "(unit type name = %s : count = %s price = %s)" % (self.unit.typeName, self.count, self.avg_price)
 
     def build_price_info(self):
         # if begin_date is null, show price for today
@@ -119,7 +123,7 @@ class UnitInfo(object):
         # build PriceInfo for each date
         for single_date in daterange(self.begin_date, self.end_date):
             unitname = self.unit.typeName
-            price_info = PriceInfo(unitname, convert_date_to_string(single_date), find_price_for_date(unitname, single_date))
+            price_info = PriceInfo(unitname, utils.convert_date_to_string(single_date), find_price_for_date(unitname, single_date))
             self.price_info_list.append(price_info)
 
     def build_avg_price(self):
@@ -146,7 +150,8 @@ class UnitInfo(object):
             'displayName': unit.displayName,
             'profilePhoto': build_photo_url_full_1x(self.profile_photo),
             'maxCapacity': unit.maxCapacity,
-            'price': find_avg_price(self.price_info_list),
+            # 'price': find_avg_price(self.price_info_list),
+            'price': self.avg_price,
             'priceMatrix': serialize_prices(self.price_info_list)
         }
 
@@ -171,17 +176,11 @@ class PriceInfo(object):
         }
 
 
-def serialize_resorts(resorts):
-    return serialize_resorts_search(resorts, None, None)
-
-
-def serialize_resorts_search(resorts, begin_date, end_date):
+def serialize_resort_info_list(resort_info_list):
     json = []
-    for resort in resorts:
-        resort_info = ResortInfo(resort, begin_date, end_date)
+    for resort_info in resort_info_list:
         json.append(resort_info.serialize_resort_summary())
     return json
-
 
 def find_all_resorts():
     return get_resort_data().resorts
@@ -242,10 +241,10 @@ def find_prices_for_unit(unitname, begin_date, end_date):
 
     # if end_date is null, show price for begin date
     if not end_date:
-        return find_price_for_date(unitname, convert_string_to_date(begin_date))
+        return find_price_for_date(unitname, utils.convert_string_to_date(begin_date))
 
     # TODO - calculate AVG price for date range
-    return find_price_for_date(unitname, convert_string_to_date(begin_date))
+    return find_price_for_date(unitname, utils.convert_string_to_date(begin_date))
 
 
 def find_price_data_for_unit(unitname):
@@ -273,27 +272,8 @@ def find_price_for_date(unitname, date):
         return convert_price_string_to_number(price_data.lowPrice)
 
 
-def find_avg_price_for_unit(unit, begin_date, end_date):
-    list = build_price_list_for_unit(unit.typeName, begin_date, end_date)
-    return find_avg_price(list)
-
-
-# input is list of PriceInfo objects
-def find_avg_price(list):
-    if not list:
-        return None
-    # if price does not exist, just return 0
-    if not list[0].price:
-        return None
-    sum_val = sum(p.price for p in list)
-    if not sum_val:
-        return None
-    avg_price = sum_val / float(len(list))
-    return int(avg_price)
-
-
 def is_in_range(date, begin_date_str, end_date_str):
-    if convert_string_to_date(begin_date_str) <= date <= convert_string_to_date(end_date_str):
+    if utils.convert_string_to_date(begin_date_str) <= date <= utils.convert_string_to_date(end_date_str):
         return True
     return False
 
@@ -302,15 +282,6 @@ def convert_price_string_to_number(price_string):
     if not price_string:
         return None
     return int(float(price_string))
-
-
-# assume always ISO date
-def convert_string_to_date(date_string):
-    return datetime.strptime(date_string, DATE_ISO_FORMAT)
-
-
-def convert_date_to_string(date):
-    return date.strftime(DATE_ISO_FORMAT)
 
 
 def get_first_element(list):

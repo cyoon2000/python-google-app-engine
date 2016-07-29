@@ -8,7 +8,12 @@ api = Blueprint('api', __name__)
 #@requires_auth
 def show_resorts():
     resorts = model.find_all_resorts()
-    results = model.serialize_resorts(resorts)
+    resort_info_list = []
+    for resort in resorts:
+        resort_info = model.ResortInfo(resort, None, None)
+        resort_info_list.append(resort_info)
+
+    results = model.serialize_resort_info_list(resort_info_list)
     return jsonify(results=results)
 
 

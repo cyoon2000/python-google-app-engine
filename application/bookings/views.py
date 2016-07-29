@@ -137,22 +137,6 @@ def edit_calendar():
     return render_template("edit_calendar.html", resort=resort, units=units, dates=dates, bookings=bookings)
 
 
-# Not Used
-# @bookings_api.route("/resorts")
-# def get_resort():
-#     resorts = model.list_resorts()
-#     for resort in resorts:
-#         print resort.id, resort.name
-#     return "OK"
-
-
-# Not Used
-# @bookings_api.route("/resorts/<id>/unitgroups")
-# def get_unitgroups(id):
-#     results = model.list_unitgroups(id)
-#     return jsonify(results=results)
-
-
 @bookings_api.route("/resorts/<id>/units")
 def get_units(id):
     results = model.get_units_by_resort(id)
@@ -236,28 +220,6 @@ def update_availability(unit_id):
     # return jsonify(data="Success")
 
 
-@bookings_api.route('/search-static')
-def search_static():
-    begin_date = request.args.get('from')
-    end_date = request.args.get('to')
-    guests = request.args.get('guests')
-    # use default if not provided
-    if not begin_date:
-        begin_date = utils.get_default_begin_date()
-        end_date = utils.get_next_day(begin_date)
-        begin_date = utils.convert_date_to_string(begin_date)
-        end_date = utils.convert_date_to_string(end_date)
-
-    begin_date = utils.convert_string_to_date(begin_date)
-    end_date = utils.convert_string_to_date(end_date)
-
-    # TODO - implement 'search'
-    # resorts = model.search(begin_date, end_date)
-    resorts = get_content_model().find_all_resorts()
-    results = get_content_model().serialize_resorts_search(resorts, begin_date, end_date)
-    return jsonify(results=results)
-
-
 @bookings_api.route('/search')
 def search():
     begin_date = request.args.get('from')
@@ -276,13 +238,15 @@ def search():
     # 'search' returns availability by resorts (id, name, count(available # of units))
     search_results = model.search(begin_date, end_date)
 
-    # for each resort entity, find/serialize resort content
-    resorts = []
+    # for each resort entity, find/serialize resort content, instantiate ResortInfo
+    resort_info_list = []
     for result in search_results:
         resort = get_content_model().find_resort_by_name(result.name)
-        # TODO - set available
-        resorts.append(resort)
-    results = get_content_model().serialize_resorts_search(resorts, begin_date, end_date)
+        resort_info = get_content_model().ResortInfo(resort, begin_date, end_date, result.count)
+        print resort_info
+        resort_info_list.append(resort_info)
+
+    results = get_content_model().serialize_resort_info_list(resort_info_list)
 
     return jsonify(results=results)
 
