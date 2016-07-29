@@ -34,7 +34,8 @@ class ResortInfo(object):
         self.build_profile_photo()
 
     def __repr__(self):
-        return "(resort name = %s : begin_date = %s end_date = %s count = %s)" % (self.resort.name, self.begin_date, self.end_date, self.count)
+        return "(resort name = %s : begin_date = %s end_date = %s count = %s)" \
+               % (self.resort.name, self.begin_date, self.end_date, self.count)
 
     def build_profile_photo(self):
         profile_photos = get_dictionary_data().profile_photo_dict[self.resort.name]
@@ -63,7 +64,8 @@ class ResortInfo(object):
             'beachFront': self.resort.privateBeach,
             'price': min(price_list),
             'maxPrice': max(price_list),
-            'highlights': serialize_resort_highlight(self.resort)
+            'highlights': serialize_resort_highlight(self.resort),
+            'count': self.count
         }
 
     def serialize_resort_info(self):
@@ -88,9 +90,20 @@ class ResortInfo(object):
             'foodSection': serialize_section_food(resort),
             'activitySection': serialize_section_activity(resort),
             'policySection': serialize_section_policy(resort),
-            'unitTypes': serialize_units_summary(self.units, self.begin_date, self.end_date),
+            'unitTypes': self.serialize_units_summary(),
             'photos': serialize_photos(self.photos)
         }
+
+    def serialize_units_summary(self):
+        units_json = []
+        if self.unit_info_list:
+            for unit_info in self.unit_info_list:
+                print unit_info.serialize_unit_summary()
+                units_json.append(unit_info.serialize_unit_summary())
+        else:
+            for unit in self.units:
+                units_json.append(UnitInfo(unit, self.begin_date, self.end_date).serialize_unit_summary())
+        return units_json
 
 
 class UnitInfo(object):
@@ -104,11 +117,16 @@ class UnitInfo(object):
         self.price_info_list = []
         self.avg_price = 0
 
+        self.build_profile_photo()
         self.build_price_info()
         self.build_avg_price()
 
     def __repr__(self):
-        return "(unit type name = %s : count = %s price = %s)" % (self.unit.typeName, self.count, self.avg_price)
+        return "(unit type name = %s : begin_date = %s end_date = %s : count = %s price = %s)" \
+               % (self.unit.typeName, self.begin_date, self.end_date, self.count, self.avg_price)
+
+    def build_profile_photo(self):
+        self.profile_photo = get_first_element(get_dictionary_data().photos_by_unit_dict[self.unit.typeName])
 
     def build_price_info(self):
         # if begin_date is null, show price for today
@@ -142,7 +160,7 @@ class UnitInfo(object):
         if unit is None:
             return {}
 
-        self.profile_photo = find_profile_photo_for_unit_type(unit.typeName)
+        # self.profile_photo = find_profile_photo_for_unit_type(unit.typeName)
 
         return {
             'unitType': unit.typeName,
@@ -150,9 +168,31 @@ class UnitInfo(object):
             'displayName': unit.displayName,
             'profilePhoto': build_photo_url_full_1x(self.profile_photo),
             'maxCapacity': unit.maxCapacity,
-            # 'price': find_avg_price(self.price_info_list),
+            'count': self.count,
             'price': self.avg_price,
             'priceMatrix': serialize_prices(self.price_info_list)
+        }
+
+    def serialize_unit_detail(self):
+        unit = self.unit
+        resort = find_resort_by_name(self.unit.resortName)
+        profile_photo = find_profile_photo_for_unit_type(self.unit.typeName)
+        photos = find_photos_by_unit_type(self.unit.typeName)
+        price = find_prices_for_unit(self.unit.typeName, self.begin_date, self.end_date)
+        return {
+            'unitType': unit.typeName,
+            'displayName': unit.displayName,
+            'profilePhoto': serialize_profile_photo(profile_photo),
+            'price': price,
+            'resortName': unit.resortName,
+            'resortDisplayName': resort.displayName,
+            'photos': serialize_photos(photos),
+            'highlight': serialize_unit_highlight(unit),
+            'space': serialize_unit_space(unit),
+            'amenity': serialize_unit_amenity(unit),
+            'resortPolicy': serialize_section_policy(resort),
+            'resortGeneral': serialize_section_general(resort),
+            'resortFood': serialize_section_food(resort)
         }
 
 
@@ -163,7 +203,7 @@ class PriceInfo(object):
         self.price = price
 
     def __repr__(self):
-        return "(unit = %s : date = %s , price = %s)" % (self.unit, self.date, self.price)
+        return "(unit = %s : date = %s , price = %i)" % (self.unit, self.date, self.price)
 
     def serialize_price_info(self):
         unit = self.unit
@@ -181,6 +221,7 @@ def serialize_resort_info_list(resort_info_list):
     for resort_info in resort_info_list:
         json.append(resort_info.serialize_resort_summary())
     return json
+
 
 def find_all_resorts():
     return get_resort_data().resorts
@@ -310,13 +351,6 @@ def build_photo_url_full_2x(photo):
     return build_photo_url (PHOTO_PATH_2X, photo)
 
 
-def serialize_units_summary(units, begin_date, end_date):
-    units_json = []
-    for unit in units:
-        units_json.append(UnitInfo(unit, begin_date, end_date).serialize_unit_summary())
-    return units_json
-
-
 def serialize_prices(prices):
     json = []
     for price in prices:
@@ -430,31 +464,6 @@ def serialize_section_policy(resort):
         'petsAllowed': resort.pets,
         'minimumStay': resort.minimumStay,
         'cancelPolicy': resort.cancelPolicy
-    }
-
-
-# highlight: type, maxCapacity, numBedroom, numBathroom
-# space: type,maxCapacity,bedSetup,numBedroom,numBathroom (privateBath is redundant here)
-# amenities: kitchen,kitchenette, ac,patio,seaview
-def serialize_unit_detail(unit, begin_date, end_date):
-    resort = find_resort_by_name(unit.resortName)
-    profile_photo = find_profile_photo_for_unit_type(unit.typeName)
-    photos = find_photos_by_unit_type(unit.typeName)
-    price = find_prices_for_unit(unit.typeName, begin_date, end_date)
-    return {
-        'unitType': unit.typeName,
-        'displayName': unit.displayName,
-        'profilePhoto': serialize_profile_photo(profile_photo),
-        'price': price,
-        'resortName': unit.resortName,
-        'resortDisplayName': resort.displayName,
-        'photos': serialize_photos(photos),
-        'highlight': serialize_unit_highlight(unit),
-        'space': serialize_unit_space(unit),
-        'amenity': serialize_unit_amenity(unit),
-        'resortPolicy': serialize_section_policy(resort),
-        'resortGeneral': serialize_section_general(resort),
-        'resortFood': serialize_section_food(resort)
     }
 
 

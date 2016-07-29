@@ -79,7 +79,6 @@ class Unitgroup(Base):
         self.display_name = row.displayName
         self.resort_id = resort.id
 
-
     def __repr__(self):
         return '<Unitgroup (%r %r %r)>' % (self.id, self.name, self.display_name)
 
@@ -349,7 +348,7 @@ def search_by_resort(resortname, begin_date, end_date):
                 IF(exists
                     (select 1 from availability a
                     where a.unit_id = u.id and a.date_slot >= :begin and a.date_slot < :end),
-                    0, 1))  as available
+                    0, 1)) as available
             from resort r
             join unitgroup ug on ug.resort_id = r.id
             join unit u on u.unitgroup_id = ug.id

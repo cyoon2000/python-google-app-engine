@@ -270,17 +270,17 @@ def search_resort(resortname):
 
     # 'search' returns availability by unit groups (id, name, count(available # of units))
     search_results = model.search_by_resort(resortname, begin_date, end_date)
-    units = []
+
+    # build unit_info_list from 'search' result
     unit_info_list = []
     for result in search_results:
         unit = get_content_model().find_unit_by_name(result.name)
-        units.append(unit)
-        unit_info = get_content_model().UnitInfo(unit, begin_date, end_date, result.available)
+        unit_info = get_content_model().UnitInfo(unit, begin_date, end_date, int(float(result.available)))
         unit_info_list.append(unit_info)
 
+    # build ResortInfo
     resort = get_content_model().find_resort_by_name(resortname)
     resort_info = get_content_model().ResortInfo(resort, begin_date, end_date)
-    resort_info.set_units(units)
     resort_info.set_unit_info_list(unit_info_list)
 
     results = resort_info.serialize_resort_info()

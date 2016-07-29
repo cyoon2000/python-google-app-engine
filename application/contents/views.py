@@ -38,6 +38,6 @@ def show_unit_detail(resortname, typename):
     if not unit:
         return 'Sorry, Invalid Request', 400
 
-    # unit_info = model.UnitInfo(unit)
-    results = model.serialize_unit_detail(unit, begin_date, end_date)
+    unit_info = model.UnitInfo(unit, begin_date, end_date)
+    results = unit_info.serialize_unit_detail()
     return jsonify(results=results)
