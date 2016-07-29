@@ -1,6 +1,7 @@
 from flask import jsonify
 from flask import current_app, Blueprint, redirect, render_template, request, url_for
 from application.contents import model
+from application.common import utils
 
 api = Blueprint('api', __name__)
 
@@ -31,8 +32,8 @@ def show_resort_by_name(resortname):
 @api.route('/resorts/<resortname>/<typename>')
 def show_unit_detail(resortname, typename):
 
-    begin_date = request.args.get('from')
-    end_date = request.args.get('to')
+    begin_date = utils.get_begin_date(request)
+    end_date = utils.get_end_date(request)
 
     unit = model.find_unit_by_name(typename)
     if not unit:

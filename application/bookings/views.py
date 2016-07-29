@@ -2,12 +2,13 @@ import flask
 import json
 import logging
 from . import get_model, get_content_model
-from . import model, forms, utils
+from . import model, forms #, utils
 
 from datetime import datetime, timedelta
 from flask import current_app, Blueprint, session, redirect, render_template, request, url_for, flash
 from flask import jsonify, json
 from flask_wtf import Form
+from application.common import utils
 
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
@@ -222,20 +223,23 @@ def update_availability(unit_id):
 
 @bookings_api.route('/search')
 def search():
-    begin_date = request.args.get('from')
-    end_date = request.args.get('to')
-    guests = request.args.get('guests')
-    # use default if not provided
-    if not begin_date:
-        begin_date = utils.get_default_begin_date()
-        end_date = utils.get_next_day(begin_date)
-        begin_date = utils.convert_date_to_string(begin_date)
-        end_date = utils.convert_date_to_string(end_date)
+    # begin_date = request.args.get('from')
+    # end_date = request.args.get('to')
+    # guests = request.args.get('guests')
+    # # use default if not provided
+    # if not begin_date:
+    #     begin_date = utils.get_default_begin_date()
+    #     end_date = utils.get_next_day(begin_date)
+    #     begin_date = utils.convert_date_to_string(begin_date)
+    #     end_date = utils.convert_date_to_string(end_date)
+    #
+    # begin_date = utils.convert_string_to_date(begin_date)
+    # end_date = utils.convert_string_to_date(end_date)
 
-    begin_date = utils.convert_string_to_date(begin_date)
-    end_date = utils.convert_string_to_date(end_date)
+    begin_date = utils.get_begin_date(request)
+    end_date = utils.get_end_date(request)
 
-    # 'search' returns availability by resorts (id, name, count(available # of units))
+# 'search' returns availability by resorts (id, name, count(available # of units))
     search_results = model.search(begin_date, end_date)
 
     # for each resort entity, find/serialize resort content, instantiate ResortInfo
@@ -254,21 +258,24 @@ def search():
 # /search/resort/bj?from=2016-07-20&to=2016-07-22&guests=1
 @bookings_api.route('/search/resort/<resortname>')
 def search_resort(resortname):
-    # parse parameter
-    begin_date = request.args.get('from')
-    end_date = request.args.get('to')
-    guests = request.args.get('guests')
-    # use default if not provided
-    if not begin_date:
-        begin_date = utils.get_default_begin_date()
-        end_date = utils.get_next_day(begin_date)
-        begin_date = utils.convert_date_to_string(begin_date)
-        end_date = utils.convert_date_to_string(end_date)
+    # # parse parameter
+    # begin_date = request.args.get('from')
+    # end_date = request.args.get('to')
+    # guests = request.args.get('guests')
+    # # use default if not provided
+    # if not begin_date:
+    #     begin_date = utils.get_default_begin_date()
+    #     end_date = utils.get_next_day(begin_date)
+    #     begin_date = utils.convert_date_to_string(begin_date)
+    #     end_date = utils.convert_date_to_string(end_date)
+    #
+    # begin_date = utils.convert_string_to_date(begin_date)
+    # end_date = utils.convert_string_to_date(end_date)
 
-    begin_date = utils.convert_string_to_date(begin_date)
-    end_date = utils.convert_string_to_date(end_date)
+    begin_date = utils.get_begin_date(request)
+    end_date = utils.get_end_date(request)
 
-    # 'search' returns availability by unit groups (id, name, count(available # of units))
+# 'search' returns availability by unit groups (id, name, count(available # of units))
     search_results = model.search_by_resort(resortname, begin_date, end_date)
 
     # build unit_info_list from 'search' result
@@ -284,6 +291,22 @@ def search_resort(resortname):
     resort_info.set_unit_info_list(unit_info_list)
 
     results = resort_info.serialize_resort_info()
+    return jsonify(results=results)
+
+@bookings_api.route('/search/<resortname>/<typename>')
+def search_unit(resortname, typename):
+
+    # begin_date = request.args.get('from')
+    # end_date = request.args.get('to')
+    begin_date = utils.get_begin_date(request)
+    end_date = utils.get_end_date(request)
+
+    unit = get_content_model().find_unit_by_name(typename)
+    if not unit:
+        return 'Sorry, Invalid Request', 400
+
+    unit_info = get_content_model().UnitInfo(unit, begin_date, end_date)
+    results = unit_info.serialize_unit_detail()
     return jsonify(results=results)
 
 

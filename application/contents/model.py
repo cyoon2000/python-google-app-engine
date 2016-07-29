@@ -160,8 +160,6 @@ class UnitInfo(object):
         if unit is None:
             return {}
 
-        # self.profile_photo = find_profile_photo_for_unit_type(unit.typeName)
-
         return {
             'unitType': unit.typeName,
             'type': unit.type,
@@ -175,15 +173,18 @@ class UnitInfo(object):
 
     def serialize_unit_detail(self):
         unit = self.unit
+        if unit is None:
+            return {}
+
         resort = find_resort_by_name(self.unit.resortName)
-        profile_photo = find_profile_photo_for_unit_type(self.unit.typeName)
         photos = find_photos_by_unit_type(self.unit.typeName)
-        price = find_prices_for_unit(self.unit.typeName, self.begin_date, self.end_date)
+
         return {
             'unitType': unit.typeName,
             'displayName': unit.displayName,
-            'profilePhoto': serialize_profile_photo(profile_photo),
-            'price': price,
+            'profilePhoto': serialize_profile_photo(self.profile_photo),
+            'price': self.avg_price,
+            'priceMatrix': serialize_prices(self.price_info_list),
             'resortName': unit.resortName,
             'resortDisplayName': resort.displayName,
             'photos': serialize_photos(photos),
@@ -274,22 +275,8 @@ def daterange(start_date, end_date):
         yield start_date + timedelta(n)
 
 
-def find_prices_for_unit(unitname, begin_date, end_date):
-
-    # if begin_date is null, show price for today
-    if not begin_date:
-        return find_price_for_date(unitname, datetime.today())
-
-    # if end_date is null, show price for begin date
-    if not end_date:
-        return find_price_for_date(unitname, utils.convert_string_to_date(begin_date))
-
-    # TODO - calculate AVG price for date range
-    return find_price_for_date(unitname, utils.convert_string_to_date(begin_date))
-
-
 def find_price_data_for_unit(unitname):
-    for price_data in get_resort_data().prices2:
+    for price_data in get_resort_data().prices:
         if price_data.typeName == unitname:
             return price_data
     return None
