@@ -1,5 +1,4 @@
 import logging
-import utils
 from datetime import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import UniqueConstraint
@@ -262,6 +261,7 @@ def get_units_by_resort(resort_id):
                 .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
                 .filter(Unitgroup.resort_id == resort_id)
                 .filter(Unit.active == 1)
+                .order_by(Unit.id)
             )
     return query.all()
 
@@ -285,7 +285,8 @@ def get_availabilities(unit_id, begin_date, end_date):
             from calendar c
             join unit u
             left join availability a on  a.date_slot = c.date_ and a.unit_id = u.id
-            where c.date_ >= :begin and c.date_ < :end and u.id = :unit_id;
+            where c.date_ >= :begin and c.date_ < :end and u.id = :unit_id
+            order by date_slot
         '''
     availabilities = db.session.execute(
         text(cmd),
@@ -321,6 +322,7 @@ def get_bookings(begin_date, end_date):
              # .limit())
     )
     return query.all()
+
 
 # returns resorts ( id, name, count )
 def search(begin_date, end_date):
@@ -369,20 +371,22 @@ def search_by_resort(resortname, begin_date, end_date):
 def init_db():
     # print 'Creating all tables...................'
     # db.create_all()
-    print 'Populating all tables from CSV........'
-    populate_csv_data()
-    print '..................................Done'
+    # print 'Populating all tables from CSV........'
+    # populate_csv_data()
+    # print '..................................Done'
+    pass
 
 
 # create Resort, Unit, Unitgroup records
 def populate_csv_data():
-    print 'Populating data in Resort, Unitgroup and Unit tables.............'
+    # print 'Populating data in Resort, Unitgroup and Unit tables.............'
     # for row in read_data_resorts():
     #     create_entity(Resort(row))
     # for row in read_data_units():
     #     create_entity(Unitgroup(row))
     # for row in read_data_unitnames():
     #   create_entity(Unit(row))
+    pass
 
 
 # def _create_database():

@@ -1,10 +1,11 @@
 import datetime
-import model, views, utils
+import model, views #, utils
 
 from flask_wtf import Form
 from wtforms import StringField, IntegerField, DateField, SelectField
 from wtforms.fields.html5 import EmailField
 from wtforms.validators import DataRequired, InputRequired, Email
+from application.common import utils
 
 
 class ExampleForm(Form):

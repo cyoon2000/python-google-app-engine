@@ -109,7 +109,6 @@ class ResortInfo(object):
         units_json = []
         if self.unit_info_list:
             for unit_info in self.unit_info_list:
-                print unit_info.serialize_unit_summary()
                 units_json.append(unit_info.serialize_unit_summary())
         else:
             for unit in self.units:
