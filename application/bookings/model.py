@@ -369,20 +369,20 @@ def search_by_resort(resortname, begin_date, end_date):
 def init_db():
     # print 'Creating all tables...................'
     # db.create_all()
-    # print 'Populating all tables from CSV........'
-    # populate_csv_data()
+    print 'Populating all tables from CSV........'
+    populate_csv_data()
     print '..................................Done'
 
 
 # create Resort, Unit, Unitgroup records
 def populate_csv_data():
     print 'Populating data in Resort, Unitgroup and Unit tables.............'
-    for row in read_data_resorts():
-        create_entity(Resort(row))
-    for row in read_data_units():
-        create_entity(Unitgroup(row))
-    for row in read_data_unitnames():
-        create_entity(Unit(row))
+    # for row in read_data_resorts():
+    #     create_entity(Resort(row))
+    # for row in read_data_units():
+    #     create_entity(Unitgroup(row))
+    # for row in read_data_unitnames():
+    #   create_entity(Unit(row))
 
 
 # def _create_database():
