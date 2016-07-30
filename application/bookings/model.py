@@ -9,8 +9,6 @@ from application.contents.data import read_data_resorts, read_data_units, read_d
 
 builtin_list = list
 
-CALENDAR_BEGIN_DATE = '2016-07-01'
-CALENDAR_END_DATE = '2017-06-30'
 
 def init_app(app):
     db.init_app(app)
@@ -27,8 +25,10 @@ class Base(db.Model):
 
     created_on = db.Column(db.DateTime, default=datetime.utcnow)
     updated_on = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    #created_by = db.Column(db.String(64), default=lambda: current_user.username)
-    #updated_by = db.Column(db.String(64), default=lambda: current_user.username)
+    # created_by = db.Column(db.String(64), default=lambda: current_user.username)
+    # updated_by = db.Column(db.String(64), default=lambda: current_user.username)
+    created_by = db.Column(db.String(64), default=lambda: 'admin')
+    updated_by = db.Column(db.String(64), default=lambda: 'admin')
 
 
 class Resort(Base):
@@ -367,12 +367,10 @@ def search_by_resort(resortname, begin_date, end_date):
 # RUN ONLY ONCE - which should happen in local DEV, not in PROD server. (invoked from __init___)
 # read CSV data and populate db.
 def init_db():
-    print 'Creating all tables...................'
-    db.create_all()
-    populate_csv_data()
-
-    # this takes too long.  use stored procedure
-    #populate_availability_all()
+    # print 'Creating all tables...................'
+    # db.create_all()
+    # print 'Populating all tables from CSV........'
+    # populate_csv_data()
     print '..................................Done'
 
 
@@ -387,30 +385,6 @@ def populate_csv_data():
         create_entity(Unit(row))
 
 
-# create availability records for all units for default date range
-def populate_availability_all():
-    print 'Populating Availability table.............'
-    for unit in get_units():
-        print unit.id
-        populate_availability(unit.id)
-    print 'Done'
-
-
-# create availability records for given unit for default date range
-def populate_availability(unit_id):
-    print '(for unit_id = %r)' % unit_id
-    for calendar in get_calendar_dates(CALENDAR_BEGIN_DATE, CALENDAR_END_DATE):
-        create_entity(Availability(unit_id, calendar.date_))
-
-    # run stored procedure - this should be faster. but the code does not work yet.
-    # params = {'unit_id': unit_id,
-    #             'start': CALENDAR_BEGIN_DATE,
-    #             'end': CALENDAR_END_DATE}
-    # results = db.session.execute('fill_availability ?, ?, ?', params)
-    # results = db.session.execute('fill_availability @unit_id=:unit_id, @start_date=:start, @end_date=:end', params)
-    # print results
-
-
 # def _create_database():
 #     app = Flask(__name__)
 #     app.config.from_pyfile('../../config.py')
@@ -422,3 +396,27 @@ def populate_availability(unit_id):
 #
 # if __name__ == '__main__':
 #     _create_database()
+
+
+
+# ----- DEPRECATED -----
+# create availability records for all units for default date range
+# def populate_availability_all():
+#     print 'Populating Availability table.............'
+#     for unit in get_units():
+#         print unit.id
+#         populate_availability(unit.id)
+#     print 'Done'
+
+# create availability records for given unit for default date range
+# def populate_availability(unit_id):
+#     for calendar in get_calendar_dates(CALENDAR_BEGIN_DATE, CALENDAR_END_DATE):
+#         create_entity(Availability(unit_id, calendar.date_))
+
+# run stored procedure - this should be faster. but the code does not work yet.
+# params = {'unit_id': unit_id,
+#             'start': CALENDAR_BEGIN_DATE,
+#             'end': CALENDAR_END_DATE}
+# results = db.session.execute('fill_availability ?, ?, ?', params)
+# results = db.session.execute('fill_availability @unit_id=:unit_id, @start_date=:start, @end_date=:end', params)
+# print results

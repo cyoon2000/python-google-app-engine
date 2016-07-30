@@ -55,15 +55,17 @@ class ResortInfo(object):
         units = find_units_by_resort_name(self.resort.name)
         price_list = []
         for unit in units:
-            price_list.append(UnitInfo(unit, self.begin_date, self.end_date).avg_price)
+            unit_info = UnitInfo(unit, self.begin_date, self.end_date)
+            if unit_info.avg_price:
+                price_list.append(unit_info.avg_price)
 
         return {
             'name': self.resort.name,
             'displayName': self.resort.displayName,
             'profilePhoto': serialize_profile_photo(self.profile_photo),
             'beachFront': self.resort.privateBeach,
-            'price': min(price_list),
-            'maxPrice': max(price_list),
+            'price': min(price_list) if price_list else None,
+            'maxPrice': max(price_list) if price_list else None,
             'highlights': serialize_resort_highlight(self.resort),
             'count': self.count
         }
