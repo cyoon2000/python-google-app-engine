@@ -30,12 +30,19 @@ class ResortInfo(object):
         self.units = None
         self.unit_info_list = []
         self.count = count
+        self.active = True
 
+        self.check_active()
         self.build_profile_photo()
 
     def __repr__(self):
         return "(resort name = %s : begin_date = %s end_date = %s count = %s)" \
                % (self.resort.name, self.begin_date, self.end_date, self.count)
+
+    # deactivate some resorts for now
+    def check_active(self):
+        if self.resort.name == 'vp' or self.resort.name == 'vwind':
+            self.active = False
 
     def build_profile_photo(self):
         profile_photos = get_dictionary_data().profile_photo_dict[self.resort.name]
@@ -67,7 +74,8 @@ class ResortInfo(object):
             'price': min(price_list) if price_list else None,
             'maxPrice': max(price_list) if price_list else None,
             'highlights': serialize_resort_highlight(self.resort),
-            'count': self.count
+            'count': self.count,
+            'active': self.active
         }
 
     def serialize_resort_info(self):
@@ -93,7 +101,8 @@ class ResortInfo(object):
             'activitySection': serialize_section_activity(resort),
             'policySection': serialize_section_policy(resort),
             'unitTypes': self.serialize_units_summary(),
-            'photos': serialize_photos(self.photos)
+            'photos': serialize_photos(self.photos),
+            'active': self.active
         }
 
     def serialize_units_summary(self):

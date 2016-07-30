@@ -247,9 +247,9 @@ def search():
     for result in search_results:
         resort = get_content_model().find_resort_by_name(result.name)
         resort_info = get_content_model().ResortInfo(resort, begin_date, end_date, result.count)
-        print resort_info
         resort_info_list.append(resort_info)
 
+    resort_info_list.sort(key=lambda x: (x.active, x.count), reverse=True)
     results = get_content_model().serialize_resort_info_list(resort_info_list)
 
     return jsonify(results=results)
