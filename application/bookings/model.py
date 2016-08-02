@@ -242,8 +242,13 @@ def delete_entity(entity):
     logging.info(entity)
     return entity
 
+
 def get_resorts():
     return Resort.query.all()
+
+
+def get_resort_by_name(resort_name):
+    return Resort.query.filter_by(name=resort_name).one()
 
 
 def get_unitgroups(resort_id):
@@ -264,6 +269,11 @@ def get_units_by_resort(resort_id):
                 .order_by(Unit.id)
             )
     return query.all()
+
+
+def get_units_by_resort_name(resort_name):
+    resort = get_resort_by_name(resort_name)
+    return get_units_by_resort(resort.id)
 
 
 def get_calendar_date(date):

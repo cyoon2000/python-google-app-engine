@@ -227,6 +227,65 @@ class PriceInfo(object):
         }
 
 
+class StatusInfo(object):
+    def __init__(self, date, status, price=None):
+        self.date = date
+        self.status = True if status == 0 else False
+        self.price = price
+
+    def __repr__(self):
+        return "(date = %r : status = %r , price = %r)" % (self.date, self.status, self.price)
+
+    def serialize(self):
+        return {
+            'day': self.date.day,
+            'month': self.date.month,
+            'year': self.date.year,
+            'weekday': utils.name_weekday(self.date.weekday()),
+            'status': self.status,
+            'price': self.price
+        }
+
+
+class CalendarInfo(object):
+    def __init__(self, unit, date_list, status_list):
+        self.unit = unit
+        self.price = None
+        self.date_list = date_list
+        self.status_list = status_list
+        self.status_info_list = []
+
+        self.build_status_info_list()
+
+    def __repr__(self):
+        return "(unit = %r : price = %r status_list = %r)" % (self.unit, self.price, self.status_list)
+
+    def build_status_info_list(self):
+        if self.date_list:
+            i = 0
+            for date_ in self.date_list:
+                status_info = StatusInfo(date_, self.status_list[i])
+                self.status_info_list.append(status_info)
+                i += 1
+
+
+    def serialize_calendar_info(self):
+        unit = self.unit
+        if unit is None:
+            return {}
+        return {
+            'displayName': self.unit.display_name,
+            'price': self.price,
+            'statusInfoList': self.serialize_status_info_list()
+        }
+
+    def serialize_status_info_list(self):
+        json = []
+        for status_info in self.status_info_list:
+            json.append(status_info.serialize())
+        return json
+
+
 def serialize_resort_info_list(resort_info_list):
     json = []
     for resort_info in resort_info_list:
@@ -453,14 +512,15 @@ def serialize_section_activity(resort):
 
 
 def serialize_section_policy(resort):
+    default_msg = 'Please contact the resort'
     return {
-        'checkIn': resort.checkIn,
-        'checkOut': resort.checkOut,
-        'ccAccepted': resort.cc,
-        'extraPersonCharge': resort.extraPersonCharge,
+        'checkIn': resort.checkIn if resort.checkIn else default_msg,
+        'checkOut': resort.checkOut if resort.checkOut else default_msg,
+        'ccAccepted': resort.cc if resort.cc else default_msg,
+        'extraPersonCharge': resort.extraPersonCharge if resort.extraPersonCharge else default_msg,
         'petsAllowed': resort.pets,
-        'minimumStay': resort.minimumStay,
-        'cancelPolicy': resort.cancelPolicy
+        'minimumStay': resort.minimumStay if resort.minimumStay else '1 night',
+        'cancelPolicy': resort.cancelPolicy if resort.cancelPolicy else default_msg
     }
 
 

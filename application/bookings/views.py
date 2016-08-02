@@ -15,7 +15,8 @@ bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 def before_request():
     # TODO - save resort_id in session upon login
     session['resort_name'] = 'kirk'
-    resort = model.Resort.query.filter_by(name=session['resort_name']).one()
+    # resort = model.Resort.query.filter_by(name=session['resort_name']).one()
+    resort = model.get_resort_by_name(session['resort_name'])
     session['resort_id'] = resort.id
 
 
@@ -211,6 +212,28 @@ def update_availability(unit_id):
     # return jsonify(data="Success")
 
 
+@bookings_api.route("/calendar/resort/<name>")
+def get_calendar(name):
+
+    begin_date = utils.get_begin_date(request)
+    end_date = utils.get_end_date(request, utils.TWO_WEEKS)
+
+    units = model.get_units_by_resort_name(name)
+    date_list = None
+    data = []
+    for unit in units:
+        results = model.get_availabilities(unit.id, begin_date, end_date)
+        results_by_unit = zip(*results)
+        if not date_list:
+            date_list = results_by_unit[0]
+        # extract status field from result set
+        status_list = results_by_unit[2]
+        calendar_info = get_content_model().CalendarInfo(unit, date_list, status_list)
+        data.append(calendar_info.serialize_calendar_info())
+
+    return jsonify(results=data)
+
+
 @bookings_api.route('/search')
 def search():
     begin_date = utils.get_begin_date(request)
@@ -257,6 +280,7 @@ def search_resort(resortname):
 
     results = resort_info.serialize_resort_info()
     return jsonify(results=results)
+
 
 @bookings_api.route('/search/<resortname>/<typename>')
 def search_unit(resortname, typename):

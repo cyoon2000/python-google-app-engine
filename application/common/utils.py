@@ -2,7 +2,10 @@ from datetime import datetime, date, timedelta
 
 ISO_FORMAT_STRING = '%Y-%m-%d'
 ONE_DAY = 1
+ONE_WEEK = 7
 TWO_WEEKS = 14
+
+weekday_dict = {0: 'Mo', 1: 'Tu', 2: 'We', 3: 'Th', 4: 'Fr', 5: 'Sa', 6: 'Su'}
 
 # This is a throwaway variable to deal with a python bug
 throwaway = datetime.strptime('2016-01-01', ISO_FORMAT_STRING)
@@ -14,6 +17,10 @@ def convert_string_to_date(input_date):
 
 def convert_date_to_string(date_):
     return date_.strftime(ISO_FORMAT_STRING)
+
+
+def name_weekday(weekday):
+    return weekday_dict[weekday]
 
 
 def get_todays_date():
@@ -47,12 +54,13 @@ def get_begin_date(request):
 
 def get_end_date(request, days=1):
     # parse parameter
-    begin_date = request.args.get('from')
+    # begin_date = request.args.get('from')
+    begin_date = get_begin_date(request)
     end_date = request.args.get('to')
 
     # use default if not provided
-    if not begin_date:
-        begin_date = get_default_begin_date()
+    # if not begin_date:
+    #     begin_date = get_default_begin_date()
 
     if not end_date:
         # returns begin_date + days
