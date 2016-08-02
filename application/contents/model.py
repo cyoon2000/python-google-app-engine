@@ -228,29 +228,36 @@ class PriceInfo(object):
 
 
 class StatusInfo(object):
-    def __init__(self, date, status, price=None):
-        self.date = date
+    def __init__(self, unit, date, status):
+        self.unit = unit
+        self.date_slot = date
         self.status = True if status == 0 else False
-        self.price = price
+        self.price = None
+
+        self.build_price()
 
     def __repr__(self):
-        return "(date = %r : status = %r , price = %r)" % (self.date, self.status, self.price)
+        return "(date = %r : status = %r , price = %r)" % (self.date_slot, self.status, self.price)
+
+    def build_price(self):
+        self.price = find_price_for_date(self.unit.unitgroup_name, self.date_slot)
 
     def serialize(self):
         return {
-            'day': self.date.day,
-            'month': self.date.month,
-            'year': self.date.year,
-            'weekday': utils.name_weekday(self.date.weekday()),
+            'day': self.date_slot.day,
+            # ouput month name instead of number
+            'month': self.date_slot.strftime("%B"),
+            'year': self.date_slot.year,
+            'weekday': utils.name_weekday(self.date_slot.weekday()),
             'status': self.status,
             'price': self.price
         }
 
 
 class CalendarInfo(object):
-    def __init__(self, unit, date_list, status_list):
+    def __init__(self, unit, resortname, date_list, status_list):
         self.unit = unit
-        self.price = None
+        self.resortname = resortname
         self.date_list = date_list
         self.status_list = status_list
         self.status_info_list = []
@@ -258,16 +265,15 @@ class CalendarInfo(object):
         self.build_status_info_list()
 
     def __repr__(self):
-        return "(unit = %r : price = %r status_list = %r)" % (self.unit, self.price, self.status_list)
+        return "(unit = %r : status_list = %r)" % (self.unit, self.status_list)
 
     def build_status_info_list(self):
         if self.date_list:
             i = 0
             for date_ in self.date_list:
-                status_info = StatusInfo(date_, self.status_list[i])
+                status_info = StatusInfo(self.unit, date_, self.status_list[i])
                 self.status_info_list.append(status_info)
                 i += 1
-
 
     def serialize_calendar_info(self):
         unit = self.unit
@@ -275,7 +281,7 @@ class CalendarInfo(object):
             return {}
         return {
             'displayName': self.unit.display_name,
-            'price': self.price,
+            'resortName': self.resortname,
             'statusInfoList': self.serialize_status_info_list()
         }
 
@@ -369,8 +375,8 @@ def find_price_for_date(unitname, date):
         return convert_price_string_to_number(price_data.lowPrice)
 
 
-def is_in_range(date, begin_date_str, end_date_str):
-    if utils.convert_string_to_date(begin_date_str) <= date <= utils.convert_string_to_date(end_date_str):
+def is_in_range(date_slot, begin_date_str, end_date_str):
+    if utils.convert_string_to_date(begin_date_str).date() <= date_slot <= utils.convert_string_to_date(end_date_str).date():
         return True
     return False
 

@@ -228,7 +228,7 @@ def get_calendar(name):
             date_list = results_by_unit[0]
         # extract status field from result set
         status_list = results_by_unit[2]
-        calendar_info = get_content_model().CalendarInfo(unit, date_list, status_list)
+        calendar_info = get_content_model().CalendarInfo(unit, name, date_list, status_list)
         data.append(calendar_info.serialize_calendar_info())
 
     return jsonify(results=data)

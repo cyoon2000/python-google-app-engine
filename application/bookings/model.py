@@ -89,6 +89,7 @@ class Unit(Base):
     name = db.Column(db.String(30), nullable=False)
     display_name = db.Column(db.String(30))
     active = db.Column(db.Boolean, default=True)
+    unitgroup_name = db.Column(db.String(30))
     unitgroup_id = db.Column(db.Integer, db.ForeignKey('unitgroup.id'))
     # relationships
     availabilities = db.relationship('Availability', backref='unit', lazy='dynamic')
@@ -99,10 +100,12 @@ class Unit(Base):
         unitgroup = Unitgroup.query.filter(Unitgroup.name == row.groupName).one()
         self.name = row.name
         self.display_name = row.displayName
+        # this column is redundant but convenient
+        self.unitgroup_name = row.groupName
         self.unitgroup_id = unitgroup.id
 
     def __repr__(self):
-        return '<Unit (%r %r %r)>' % (self.id, self.name, self.display_name)
+        return '<Unit (%r %r %r %r)>' % (self.id, self.name, self.display_name, self.unitgroup_name)
 
 
 # TODO - add note field, transaction_id(UUID), payment_id (payment table does not exist yet)
@@ -390,12 +393,12 @@ def init_db():
 # create Resort, Unit, Unitgroup records
 def populate_csv_data():
     # print 'Populating data in Resort, Unitgroup and Unit tables.............'
-    # for row in read_data_resorts():
-    #     create_entity(Resort(row))
-    # for row in read_data_units():
-    #     create_entity(Unitgroup(row))
-    # for row in read_data_unitnames():
-    #   create_entity(Unit(row))
+    for row in read_data_resorts():
+        create_entity(Resort(row))
+    for row in read_data_units():
+        create_entity(Unitgroup(row))
+    for row in read_data_unitnames():
+        create_entity(Unit(row))
     pass
 
 
