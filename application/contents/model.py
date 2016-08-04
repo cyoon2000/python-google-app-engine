@@ -150,6 +150,8 @@ class UnitInfo(object):
 
         # build PriceInfo for each date
         for single_date in daterange(self.begin_date, self.end_date):
+            # change datetime to date
+            single_date = single_date.date()
             unitname = self.unit.typeName
             price_info = PriceInfo(unitname, utils.convert_date_to_string(single_date), find_price_for_date(unitname, single_date))
             self.price_info_list.append(price_info)
