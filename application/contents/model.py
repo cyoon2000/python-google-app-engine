@@ -117,10 +117,11 @@ class ResortInfo(object):
 
 
 class UnitInfo(object):
-    def __init__(self, unit, begin_date, end_date, count=None):
+    def __init__(self, unit, begin_date, end_date, guests=1, count=None):
         self.unit = unit
         self.begin_date = begin_date
         self.end_date = end_date
+        self.guests = guests
         self.count = count
         self.profile_photo = None
         self.photos = None
@@ -180,7 +181,9 @@ class UnitInfo(object):
             'maxCapacity': unit.maxCapacity,
             'count': self.count,
             'price': self.avg_price,
-            'priceMatrix': serialize_prices(self.price_info_list)
+            'priceMatrix': serialize_prices(self.price_info_list),
+            'guests': self.guests,
+            'toomany': True if int(self.guests) > int(unit.maxCapacity) else False
         }
 
     def serialize_unit_detail(self):
@@ -191,12 +194,20 @@ class UnitInfo(object):
         resort = find_resort_by_name(self.unit.resortName)
         photos = find_photos_by_unit_type(self.unit.typeName)
 
+        nights = len(self.price_info_list)
+        total = int(float(self.avg_price) * int(nights)) if self.avg_price else None
+
         return {
             'unitType': unit.typeName,
             'displayName': unit.displayName,
             'profilePhoto': serialize_profile_photo(self.profile_photo),
+            'beginDate': utils.convert_date_to_string(self.begin_date),
+            'endDate': utils.convert_date_to_string(self.end_date),
+            'guests': self.guests,
             'price': self.avg_price,
             'priceMatrix': serialize_prices(self.price_info_list),
+            'nights': nights,
+            'total': total,
             'resortName': unit.resortName,
             'resortDisplayName': resort.displayName,
             'photos': serialize_photos(photos),

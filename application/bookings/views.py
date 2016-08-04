@@ -238,7 +238,7 @@ def get_calendar(name):
 def search():
     begin_date = utils.get_begin_date(request)
     end_date = utils.get_end_date(request)
-    # guests = request.args.get('guests')
+    guests = request.args.get('guests')
 
     # 'search' returns availability by resorts (id, name, count(available # of units))
     search_results = model.search(begin_date, end_date)
@@ -261,7 +261,7 @@ def search():
 def search_resort(resortname):
     begin_date = utils.get_begin_date(request)
     end_date = utils.get_end_date(request)
-    # guests = request.args.get('guests')
+    guests = request.args.get('guests')
 
     # 'search' returns availability by unit groups (id, name, count(available # of units))
     search_results = model.search_by_resort(resortname, begin_date, end_date)
@@ -270,7 +270,7 @@ def search_resort(resortname):
     unit_info_list = []
     for result in search_results:
         unit = get_content_model().find_unit_by_name(result.name)
-        unit_info = get_content_model().UnitInfo(unit, begin_date, end_date, int(float(result.available)))
+        unit_info = get_content_model().UnitInfo(unit, begin_date, end_date, guests, int(float(result.available)))
         unit_info_list.append(unit_info)
 
     # build ResortInfo
@@ -289,12 +289,14 @@ def search_unit(resortname, typename):
     # end_date = request.args.get('to')
     begin_date = utils.get_begin_date(request)
     end_date = utils.get_end_date(request)
+    guests = request.args.get('guests')
 
     unit = get_content_model().find_unit_by_name(typename)
     if not unit:
         return 'Sorry, Invalid Request', 400
 
-    unit_info = get_content_model().UnitInfo(unit, begin_date, end_date)
+    # TODO - check availability again
+    unit_info = get_content_model().UnitInfo(unit, begin_date, end_date, guests)
     results = unit_info.serialize_unit_detail()
     return jsonify(results=results)
 
