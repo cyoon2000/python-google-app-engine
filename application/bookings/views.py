@@ -238,7 +238,7 @@ def get_calendar(name):
 def search():
     begin_date = utils.get_begin_date(request)
     end_date = utils.get_end_date(request)
-    guests = request.args.get('guests')
+    # guests = request.args.get('guests')
 
     # 'search' returns availability by resorts (id, name, count(available # of units))
     search_results = model.search(begin_date, end_date)
@@ -262,6 +262,8 @@ def search_resort(resortname):
     begin_date = utils.get_begin_date(request)
     end_date = utils.get_end_date(request)
     guests = request.args.get('guests')
+    if not guests:
+        guests = 2
 
     # 'search' returns availability by unit groups (id, name, count(available # of units))
     search_results = model.search_by_resort(resortname, begin_date, end_date)
@@ -290,6 +292,9 @@ def search_unit(resortname, typename):
     begin_date = utils.get_begin_date(request)
     end_date = utils.get_end_date(request)
     guests = request.args.get('guests')
+    guests = request.args.get('guests')
+    if not guests:
+        guests = 2
 
     unit = get_content_model().find_unit_by_name(typename)
     if not unit:

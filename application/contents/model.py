@@ -117,7 +117,7 @@ class ResortInfo(object):
 
 
 class UnitInfo(object):
-    def __init__(self, unit, begin_date, end_date, guests=1, count=None):
+    def __init__(self, unit, begin_date, end_date, guests=2, count=None):
         self.unit = unit
         self.begin_date = begin_date
         self.end_date = end_date
