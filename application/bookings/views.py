@@ -348,20 +348,27 @@ def book(groupname):
         #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
 
 
-@bookings_api.route('/mail', methods=['POST'])
-def test_mail():
+@bookings_api.route('/mail/<groupname>', methods=['POST'])
+def test_mail(groupname):
     input = json.loads(request.data)
-    if not request.data:
-        return 'Sorry, Invalid Request', 400
-    if input['recipient']:
-        recipient = input['recipient']
-    else:
+    if not input:
         return 'Sorry, Invalid Request', 400
 
-    #booking_request = get_model().BookingRequest(groupname, unitgroup_id, checkin, checkout, guests, unit_info)
-    booking_request = {}
-    booking_request['resort_name'] = 'Kirt n Marina'
-    booking_request['unit_group'] = 'Standard Room'
+    recipient = input['recipient']
+    checkin = "2016-11-01"
+    checkout = "2016-11-05"
+    guests = 2
+    email = "test@example.com"
+
+    checkin = utils.convert_string_to_date(checkin)
+    checkout = utils.convert_string_to_date(checkout)
+
+    unitgroup = get_content_model().find_unit_by_name(groupname)
+    if not unitgroup:
+        return 'Sorry, Invalid Unitgroup Name', 400
+
+    unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
+    booking_request = get_model().BookingRequest(groupname, 1, checkin, checkout, guests, email, unit_info)
     email_content = send_complex_message(recipient, booking_request)
 
     return jsonify(results=email_content)

@@ -3,9 +3,9 @@
 <head>
     <meta name="viewport" content="width=device-width" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Confirmation Email</title>
+    <title>Booking Request Confirmation Email</title>
 
-
+    <link href="https://fonts.googleapis.com/css?family=Tangerine" rel="stylesheet">
     <style type="text/css">
         img {
         max-width: 100%;
@@ -69,15 +69,17 @@
 
 
                 <table width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
-                    <h2 class="aligncenter" style="font-family: 'Helvetica Neue',Helvetica,Arial,'Lucida Grande',sans-serif; box-sizing: border-box; font-size: 24px; color: #000; line-height: 1.2em; font-weight: 400; text-align: center; margin: 40px 0 0;" align="center">
+                    <h2 class="aligncenter" style="font-family: 'Tangerine', cursive; box-sizing: border-box; font-size: 24px; color: #000; line-height: 1.2em; font-weight: 400; text-align: center; margin: 40px 0 0;" align="center">
                         {{ booking_request.unit_info.unit.displayName }} <br/>
-                        at {{ booking_request.unit_info.resort.displayName }}</h2></td>
+                        at {{ booking_request.unit_info.resort.displayName }} </h2>
+                </td>
                 </tr>
                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                    <!--<h4 class="aligncenter" style="font-family: 'Helvetica Neue',Helvetica,Arial,'Lucida Grande',sans-serif; box-sizing: border-box; font-size: 18px; color: #000; line-height: 1.2em; font-weight: 400; text-align: center; margin: 40px 0 0;" align="center">-->
                     <h4 class="aligncenter" style="font-family: 'Helvetica Neue',Helvetica,Arial,'Lucida Grande',sans-serif; box-sizing: border-box; font-size: 18px; color: #000; line-height: 1.2em; font-weight: 400; text-align: center; margin: 40px 0 0;" align="center">
-                        Check-in: {{ booking_request.checkin }} <br/>
-                        Check-out: {{ booking_request.checkout }} <br/>
-                        <small><i>( For {{ booking_request.guests }} guests ) </i></small><br/>
+                        <font color="gray">Check In </font> {{ booking_request.checkin }}<br/>
+                        <font color="gray">Check Out </font> {{ booking_request.checkout }} <br/>
+                        <small>( For {{ booking_request.guests }} guests ) </small><br/>
                     </h4>
                 </td></tr>
                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block aligncenter" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
