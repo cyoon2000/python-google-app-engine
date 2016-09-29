@@ -30,12 +30,19 @@ class ResortInfo(object):
         self.units = None
         self.unit_info_list = []
         self.count = count
+        self.active = True
 
+        self.check_active()
         self.build_profile_photo()
 
     def __repr__(self):
         return "(resort name = %s : begin_date = %s end_date = %s count = %s)" \
                % (self.resort.name, self.begin_date, self.end_date, self.count)
+
+    # deactivate some resorts for now
+    def check_active(self):
+        if self.resort.name == 'vp' or self.resort.name == 'vwind':
+            self.active = False
 
     def build_profile_photo(self):
         profile_photos = get_dictionary_data().profile_photo_dict[self.resort.name]
@@ -55,17 +62,20 @@ class ResortInfo(object):
         units = find_units_by_resort_name(self.resort.name)
         price_list = []
         for unit in units:
-            price_list.append(UnitInfo(unit, self.begin_date, self.end_date).avg_price)
+            unit_info = UnitInfo(unit, self.begin_date, self.end_date)
+            if unit_info.avg_price:
+                price_list.append(unit_info.avg_price)
 
         return {
             'name': self.resort.name,
             'displayName': self.resort.displayName,
             'profilePhoto': serialize_profile_photo(self.profile_photo),
             'beachFront': self.resort.privateBeach,
-            'price': min(price_list),
-            'maxPrice': max(price_list),
+            'price': min(price_list) if price_list else None,
+            'maxPrice': max(price_list) if price_list else None,
             'highlights': serialize_resort_highlight(self.resort),
-            'count': self.count
+            'count': self.count,
+            'active': self.active
         }
 
     def serialize_resort_info(self):
@@ -91,14 +101,14 @@ class ResortInfo(object):
             'activitySection': serialize_section_activity(resort),
             'policySection': serialize_section_policy(resort),
             'unitTypes': self.serialize_units_summary(),
-            'photos': serialize_photos(self.photos)
+            'photos': serialize_photos(self.photos),
+            'active': self.active
         }
 
     def serialize_units_summary(self):
         units_json = []
         if self.unit_info_list:
             for unit_info in self.unit_info_list:
-                print unit_info.serialize_unit_summary()
                 units_json.append(unit_info.serialize_unit_summary())
         else:
             for unit in self.units:
@@ -107,10 +117,11 @@ class ResortInfo(object):
 
 
 class UnitInfo(object):
-    def __init__(self, unit, begin_date, end_date, count=None):
+    def __init__(self, unit, begin_date, end_date, guests=2, count=None):
         self.unit = unit
         self.begin_date = begin_date
         self.end_date = end_date
+        self.guests = guests
         self.count = count
         self.profile_photo = None
         self.photos = None
@@ -142,6 +153,8 @@ class UnitInfo(object):
 
         # build PriceInfo for each date
         for single_date in daterange(self.begin_date, self.end_date):
+            # change datetime to date
+            single_date = single_date.date()
             unitname = self.unit.typeName
             price_info = PriceInfo(unitname, utils.convert_date_to_string(single_date), find_price_for_date(unitname, single_date))
             self.price_info_list.append(price_info)
@@ -177,7 +190,9 @@ class UnitInfo(object):
             'maxCapacity': unit.maxCapacity,
             'count': self.count,
             'price': self.avg_price,
-            'priceMatrix': serialize_prices(self.price_info_list)
+            'priceMatrix': serialize_prices(self.price_info_list),
+            'guests': self.guests,
+            'toomany': True if int(self.guests) > int(unit.maxCapacity) else False
         }
 
     def serialize_unit_detail(self):
@@ -188,12 +203,20 @@ class UnitInfo(object):
         resort = find_resort_by_name(self.unit.resortName)
         photos = find_photos_by_unit_type(self.unit.typeName)
 
+        nights = len(self.price_info_list)
+        total = int(float(self.avg_price) * int(nights)) if self.avg_price else None
+
         return {
             'unitType': unit.typeName,
             'displayName': unit.displayName,
             'profilePhoto': serialize_profile_photo(self.profile_photo),
+            'beginDate': utils.convert_date_to_string(self.begin_date),
+            'endDate': utils.convert_date_to_string(self.end_date),
+            'guests': self.guests,
             'price': self.avg_price,
             'priceMatrix': serialize_prices(self.price_info_list),
+            'nights': nights,
+            'total': total,
             'resortName': unit.resortName,
             'resortDisplayName': resort.displayName,
             'photos': serialize_photos(photos),
@@ -224,6 +247,71 @@ class PriceInfo(object):
             'date': self.date,
             'price': self.price if self.price else 0
         }
+
+
+class StatusInfo(object):
+    def __init__(self, unit, date, status):
+        self.unit = unit
+        self.date_slot = date
+        self.status = True if status == 0 else False
+        self.price = None
+
+        self.build_price()
+
+    def __repr__(self):
+        return "(date = %r : status = %r , price = %r)" % (self.date_slot, self.status, self.price)
+
+    def build_price(self):
+        self.price = find_price_for_date(self.unit.unitgroup_name, self.date_slot)
+
+    def serialize(self):
+        return {
+            'day': self.date_slot.day,
+            # ouput month name instead of number
+            'month': self.date_slot.strftime("%B"),
+            'year': self.date_slot.year,
+            'weekday': utils.name_weekday(self.date_slot.weekday()),
+            'status': self.status,
+            'price': self.price
+        }
+
+
+class CalendarInfo(object):
+    def __init__(self, unit, resortname, date_list, status_list):
+        self.unit = unit
+        self.resortname = resortname
+        self.date_list = date_list
+        self.status_list = status_list
+        self.status_info_list = []
+
+        self.build_status_info_list()
+
+    def __repr__(self):
+        return "(unit = %r : status_list = %r)" % (self.unit, self.status_list)
+
+    def build_status_info_list(self):
+        if self.date_list:
+            i = 0
+            for date_ in self.date_list:
+                status_info = StatusInfo(self.unit, date_, self.status_list[i])
+                self.status_info_list.append(status_info)
+                i += 1
+
+    def serialize_calendar_info(self):
+        unit = self.unit
+        if unit is None:
+            return {}
+        return {
+            'displayName': self.unit.display_name,
+            'resortName': self.resortname,
+            'statusInfoList': self.serialize_status_info_list()
+        }
+
+    def serialize_status_info_list(self):
+        json = []
+        for status_info in self.status_info_list:
+            json.append(status_info.serialize())
+        return json
 
 
 def serialize_resort_info_list(resort_info_list):
@@ -309,8 +397,8 @@ def find_price_for_date(unitname, date):
         return convert_price_string_to_number(price_data.lowPrice)
 
 
-def is_in_range(date, begin_date_str, end_date_str):
-    if utils.convert_string_to_date(begin_date_str) <= date <= utils.convert_string_to_date(end_date_str):
+def is_in_range(date_slot, begin_date_str, end_date_str):
+    if utils.convert_string_to_date(begin_date_str).date() <= date_slot <= utils.convert_string_to_date(end_date_str).date():
         return True
     return False
 
@@ -452,14 +540,15 @@ def serialize_section_activity(resort):
 
 
 def serialize_section_policy(resort):
+    default_msg = 'Please contact the resort'
     return {
-        'checkIn': resort.checkIn,
-        'checkOut': resort.checkOut,
-        'ccAccepted': resort.cc,
-        'extraPersonCharge': resort.extraPersonCharge,
+        'checkIn': resort.checkIn if resort.checkIn else default_msg,
+        'checkOut': resort.checkOut if resort.checkOut else default_msg,
+        'ccAccepted': resort.cc if resort.cc else default_msg,
+        'extraPersonCharge': resort.extraPersonCharge if resort.extraPersonCharge else default_msg,
         'petsAllowed': resort.pets,
-        'minimumStay': resort.minimumStay,
-        'cancelPolicy': resort.cancelPolicy
+        'minimumStay': resort.minimumStay if resort.minimumStay else '1 night',
+        'cancelPolicy': resort.cancelPolicy if resort.cancelPolicy else default_msg
     }
 
 

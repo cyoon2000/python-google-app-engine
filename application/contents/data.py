@@ -14,7 +14,7 @@ CSV_PATH_PRICE = BASE_PATH + '/csv/prices.csv'
 # reader = csv.DictReader(open(BASE_PATH + '/resorts.csv'))
 
 # resort-names - used as resort ID
-RESORT_NAME_LIST = ["bj", "kirk", "dw", "kirt", "plp", "pelican", "vp", "vbay", "vwind"]
+RESORT_NAME_LIST = ["bj", "kirk", "dw", "kurt", "plp", "pelican", "vp", "vbay", "vwind"]
 
 # parse instruction for Resort CSV file
 fields = ("name", "displayName", "seoName", "email", "wifi", "parking", "communalKitchen", "privateBeach", "freeBreakfast", "noteOnFood",

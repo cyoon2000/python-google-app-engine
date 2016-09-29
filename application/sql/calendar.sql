@@ -19,7 +19,7 @@ begin
 end $$
 delimiter ;
 
-call fill_calendar('2016-07-01', '2017-06-30');
+call fill_calendar('2016-08-01', '2018-08-31');
 
 
 ---- NOTE : This has been migrated to SQLAlchemy
@@ -33,21 +33,21 @@ call fill_calendar('2016-07-01', '2017-06-30');
 --);
 
 
----- NOTE : This has been migrated to SQLAlchemy
+---- NOTE : This has been DEPRECATED
 ---- stored procedure : insert to data to unit_calendar for given unit_id
-drop procedure if exists fill_availability;
-delimiter $$
-create procedure fill_availability(unit_id int, start_date date, end_date date)
-begin
-  declare date_ date;
-  set date_=start_date;
-
-  while date_ < end_date do
-        -- created_on, updated_on, id, date_slot, status, unit_id, booking_id
-    	insert into availability values(NOW(), NOW(), NULL, date_, 1, unit_id, NULL);
-    	set date_ = adddate(date_, interval 1 day);
-	end while;
-end $$
-delimiter ;
-
-call fill_availability(10, '2016-07-01', '2017-07-01');
+--drop procedure if exists fill_availability;
+--delimiter $$
+--create procedure fill_availability(unit_id int, start_date date, end_date date)
+--begin
+--  declare date_ date;
+--  set date_=start_date;
+--
+--  while date_ < end_date do
+--        -- created_on, updated_on, id, date_slot, status, unit_id, booking_id
+--    	insert into availability values(NOW(), NOW(), NULL, date_, 1, unit_id, NULL);
+--    	set date_ = adddate(date_, interval 1 day);
+--	end while;
+--end $$
+--delimiter ;
+--
+--call fill_availability(10, '2016-07-01', '2017-07-01');

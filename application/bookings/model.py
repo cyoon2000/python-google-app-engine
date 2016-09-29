@@ -1,5 +1,4 @@
 import logging
-import utils
 from datetime import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import UniqueConstraint
@@ -9,8 +8,6 @@ from application.contents.data import read_data_resorts, read_data_units, read_d
 
 builtin_list = list
 
-CALENDAR_BEGIN_DATE = '2016-07-01'
-CALENDAR_END_DATE = '2017-06-30'
 
 def init_app(app):
     db.init_app(app)
@@ -27,8 +24,10 @@ class Base(db.Model):
 
     created_on = db.Column(db.DateTime, default=datetime.utcnow)
     updated_on = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    #created_by = db.Column(db.String(64), default=lambda: current_user.username)
-    #updated_by = db.Column(db.String(64), default=lambda: current_user.username)
+    # created_by = db.Column(db.String(64), default=lambda: current_user.username)
+    # updated_by = db.Column(db.String(64), default=lambda: current_user.username)
+    created_by = db.Column(db.String(64), default=lambda: 'admin')
+    updated_by = db.Column(db.String(64), default=lambda: 'admin')
 
 
 class Resort(Base):
@@ -90,6 +89,7 @@ class Unit(Base):
     name = db.Column(db.String(30), nullable=False)
     display_name = db.Column(db.String(30))
     active = db.Column(db.Boolean, default=True)
+    unitgroup_name = db.Column(db.String(30))
     unitgroup_id = db.Column(db.Integer, db.ForeignKey('unitgroup.id'))
     # relationships
     availabilities = db.relationship('Availability', backref='unit', lazy='dynamic')
@@ -100,10 +100,12 @@ class Unit(Base):
         unitgroup = Unitgroup.query.filter(Unitgroup.name == row.groupName).one()
         self.name = row.name
         self.display_name = row.displayName
+        # this column is redundant but convenient
+        self.unitgroup_name = row.groupName
         self.unitgroup_id = unitgroup.id
 
     def __repr__(self):
-        return '<Unit (%r %r %r)>' % (self.id, self.name, self.display_name)
+        return '<Unit (%r %r %r %r)>' % (self.id, self.name, self.display_name, self.unitgroup_name)
 
 
 # TODO - add note field, transaction_id(UUID), payment_id (payment table does not exist yet)
@@ -275,8 +277,13 @@ def delete_entity(entity):
     logging.info(entity)
     return entity
 
+
 def get_resorts():
     return Resort.query.all()
+
+
+def get_resort_by_name(resort_name):
+    return Resort.query.filter_by(name=resort_name).one()
 
 
 def get_unitgroups(resort_id):
@@ -295,8 +302,14 @@ def get_units_by_resort(resort_id):
                 .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
                 .filter(Unitgroup.resort_id == resort_id)
                 .filter(Unit.active == 1)
+                .order_by(Unit.id)
             )
     return query.all()
+
+
+def get_units_by_resort_name(resort_name):
+    resort = get_resort_by_name(resort_name)
+    return get_units_by_resort(resort.id)
 
 
 def get_calendar_date(date):
@@ -318,7 +331,8 @@ def get_availabilities(unit_id, begin_date, end_date):
             from calendar c
             join unit u
             left join availability a on  a.date_slot = c.date_ and a.unit_id = u.id
-            where c.date_ >= :begin and c.date_ < :end and u.id = :unit_id;
+            where c.date_ >= :begin and c.date_ < :end and u.id = :unit_id
+            order by date_slot
         '''
     availabilities = db.session.execute(
         text(cmd),
@@ -354,6 +368,7 @@ def get_bookings(begin_date, end_date):
              # .limit())
     )
     return query.all()
+
 
 # returns resorts ( id, name, count )
 def search(begin_date, end_date):
@@ -419,48 +434,24 @@ def search_by_unit_group(unitgroup_name, begin_date, end_date):
 # RUN ONLY ONCE - which should happen in local DEV, not in PROD server. (invoked from __init___)
 # read CSV data and populate db.
 def init_db():
-    print 'Creating all tables...................'
-    db.create_all()
-    populate_csv_data()
-
-    # this takes too long.  use stored procedure
-    #populate_availability_all()
-    print '..................................Done'
+    # print 'Creating all tables...................'
+    # db.create_all()
+    # print 'Populating all tables from CSV........'
+    # populate_csv_data()
+    # print '..................................Done'
+    pass
 
 
 # create Resort, Unit, Unitgroup records
 def populate_csv_data():
-    print 'Populating data in Resort, Unitgroup and Unit tables.............'
+    # print 'Populating data in Resort, Unitgroup and Unit tables.............'
     for row in read_data_resorts():
         create_entity(Resort(row))
     for row in read_data_units():
         create_entity(Unitgroup(row))
     for row in read_data_unitnames():
         create_entity(Unit(row))
-
-
-# create availability records for all units for default date range
-def populate_availability_all():
-    print 'Populating Availability table.............'
-    for unit in get_units():
-        print unit.id
-        populate_availability(unit.id)
-    print 'Done'
-
-
-# create availability records for given unit for default date range
-def populate_availability(unit_id):
-    print '(for unit_id = %r)' % unit_id
-    for calendar in get_calendar_dates(CALENDAR_BEGIN_DATE, CALENDAR_END_DATE):
-        create_entity(Availability(unit_id, calendar.date_))
-
-    # run stored procedure - this should be faster. but the code does not work yet.
-    # params = {'unit_id': unit_id,
-    #             'start': CALENDAR_BEGIN_DATE,
-    #             'end': CALENDAR_END_DATE}
-    # results = db.session.execute('fill_availability ?, ?, ?', params)
-    # results = db.session.execute('fill_availability @unit_id=:unit_id, @start_date=:start, @end_date=:end', params)
-    # print results
+    pass
 
 
 # def _create_database():
@@ -474,3 +465,27 @@ def populate_availability(unit_id):
 #
 # if __name__ == '__main__':
 #     _create_database()
+
+
+
+# ----- DEPRECATED -----
+# create availability records for all units for default date range
+# def populate_availability_all():
+#     print 'Populating Availability table.............'
+#     for unit in get_units():
+#         print unit.id
+#         populate_availability(unit.id)
+#     print 'Done'
+
+# create availability records for given unit for default date range
+# def populate_availability(unit_id):
+#     for calendar in get_calendar_dates(CALENDAR_BEGIN_DATE, CALENDAR_END_DATE):
+#         create_entity(Availability(unit_id, calendar.date_))
+
+# run stored procedure - this should be faster. but the code does not work yet.
+# params = {'unit_id': unit_id,
+#             'start': CALENDAR_BEGIN_DATE,
+#             'end': CALENDAR_END_DATE}
+# results = db.session.execute('fill_availability ?, ?, ?', params)
+# results = db.session.execute('fill_availability @unit_id=:unit_id, @start_date=:start, @end_date=:end', params)
+# print results
