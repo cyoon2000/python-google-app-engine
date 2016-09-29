@@ -317,8 +317,6 @@ def search_unit(resortname, typename):
 @bookings_api.route('/book/<groupname>', methods=['POST'])
 def book(groupname):
 
-    print groupname
-
     # input = request.get_json()
     # input = request.get_data()
     # if not input:
@@ -330,6 +328,7 @@ def book(groupname):
     checkin = request.args.get('from')
     checkout = request.args.get('to')
     guests = request.args.get('guests')
+    email = request.args.get('email')
 
     checkin = utils.convert_string_to_date(checkin)
     checkout = utils.convert_string_to_date(checkout)
@@ -344,7 +343,7 @@ def book(groupname):
         unitgroup = get_content_model().find_unit_by_name(groupname)
         unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
         print unit_info
-        booking_request = get_model().BookingRequest(groupname, unitgroup_id, checkin, checkout, guests, unit_info)
+        booking_request = get_model().BookingRequest(groupname, unitgroup_id, checkin, checkout, guests, email, unit_info)
         return send_mail(booking_request)
         #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
 

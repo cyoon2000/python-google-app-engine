@@ -171,7 +171,7 @@ class Calendar(db.Model):
 
 
 class BookingRequest(object):
-    def __init__(self, groupname, unitgroup_id, checkin, checkout, guests, unit_info):
+    def __init__(self, groupname, unitgroup_id, checkin, checkout, guests, email, unit_info):
         self.unitgroup_id = unitgroup_id
         self.groupname = groupname
         self.checkin = utils.convert_date_to_string(checkin)
@@ -179,10 +179,10 @@ class BookingRequest(object):
         self.guests = guests
         self.unit_info = unit_info
         # self.avg_price = None
-        # TODO
-        self.first_name = "Jane"
-        self.last_name = "Doe"
-        self.email = "jdoe@example.com"
+        # TODO - populate firstname and lastname
+        self.firstname = ""
+        self.lastname = ""
+        self.email = email
     def __repr__(self):
         return "(unit group name = %s : checkin = %s checkout = %s guests = %s price = %s)" \
                % (self.groupname, self.checkin, self.checkout,  self.guests, self.unit_info.avg_price)
@@ -198,6 +198,7 @@ class BookingRequest(object):
             'checkin': self.checkin,
             'checkout': self.checkout,
             'guests': self.guests,
+            'email': self.email,
             'avg_price': self.unit_info.avg_price if self.unit_info.avg_price else 0
         }
 
