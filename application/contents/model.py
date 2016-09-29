@@ -116,7 +116,9 @@ class UnitInfo(object):
         self.photos = None
         self.price_info_list = []
         self.avg_price = 0
+        self.resort = None
 
+        self.populate_resort()
         self.build_profile_photo()
         self.build_price_info()
         self.build_avg_price()
@@ -154,6 +156,13 @@ class UnitInfo(object):
             return
         avg_price = sum_val / float(len(self.price_info_list))
         self.avg_price = int(avg_price)
+
+    def populate_resort(self):
+        unit = self.unit
+        if unit is None:
+            return {}
+        resort = find_resort_by_name(unit.resortName)
+        self.resort = resort
 
     def serialize_unit_summary(self):
         unit = self.unit

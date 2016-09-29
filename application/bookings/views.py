@@ -10,6 +10,14 @@ from flask import jsonify, json
 from flask_wtf import Form
 from application.common import utils
 
+from urllib import urlencode
+
+import httplib2
+import webapp2
+
+MAILGUN_DOMAIN_NAME = 'sandbox9831351ae46f4ed3b48fdefa8e053e40.mailgun.org'
+MAILGUN_API_KEY = 'key-3b38025c106d8d620b501aaf7e89961c'
+
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
 @bookings_api.before_request
@@ -308,6 +316,111 @@ def search_unit(resortname, typename):
     unit_info = get_content_model().UnitInfo(unit, begin_date, end_date)
     results = unit_info.serialize_unit_detail()
     return jsonify(results=results)
+
+
+@bookings_api.route('/book/<groupname>', methods=['POST'])
+def book(groupname):
+
+    print groupname
+
+    # input = request.get_json()
+    # input = request.get_data()
+    # if not input:
+    #     return 'Empty Data', 400
+    # checkin = input['checkin']
+    # checkout = input['checkout']
+    # guests = input['guests']
+
+    checkin = request.args.get('from')
+    checkout = request.args.get('to')
+    guests = request.args.get('guests')
+
+    checkin = utils.convert_string_to_date(checkin)
+    checkout = utils.convert_string_to_date(checkout)
+
+    results = get_model().search_by_unit_group(groupname, checkin, checkout)
+    for result in results:
+        count = result[2]
+        if not count > 0:
+            return 'Sorry, those dates you requested are not available', 400
+
+        unitgroup_id = result[0]
+        unitgroup = get_content_model().find_unit_by_name(groupname)
+        unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
+        print unit_info
+        booking_request = get_model().BookingRequest(groupname, unitgroup_id, checkin, checkout, guests, unit_info)
+        return send_mail(booking_request)
+        #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
+
+
+@bookings_api.route('/mail', methods=['POST'])
+def test_mail():
+    input = json.loads(request.data)
+    if not request.data:
+        return 'Sorry, Invalid Request', 400
+    if input['recipient']:
+        recipient = input['recipient']
+    else:
+        return 'Sorry, Invalid Request', 400
+
+    #booking_request = get_model().BookingRequest(groupname, unitgroup_id, checkin, checkout, guests, unit_info)
+    booking_request = {}
+    booking_request['resort_name'] = 'Kirt n Marina'
+    booking_request['unit_group'] = 'Standard Room'
+    email_content = send_complex_message(recipient, booking_request)
+
+    return jsonify(results=email_content)
+
+
+def send_mail(booking_request):
+    # TODO get recipient from content API (email for resort)
+    recipient = 'book@gokitebaja.com'
+    email_content = send_complex_message(recipient, booking_request)
+    return jsonify(results=email_content)
+
+
+def send_simple_message(recipient):
+    http = httplib2.Http()
+    http.add_credentials('api', MAILGUN_API_KEY)
+
+    url = 'https://api.mailgun.net/v3/{}/messages'.format(MAILGUN_DOMAIN_NAME)
+    data = {
+        'from': 'GoKiteBaja <mailgun@{}>'.format(MAILGUN_DOMAIN_NAME),
+        'to': recipient,
+        'subject': 'This is an example email from Mailgun',
+        'text': 'Test message from Mailgun'
+    }
+
+    resp, content = http.request(url, 'POST', urlencode(data))
+
+    if resp.status != 200:
+        raise RuntimeError(
+            'Mailgun API error: {} {}'.format(resp.status, content))
+
+
+def send_complex_message(recipient, booking_request):
+    http = httplib2.Http()
+    http.add_credentials('api', MAILGUN_API_KEY)
+    html_body = render_template("email/booking_request.html",
+                                booking_request=booking_request)
+
+    url = 'https://api.mailgun.net/v3/{}/messages'.format(MAILGUN_DOMAIN_NAME)
+    data = {
+        'from': 'GoKiteBaja <mailgun@{}>'.format(MAILGUN_DOMAIN_NAME),
+        'to': recipient,
+        'subject': 'Your Booking Request has been received',
+        'text': 'Test message from Mailgun',
+        'html': html_body
+        # 'html': '<html>HTML <strong>version</strong> of the body</html>'
+    }
+
+    resp, content = http.request(url, 'POST', urlencode(data))
+
+    if resp.status != 200:
+        raise RuntimeError(
+            'Mailgun API error: {} {}'.format(resp.status, content))
+
+    return html_body
 
 
 def serialize_unit(unit):

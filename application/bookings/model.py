@@ -167,6 +167,38 @@ class Calendar(db.Model):
         return '<Calendar (id = %r)>' % self.date_
 
 
+class BookingRequest(object):
+    def __init__(self, groupname, unitgroup_id, checkin, checkout, guests, unit_info):
+        self.unitgroup_id = unitgroup_id
+        self.groupname = groupname
+        self.checkin = checkin
+        self.checkout = checkout
+        self.guests = guests
+        self.unit_info = unit_info
+        # self.avg_price = None
+        # TODO
+        self.first_name = "Jane"
+        self.last_name = "Doe"
+        self.email = "jdoe@example.com"
+    def __repr__(self):
+        return "(unit group name = %s : checkin = %s checkout = %s guests = %s price = %s)" \
+               % (self.groupname, self.checkin, self.checkout,  self.guests, self.unit_info.avg_price)
+
+    def serialize_booking_request(self):
+        unit_info = self.unit_info
+        if unit_info is None:
+            return {}
+        return {
+            'group_name': self.groupname,
+            'display_name': unit_info.unit.displayName,
+            'resort_name': unit_info.resort.displayName,
+            'checkin': self.checkin,
+            'checkout': self.checkout,
+            'guests': self.guests,
+            'avg_price': self.unit_info.avg_price if self.unit_info.avg_price else 0
+        }
+
+
 def list(limit=10, cursor=None):
     cursor = int(cursor) if cursor else 0
     query = (Booking.query
@@ -253,6 +285,7 @@ def get_unitgroups(resort_id):
 
 def get_units():
     return Unit.query.all()
+
 
 
 def get_units_by_resort(resort_id):
@@ -358,6 +391,25 @@ def search_by_resort(resortname, begin_date, end_date):
     units = db.session.execute(
         text(cmd),
         {'resortname': resortname,
+         'begin': begin_date,
+         'end': end_date})
+    return units
+
+
+def search_by_unit_group(unitgroup_name, begin_date, end_date):
+    cmd = '''
+            select ug.id, ug.name, sum(
+                IF(exists
+                    (select 1 from availability a
+                    where a.unit_id = u.id and a.date_slot >= :begin and a.date_slot < :end),
+                    0, 1)) as available
+            from unitgroup ug
+            join unit u on u.unitgroup_id = ug.id
+            where ug.name = :groupname;
+            '''
+    units = db.session.execute(
+        text(cmd),
+        {'groupname': unitgroup_name,
          'begin': begin_date,
          'end': end_date})
     return units
