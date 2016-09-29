@@ -5,6 +5,7 @@ from sqlalchemy import UniqueConstraint
 from sqlalchemy.sql import text
 from database import db
 from application.contents.data import read_data_resorts, read_data_units, read_data_unitnames
+from application.common import utils
 
 builtin_list = list
 
@@ -173,8 +174,8 @@ class BookingRequest(object):
     def __init__(self, groupname, unitgroup_id, checkin, checkout, guests, unit_info):
         self.unitgroup_id = unitgroup_id
         self.groupname = groupname
-        self.checkin = checkin
-        self.checkout = checkout
+        self.checkin = utils.convert_date_to_string(checkin)
+        self.checkout = utils.convert_date_to_string(checkout)
         self.guests = guests
         self.unit_info = unit_info
         # self.avg_price = None

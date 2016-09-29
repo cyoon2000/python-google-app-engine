@@ -128,11 +128,14 @@ class UnitInfo(object):
         self.price_info_list = []
         self.avg_price = 0
         self.resort = None
+        self.nights = None
+        self.total = None
 
         self.populate_resort()
         self.build_profile_photo()
         self.build_price_info()
         self.build_avg_price()
+        self.build_total()
 
     def __repr__(self):
         return "(unit type name = %s : begin_date = %s end_date = %s : count = %s price = %s)" \
@@ -170,6 +173,11 @@ class UnitInfo(object):
         avg_price = sum_val / float(len(self.price_info_list))
         self.avg_price = int(avg_price)
 
+    def build_total(self):
+        if self.price_info_list:
+            self.nights = len(self.price_info_list)
+            self.total = int(float(self.avg_price) * int(self.nights)) if self.avg_price else None
+
     def populate_resort(self):
         unit = self.unit
         if unit is None:
@@ -203,9 +211,6 @@ class UnitInfo(object):
         resort = find_resort_by_name(self.unit.resortName)
         photos = find_photos_by_unit_type(self.unit.typeName)
 
-        nights = len(self.price_info_list)
-        total = int(float(self.avg_price) * int(nights)) if self.avg_price else None
-
         return {
             'unitType': unit.typeName,
             'displayName': unit.displayName,
@@ -215,8 +220,8 @@ class UnitInfo(object):
             'guests': self.guests,
             'price': self.avg_price,
             'priceMatrix': serialize_prices(self.price_info_list),
-            'nights': nights,
-            'total': total,
+            'nights': self.nights,
+            'total': self.total,
             'resortName': unit.resortName,
             'resortDisplayName': resort.displayName,
             'photos': serialize_photos(photos),
