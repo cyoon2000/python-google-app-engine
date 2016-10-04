@@ -20,13 +20,12 @@ def from_sql(row):
     data.pop('_sa_instance_state')
     return data
 
+
 class Base(db.Model):
     __abstract__ = True
 
     created_on = db.Column(db.DateTime, default=datetime.utcnow)
     updated_on = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    # created_by = db.Column(db.String(64), default=lambda: current_user.username)
-    # updated_by = db.Column(db.String(64), default=lambda: current_user.username)
     created_by = db.Column(db.String(64), default=lambda: 'admin')
     updated_by = db.Column(db.String(64), default=lambda: 'admin')
 
@@ -109,29 +108,6 @@ class Unit(Base):
         return '<Unit (%r %r %r %r)>' % (self.id, self.name, self.display_name, self.unitgroup_name)
 
 
-# TODO - add note field, transaction_id(UUID), payment_id (payment table does not exist yet)
-# unit_name is captured as a snapshot(convenience field). source of truth is unit_id.
-# Validation rule upon save : each date should be available
-class Booking(Base):
-    __tablename__ = 'booking'
-
-    id = db.Column(db.Integer, primary_key=True)
-    unit_name = db.Column(db.String(30))
-    begin_on = db.Column(db.DateTime, nullable=False)
-    end_on = db.Column(db.DateTime, nullable=False)
-    status = db.Column(db.String(30), default='CREATED')
-    first_name = db.Column(db.String(30))
-    last_name = db.Column(db.String(30))
-    email = db.Column(db.String(60))
-    is_admin = db.Column(db.Boolean, default=False)
-    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
-    availabilities = db.relationship('Availability', backref='booking', lazy='dynamic')
-    #transaction_id = db.Column(db.String(255), unique=True)
-
-    def __repr__(self):
-        return '<Booking (id = %r, unit_id = %, begin_on = %r, end_on = %r)>' % (self.id, self.unit_id, self.begin_on, self.end_on)
-
-
 class Availability(Base):
     __tablename__ = 'availability'
 
@@ -170,36 +146,75 @@ class Calendar(db.Model):
         return '<Calendar (id = %r)>' % self.date_
 
 
-class BookingRequest(object):
-    def __init__(self, groupname, unitgroup_id, checkin, checkout, guests, email, unit_info):
+# TODO - add note field, transaction_id
+# unit_name is captured as a snapshot(convenience field). source of truth is unit_id.
+# Validation rule upon save : each date should be available
+class Booking(Base):
+    __tablename__ = 'booking'
+
+    id = db.Column(db.Integer, primary_key=True)
+    unit_name = db.Column(db.String(30))
+    begin_on = db.Column(db.Date, nullable=False)
+    end_on = db.Column(db.Date, nullable=False)
+    status = db.Column(db.String(30), default='CREATED')
+    first_name = db.Column(db.String(30))
+    last_name = db.Column(db.String(30))
+    email = db.Column(db.String(60))
+    is_admin = db.Column(db.Boolean, default=False)
+    unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
+    availabilities = db.relationship('Availability', backref='booking', lazy='dynamic')
+    #transaction_id = db.Column(db.String(255), unique=True)
+
+    def __repr__(self):
+        return '<Booking (id = %r, unit_id = %, begin_on = %r, end_on = %r)>' % (self.id, self.unit_id, self.begin_on, self.end_on)
+
+
+class BookingRequest(Base):
+    __tablename__ = 'booking_request'
+
+    id = db.Column(db.Integer, primary_key=True)
+    unitgroup_name = db.Column(db.String(30), nullable=False)
+    checkin = db.Column(db.Date, nullable=False)
+    checkout = db.Column(db.Date, nullable=False)
+    guests = db.Column(db.Integer, nullable=False)
+    avg_price = db.Column(db.Integer)
+    first_name = db.Column(db.String(30))
+    last_name = db.Column(db.String(30))
+    email = db.Column(db.String(60))
+    status = db.Column(db.String(30), default='CREATED')
+    stripe_id = db.Column(db.Unicode(255, collation='utf8_bin'))
+    unitgroup_id = db.Column(db.Integer, db.ForeignKey('unitgroup.id'))
+
+    def __init__(self, unitgroup_name, unitgroup_id, checkin, checkout, guests, email, unit_info):
         self.unitgroup_id = unitgroup_id
-        self.groupname = groupname
+        self.unitgroup_name = unitgroup_name
         self.checkin = utils.convert_date_to_string(checkin)
         self.checkout = utils.convert_date_to_string(checkout)
         self.guests = guests
         self.unit_info = unit_info
-        # self.avg_price = None
+        self.avg_price = self.unit_info.avg_price if self.unit_info.avg_price else 0
         # TODO - populate firstname and lastname
         self.firstname = ""
         self.lastname = ""
         self.email = email
+
     def __repr__(self):
-        return "(unit group name = %s : checkin = %s checkout = %s guests = %s price = %s)" \
-               % (self.groupname, self.checkin, self.checkout,  self.guests, self.unit_info.avg_price)
+        return "(unitgroup name = %s : checkin = %s checkout = %s guests = %s price = %s)" \
+               % (self.unitgroup_name, self.checkin, self.checkout,  self.guests, self.unit_info.avg_price)
 
     def serialize_booking_request(self):
         unit_info = self.unit_info
         if unit_info is None:
             return {}
         return {
-            'group_name': self.groupname,
+            'unitgroup_name': self.unitgroup_name,
             'display_name': unit_info.unit.displayName,
             'resort_name': unit_info.resort.displayName,
             'checkin': self.checkin,
             'checkout': self.checkout,
             'guests': self.guests,
             'email': self.email,
-            'avg_price': self.unit_info.avg_price if self.unit_info.avg_price else 0
+            'avg_price': self.avg_price
         }
 
 

@@ -19,7 +19,7 @@ begin
 end $$
 delimiter ;
 
-call fill_calendar('2016-08-01', '2018-08-31');
+call fill_calendar('2016-09-01', '2018-09-30');
 
 
 ---- NOTE : This has been migrated to SQLAlchemy

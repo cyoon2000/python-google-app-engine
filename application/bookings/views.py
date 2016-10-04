@@ -14,7 +14,8 @@ from urllib import urlencode
 import httplib2
 import webapp2
 
-MAILGUN_DOMAIN_NAME = 'sandbox9831351ae46f4ed3b48fdefa8e053e40.mailgun.org'
+# MAILGUN_DOMAIN_NAME = 'sandbox9831351ae46f4ed3b48fdefa8e053e40.mailgun.org'
+MAILGUN_DOMAIN_NAME = 'gokitebaja.com'
 MAILGUN_API_KEY = 'key-3b38025c106d8d620b501aaf7e89961c'
 
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
@@ -342,9 +343,11 @@ def book(groupname):
         unitgroup_id = result[0]
         unitgroup = get_content_model().find_unit_by_name(groupname)
         unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
-        print unit_info
         booking_request = get_model().BookingRequest(groupname, unitgroup_id, checkin, checkout, guests, email, unit_info)
-        return send_mail(booking_request)
+        booking_request = model.save_entity(booking_request)
+        logging.info(get_model().BookingRequest.serialize_booking_request(booking_request))
+
+    return send_mail(booking_request)
         #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
 
 
@@ -358,7 +361,7 @@ def test_mail(groupname):
     checkin = "2016-11-01"
     checkout = "2016-11-05"
     guests = 2
-    email = "test@example.com"
+    email = "cherieyoun@gmail.com"
 
     checkin = utils.convert_string_to_date(checkin)
     checkout = utils.convert_string_to_date(checkout)
@@ -410,6 +413,8 @@ def send_complex_message(recipient, booking_request):
     data = {
         'from': 'GoKiteBaja <mailgun@{}>'.format(MAILGUN_DOMAIN_NAME),
         'to': recipient,
+        'cc': booking_request.email,
+        'bcc': "book@gokitebaja.com",
         'subject': 'Your Booking Request has been received',
         'text': 'Test message from Mailgun',
         'html': html_body
