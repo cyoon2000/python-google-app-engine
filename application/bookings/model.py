@@ -180,7 +180,7 @@ class BookingRequest(Base):
     avg_price = db.Column(db.Integer)
     first_name = db.Column(db.String(30))
     last_name = db.Column(db.String(30))
-    email = db.Column(db.String(60))
+    email = db.Column(db.String(60), nullable=False)
     status = db.Column(db.String(30), default='CREATED')
     stripe_id = db.Column(db.Unicode(255, collation='utf8_bin'))
     unitgroup_id = db.Column(db.Integer, db.ForeignKey('unitgroup.id'))
@@ -193,9 +193,8 @@ class BookingRequest(Base):
         self.guests = guests
         self.unit_info = unit_info
         self.avg_price = self.unit_info.avg_price if self.unit_info.avg_price else 0
-        # TODO - populate firstname and lastname
-        self.firstname = ""
-        self.lastname = ""
+        self.firstname = None
+        self.lastname = None
         self.email = email
 
     def __repr__(self):

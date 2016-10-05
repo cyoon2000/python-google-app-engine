@@ -330,6 +330,8 @@ def book(groupname):
     checkout = request.args.get('to')
     guests = request.args.get('guests')
     email = request.args.get('email')
+    firstname = request.args.get('firstname')
+    lastname = request.args.get('lastname')
 
     checkin = utils.convert_string_to_date(checkin)
     checkout = utils.convert_string_to_date(checkout)
@@ -344,11 +346,13 @@ def book(groupname):
         unitgroup = get_content_model().find_unit_by_name(groupname)
         unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
         booking_request = get_model().BookingRequest(groupname, unitgroup_id, checkin, checkout, guests, email, unit_info)
+        booking_request.first_name = firstname
+        booking_request.last_name = lastname
         booking_request = model.save_entity(booking_request)
         logging.info(get_model().BookingRequest.serialize_booking_request(booking_request))
 
     return send_mail(booking_request)
-        #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
+    #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
 
 
 @bookings_api.route('/mail/<groupname>', methods=['POST'])
