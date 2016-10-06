@@ -48,14 +48,33 @@ def list():
     if token:
         token = token.encode('utf-8')
 
-    bookings, next_page_token = get_model().list(cursor=token)
+    requests, next_page_token = get_model().list_booking_request(cursor=token)
+
+
+    #print render_template("booking-request/list.html", bookings=requests)
 
     try: return render_template(
-        "list.html",
-        bookings=bookings,
+        "booking-request/list.html",
+        requests=requests,
         next_page_token=next_page_token)
     except TemplateNotFound:
         abort(404)
+
+
+# @bookings_api.route("/")
+# def list():
+#     token = request.args.get('page_token', None)
+#     if token:
+#         token = token.encode('utf-8')
+#
+#     bookings, next_page_token = get_model().list(cursor=token)
+#
+#     try: return render_template(
+#         "list.html",
+#         bookings=bookings,
+#         next_page_token=next_page_token)
+#     except TemplateNotFound:
+#         abort(404)
 
 
 @bookings_api.route('/<id>')

@@ -217,6 +217,18 @@ class BookingRequest(Base):
         }
 
 
+def list_booking_request(limit=20, cursor=None):
+    cursor = int(cursor) if cursor else 0
+    query = (BookingRequest.query
+             .order_by(BookingRequest.created_on)
+             .limit(limit)
+             .offset(cursor))
+    bookings = builtin_list(map(from_sql, query.all()))
+    next_page = cursor + limit if len(bookings) == limit else None
+    return (bookings, next_page)
+
+
+
 def list(limit=10, cursor=None):
     cursor = int(cursor) if cursor else 0
     query = (Booking.query
