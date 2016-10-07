@@ -228,6 +228,7 @@ class EmailData(object):
 def list_booking_request(limit=20, cursor=None):
     cursor = int(cursor) if cursor else 0
     query = (BookingRequest.query
+             .filter(BookingRequest.status == 'CREATED')
              .order_by(BookingRequest.created_on)
              .limit(limit)
              .offset(cursor))
@@ -235,6 +236,25 @@ def list_booking_request(limit=20, cursor=None):
     next_page = cursor + limit if len(bookings) == limit else None
     return (bookings, next_page)
 
+
+def list_booking_request_confirmed(limit=5):
+    query = (BookingRequest.query
+             .filter(BookingRequest.status == 'CONFIRMED')
+             .order_by(BookingRequest.updated_on.desc())
+             .limit(limit))
+
+    confirms = builtin_list(map(from_sql, query.all()))
+    return confirms
+
+
+def list_booking_request_declined(limit=5):
+    query = (BookingRequest.query
+             .filter(BookingRequest.status == 'DECLINED')
+             .order_by(BookingRequest.updated_on.desc())
+             .limit(limit))
+
+    declines = builtin_list(map(from_sql, query.all()))
+    return declines
 
 
 def list(limit=10, cursor=None):

@@ -2,16 +2,22 @@
 {% block content %}
 
 <h2> Booking Requests </h2>
-<a href="/bookings/add" class="btn btn-success btn-sm">
-    <i class="glyphicon glyphicon-plus"></i>
-    Add booking
-</a>
+<!--<a href="/bookings/add" class="btn btn-success btn-sm">-->
+    <!--<i class="glyphicon glyphicon-plus"></i>-->
+    <!--Add booking-->
+<!--</a>-->
 
 
 <div class="container">
-    <h2>Waiting for Your Response</h2>
-    <p>When you <strong>confirm</strong>, a confirmation email will be sent to the customer.</p>
-    <p>When you <strong>decline</strong>, you will have opportunity to add personal message such as suggesting different dates to the email to the customer.</p>
+    <h2><span class="label label-primary">Waiting for Your Response</span></h2>
+
+    <ul>
+        <li>When you <strong>confirm</strong>, a confirmation email will be sent to the customer.</li>
+        <li>When you <strong>decline</strong>, you will have opportunity to add personal message such as suggesting different dates to the email to the customer.</li>
+    </ul>
+
+    <!--<p>When you <strong>confirm</strong>, a confirmation email will be sent to the customer.</p>-->
+    <!--<p>When you <strong>decline</strong>, you will have opportunity to add personal message such as suggesting different dates to the email to the customer.</p>-->
     <table class="table table-hover">
         <thead>
         <tr>
@@ -19,7 +25,7 @@
             <th>Check In</th>
             <th>Check Out</th>
             <th>Guests</th>
-            <th>Ave Price<br/> per night</th>
+            <th>Ave Rate<br/> per night</th>
             <th>Name</th>
             <th>Date Requested</th>
             <th>Confirm</th>
@@ -45,6 +51,67 @@
         </tbody>
     </table>
 
+    <hr/>
+    <h2><span class="label label-primary">Confirmed Recently</span></h2>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>Unit (Type)</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Guests</th>
+            <th>Ave Rate<br/> per night</th>
+            <th>Name</th>
+            <th>Date Requested</th>
+            <th>Date Confirmed</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for booking_request in confirms %}
+        <tr>
+            <td>{{booking_request.unitgroup_name}}</td>
+            <td>{{booking_request.checkin}}</td>
+            <td>{{booking_request.checkout}}</td>
+            <td>{{booking_request.guests}}</td>
+            <td>USD {{booking_request.avg_price}}</td>
+            <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
+            <td>{{booking_request.created_on}}</td>
+            <td>{{booking_request.updated_on}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <hr/>
+    <h2><span class="label label-primary"> Declined Recently</span></h2>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>Unit (Type)</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Guests</th>
+            <th>Ave Rate<br/> per night</th>
+            <th>Name</th>
+            <th>Date Requested</th>
+            <th>Date Confirmed</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for booking_request in declines %}
+        <tr>
+            <td>{{booking_request.unitgroup_name}}</td>
+            <td>{{booking_request.checkin}}</td>
+            <td>{{booking_request.checkout}}</td>
+            <td>{{booking_request.guests}}</td>
+            <td>USD {{booking_request.avg_price}}</td>
+            <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
+            <td>{{booking_request.created_on}}</td>
+            <td>{{booking_request.updated_on}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
 
     <!-- confirm Modal -->
     <div class="modal fade" id="confirmModal" role="dialog">

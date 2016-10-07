@@ -56,13 +56,14 @@ def list():
         token = token.encode('utf-8')
 
     requests, next_page_token = get_model().list_booking_request(cursor=token)
-
-
-    #print render_template("booking-request/list.html", bookings=requests)
+    confirms = get_model().list_booking_request_confirmed()
+    declines = get_model().list_booking_request_declined()
 
     try: return render_template(
         "booking-request/list.html",
         requests=requests,
+        confirms=confirms,
+        declines=declines,
         next_page_token=next_page_token)
     except TemplateNotFound:
         abort(404)
@@ -389,6 +390,9 @@ def confirm():
         return 'Sorry, Invalid Request. bookingRequestId is required', 400
 
     booking_request = build_booking_request_for_email(id)
+    booking_request.status = "CONFIRMED"
+    booking_request = model.save_entity(booking_request)
+
     logging.info("sending CONFIRMATION email : id = %d, name = %s", booking_request.id, booking_request.unitgroup_name)
 
     return send_mail(booking_request, RESPONSE_CONFIRM, "")
@@ -403,6 +407,9 @@ def decline():
     comment = request.form['comment']
 
     booking_request = build_booking_request_for_email(id)
+    booking_request.status = "DECLINED"
+    booking_request = model.save_entity(booking_request)
+
     logging.info("sending DECLINE email : id = %d, name = %s", booking_request.id, booking_request.unitgroup_name)
     return send_mail(booking_request, RESPONSE_DECLINE, comment)
 
