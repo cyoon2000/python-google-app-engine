@@ -10,8 +10,8 @@
 
 <div class="container">
     <h2>Waiting for Your Response</h2>
-    <p>When you confirm, a confirmation email will be sent to the customer.</p>
-    <p>When you decline, you will have opportunity to add personal message such as suggesting different dates to the email to the customer.</p>
+    <p>When you <strong>confirm</strong>, a confirmation email will be sent to the customer.</p>
+    <p>When you <strong>decline</strong>, you will have opportunity to add personal message such as suggesting different dates to the email to the customer.</p>
     <table class="table table-hover">
         <thead>
         <tr>
@@ -36,13 +36,15 @@
             <td>USD {{booking_request.avg_price}}</td>
             <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
             <td>{{booking_request.created_on}}</td>
+            <!--<td><button type="button" class="btn btn-success btn-sm" id="confirmButton" value="{{booking_request.id}}">Confirm</button></td>-->
+            <!--<td><a href="/bookings/confirm/{{booking_request.id}}" class="btn btn-success btn-sm">Confirm</button></a>-->
             <td><button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#confirmModal" data-id="{{booking_request.id}}">Confirm</button></td>
-            <!--<td><a href="/bookings/add" class="btn btn-success btn-sm">Confirm</button></a>-->
-            <td><button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#declineModal">Decline</button></td>
+            <td><button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#declineModal" data-id="{{booking_request.id}}">Decline</button></td>
         </tr>
         {% endfor %}
         </tbody>
     </table>
+
 
     <!-- confirm Modal -->
     <div class="modal fade" id="confirmModal" role="dialog">
@@ -53,15 +55,13 @@
                     <h4 class="modal-title">Confirm Booking Request</h4>
                 </div>
                 <div class="modal-body">
-                    <p>Feel free to add a message here. Your message will be added to the confirmation email.</p>
-                    <form id="myForm" method="post">
-                            <label for="comment">Comment:</label>
-                            <input type="text" class="form-control" name="comment" id="comment">
-                            <input type="hidden" name="bookingRequestId" id="bookingRequestId" value=""/>
+                    <p>The confirmation email will be sent shortly to the customer. You will also receive the copy of the email.</p>
+                    <form id="confirmForm" method="post">
+                        <input type="hidden" name="bookingRequestId" id="bookingRequestId" value=""/>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button id="myFormSubmit" type="button" class="btn btn-success" data-dismiss="modal">Confirm</button>
+                    <button id="confirmFormSubmit" type="button" class="btn btn-success" data-dismiss="modal">Confirm</button>
                     <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                 </div>
             </div>
@@ -69,29 +69,30 @@
     </div>
 
     <!-- decline Modal -->
-    <!--<div class="modal fade" id="declineModal" role="dialog">-->
-        <!--<div class="modal-dialog">-->
-            <!--<div class="modal-content">-->
-                <!--<div class="modal-header">-->
-                    <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
-                    <!--<h4 class="modal-title">Decline Booking Request</h4>-->
-                <!--</div>-->
-                <!--<div class="modal-body">-->
-                    <!--<p>Feel free to add a message here. You can suggest different dates or different units. Your message will be added to the email.</p>-->
-                <!--</div>-->
-                <!--<form>-->
-                    <!--<div class="form-group">-->
-                        <!--<label for="comment">Comment:</label>-->
-                        <!--<textarea class="form-control" rows="5" id="comment"></textarea>-->
-                    <!--</div>-->
-                <!--</form>-->
-                <!--<div class="modal-footer">-->
-                    <!--<button type="button" class="btn btn-danger" data-dismiss="modal">Decline</button>-->
-                    <!--<button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>-->
-                <!--</div>-->
-            <!--</div>-->
-        <!--</div>-->
-    <!--</div>-->
+    <div class="modal fade" id="declineModal" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Decline Booking Request</h4>
+                </div>
+                <div class="modal-body">
+                    <p>The email will be sent shortly to the customer. You will also receive the copy of the email.</p>
+                    <p>Feel free to add a message here (such as suggesting different dates or different units). Your message will be added to the email.</p>
+                    <form id="myForm" method="post">
+                            <label for="comment">Comment:</label>
+                            <input type="text" class="form-control" name="comment" id="comment">
+                            <input type="hidden" name="bookingRequestId" id="bookingRequestId" value=""/>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button id="myFormSubmit" type="button" class="btn btn-danger" data-dismiss="modal">Decline</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 
@@ -116,19 +117,49 @@
         $(e.currentTarget).find('input[name="bookingRequestId"]').val(bookingRequestId);
     });
 
+    $('#confirmFormSubmit').click(function(e){
+        e.preventDefault();
+
+        $.ajax({
+            url: "/bookings/confirm",
+            type: "POST",
+            data: $("#confirmForm").serialize(),
+            success: function(data){
+                alert("The confirm email will be sent shortly.")
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                alert(errorThrown);
+            }
+        });
+    });
+
+
+    $('#declineModal').on('show.bs.modal', function(e) {
+
+        //get data-id attribute of the clicked element
+        var bookingRequestId = $(e.relatedTarget).data('id');
+
+        //populate the textbox
+        $(e.currentTarget).find('input[name="bookingRequestId"]').val(bookingRequestId);
+    });
+
     $('#myFormSubmit').click(function(e){
       e.preventDefault();
 
-    $.ajax({
-        url: "/bookings/confirm",
-        type: "POST",
-        data: $("#myForm").serialize(),
-        success: function(data){
-            alert("Success")
-        }
+        $.ajax({
+            url: "/bookings/decline",
+            type: "POST",
+            data: $("#myForm").serialize(),
+            success: function(data){
+                alert("The decline email will be sent shortly.")
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                alert(errorThrown);
+            }
+        });
     });
 
-});
+
 </script>
 
 {% endblock %}

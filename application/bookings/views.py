@@ -381,21 +381,30 @@ def book(groupname):
     #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
 
 
-# booking_request_id
+# No comment will be added for confirm email
 @bookings_api.route('/confirm', methods=['POST'])
 def confirm():
     id = request.form['bookingRequestId']
+    if not id:
+        return 'Sorry, Invalid Request. bookingRequestId is required', 400
+
+    booking_request = build_booking_request_for_email(id)
+    logging.info("sending CONFIRMATION email : id = %d, name = %s", booking_request.id, booking_request.unitgroup_name)
+
+    return send_mail(booking_request, RESPONSE_CONFIRM, "")
+
+
+# Comment will be added for decline email
+@bookings_api.route('/decline', methods=['POST'])
+def decline():
+    id = request.form['bookingRequestId']
+    if not id:
+        return 'Sorry, Invalid Request. bookingRequestId is required', 400
     comment = request.form['comment']
-    booking_request = get_model().BookingRequest.query.get(id)
-    logging.info("sending confirmation email : id = %d, name = %s", booking_request.id, booking_request.unitgroup_name)
 
-    checkin = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkin))
-    checkout = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkout))
-    unitgroup = get_content_model().find_unit_by_name(booking_request.unitgroup_name)
-    unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
-    booking_request.unit_info = unit_info
-
-    return send_mail(booking_request, RESPONSE_CONFIRM, comment)
+    booking_request = build_booking_request_for_email(id)
+    logging.info("sending DECLINE email : id = %d, name = %s", booking_request.id, booking_request.unitgroup_name)
+    return send_mail(booking_request, RESPONSE_DECLINE, comment)
 
 
 @bookings_api.route('/mail/<groupname>', methods=['POST'])
@@ -426,6 +435,17 @@ def test_mail(groupname):
     #email_content = send_mail(booking_request, RESPONSE_CONFIRM, "")
     #email_content = send_mail(booking_request, RESPONSE_DECLINE, "We have availability after Jan 4th, 2016.")
     return email_content
+
+
+def build_booking_request_for_email(id):
+    booking_request = get_model().BookingRequest.query.get(id)
+
+    checkin = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkin))
+    checkout = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkout))
+    unitgroup = get_content_model().find_unit_by_name(booking_request.unitgroup_name)
+    unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
+    booking_request.unit_info = unit_info
+    return booking_request
 
 
 def send_mail(booking_request, response_type, comment):
