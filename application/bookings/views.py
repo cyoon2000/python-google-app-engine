@@ -18,12 +18,12 @@ import webapp2
 MAILGUN_DOMAIN_NAME = 'gokitebaja.com'
 MAILGUN_API_KEY = 'key-3b38025c106d8d620b501aaf7e89961c'
 
-TEMPLATE_REQUEST = "email/booking_request.html"
-TEMPLATE_CONFIRM = "email/booking_confirm.html"
-TEMPLATE_DECLINE = "email/booking_decline.html"
+EMAIL_TEMPLATE = "email/booking_request.html"
 EMAIL_SUBJECT_REQUEST = "Your Booking Request has been received"
 EMAIL_SUBJECT_CONFIRM = "Confirmation for Your Booking Request"
 EMAIL_SUBJECT_DECLINE = "Response for Your Booking Request"
+RESPONSE_CONFIRM = "confirm"
+RESPONSE_DECLINE = "decline"
 
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
@@ -377,7 +377,7 @@ def book(groupname):
         booking_request = model.save_entity(booking_request)
         logging.info(get_model().BookingRequest.serialize_booking_request(booking_request))
 
-    return send_mail(booking_request)
+    return send_mail(booking_request, None, None)
     #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
 
 
@@ -395,7 +395,7 @@ def confirm():
     unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
     booking_request.unit_info = unit_info
 
-    return send_confirm_email(booking_request)
+    return send_mail(booking_request, RESPONSE_CONFIRM, comment)
 
 
 @bookings_api.route('/mail/<groupname>', methods=['POST'])
@@ -419,27 +419,34 @@ def test_mail(groupname):
 
     unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
     booking_request = get_model().BookingRequest(groupname, 1, checkin, checkout, guests, email, unit_info)
-    email_content = send_complex_message(recipient, booking_request, TEMPLATE_REQUEST, EMAIL_SUBJECT_REQUEST)
+    booking_request.first_name = "Frodo"
+    booking_request.last_name = "Baggins"
 
-    return jsonify(results=email_content)
+    email_content = send_mail(booking_request, None, "")
+    #email_content = send_mail(booking_request, RESPONSE_CONFIRM, "")
+    #email_content = send_mail(booking_request, RESPONSE_DECLINE, "We have availability after Jan 4th, 2016.")
+    return email_content
 
 
-def send_mail(booking_request):
+def send_mail(booking_request, response_type, comment):
     # TODO get recipient from content API (email for resort)
     recipient = 'book@gokitebaja.com'
-    email_content = send_complex_message(recipient, booking_request, TEMPLATE_REQUEST, EMAIL_SUBJECT_REQUEST)
-    return jsonify(results=email_content)
 
-
-def send_confirm_email(booking_request):
-    recipient = 'book@gokitebaja.com'
-    email_content = send_complex_message(recipient, booking_request, TEMPLATE_CONFIRM, EMAIL_SUBJECT_CONFIRM)
-    return jsonify(results=email_content)
-
-
-def send_decline_mail(booking_request):
-    recipient = 'book@gokitebaja.com'
-    email_content = send_complex_message(recipient, booking_request, TEMPLATE_DECLINE, EMAIL_SUBJECT_DECLINE)
+    if response_type == RESPONSE_CONFIRM:
+        subject = "Thank you " + booking_request.first_name + "!"
+        status = "Your booking request has been confirmed by the resort."
+        email_data = get_model().EmailData(booking_request, subject, status, comment)
+        email_content = send_complex_message(recipient, email_data, EMAIL_SUBJECT_CONFIRM)
+    elif response_type == RESPONSE_DECLINE:
+        subject = "Sorry, the unit you requested is not available..."
+        status = "Your booking request cannot be accepted by the resort at this time."
+        email_data = get_model().EmailData(booking_request, subject, status, comment)
+        email_content = send_complex_message(recipient, email_data, EMAIL_SUBJECT_DECLINE)
+    else:
+        subject = "Thank you " + booking_request.first_name + "!"
+        status = "Your booking request has been sent to the resort."
+        email_data = get_model().EmailData(booking_request, subject, status, comment)
+        email_content = send_complex_message(recipient, email_data, EMAIL_SUBJECT_REQUEST)
     return jsonify(results=email_content)
 
 
@@ -462,16 +469,16 @@ def send_simple_message(recipient):
             'Mailgun API error: {} {}'.format(resp.status, content))
 
 
-def send_complex_message(recipient, booking_request, template_name, email_subject):
+def send_complex_message(recipient, email_data, email_subject):
     http = httplib2.Http()
     http.add_credentials('api', MAILGUN_API_KEY)
-    html_body = render_template(template_name,
-                                booking_request=booking_request)
+    html_body = render_template(EMAIL_TEMPLATE,
+                                email_data=email_data)
 
     url = 'https://api.mailgun.net/v3/{}/messages'.format(MAILGUN_DOMAIN_NAME)
     data = {
         'from': 'GoKiteBaja <mailgun@{}>'.format(MAILGUN_DOMAIN_NAME),
-        'to': booking_request.email,
+        'to': email_data.booking_request.email,
         'cc': recipient,
         'bcc': "book@gokitebaja.com",
         'subject': email_subject,

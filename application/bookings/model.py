@@ -217,6 +217,14 @@ class BookingRequest(Base):
         }
 
 
+class EmailData(object):
+    def __init__(self, booking_request, subject, status, comment):
+        self.booking_request = booking_request
+        self.subject = subject
+        self.status = status
+        self.comment = comment
+
+
 def list_booking_request(limit=20, cursor=None):
     cursor = int(cursor) if cursor else 0
     query = (BookingRequest.query
