@@ -18,6 +18,13 @@ import webapp2
 MAILGUN_DOMAIN_NAME = 'gokitebaja.com'
 MAILGUN_API_KEY = 'key-3b38025c106d8d620b501aaf7e89961c'
 
+TEMPLATE_REQUEST = "email/booking_request.html"
+TEMPLATE_CONFIRM = "email/booking_confirm.html"
+TEMPLATE_DECLINE = "email/booking_decline.html"
+EMAIL_SUBJECT_REQUEST = "Your Booking Request has been received"
+EMAIL_SUBJECT_CONFIRM = "Confirmation for Your Booking Request"
+EMAIL_SUBJECT_DECLINE = "Response for Your Booking Request"
+
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
 @bookings_api.before_request
@@ -374,6 +381,23 @@ def book(groupname):
     #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
 
 
+# booking_request_id
+@bookings_api.route('/confirm', methods=['POST'])
+def confirm():
+    id = request.form['bookingRequestId']
+    comment = request.form['comment']
+    booking_request = get_model().BookingRequest.query.get(id)
+    logging.info("sending confirmation email : id = %d, name = %s", booking_request.id, booking_request.unitgroup_name)
+
+    checkin = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkin))
+    checkout = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkout))
+    unitgroup = get_content_model().find_unit_by_name(booking_request.unitgroup_name)
+    unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
+    booking_request.unit_info = unit_info
+
+    return send_confirm_email(booking_request)
+
+
 @bookings_api.route('/mail/<groupname>', methods=['POST'])
 def test_mail(groupname):
     input = json.loads(request.data)
@@ -395,7 +419,7 @@ def test_mail(groupname):
 
     unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
     booking_request = get_model().BookingRequest(groupname, 1, checkin, checkout, guests, email, unit_info)
-    email_content = send_complex_message(recipient, booking_request)
+    email_content = send_complex_message(recipient, booking_request, TEMPLATE_REQUEST, EMAIL_SUBJECT_REQUEST)
 
     return jsonify(results=email_content)
 
@@ -403,7 +427,19 @@ def test_mail(groupname):
 def send_mail(booking_request):
     # TODO get recipient from content API (email for resort)
     recipient = 'book@gokitebaja.com'
-    email_content = send_complex_message(recipient, booking_request)
+    email_content = send_complex_message(recipient, booking_request, TEMPLATE_REQUEST, EMAIL_SUBJECT_REQUEST)
+    return jsonify(results=email_content)
+
+
+def send_confirm_email(booking_request):
+    recipient = 'book@gokitebaja.com'
+    email_content = send_complex_message(recipient, booking_request, TEMPLATE_CONFIRM, EMAIL_SUBJECT_CONFIRM)
+    return jsonify(results=email_content)
+
+
+def send_decline_mail(booking_request):
+    recipient = 'book@gokitebaja.com'
+    email_content = send_complex_message(recipient, booking_request, TEMPLATE_DECLINE, EMAIL_SUBJECT_DECLINE)
     return jsonify(results=email_content)
 
 
@@ -426,20 +462,20 @@ def send_simple_message(recipient):
             'Mailgun API error: {} {}'.format(resp.status, content))
 
 
-def send_complex_message(recipient, booking_request):
+def send_complex_message(recipient, booking_request, template_name, email_subject):
     http = httplib2.Http()
     http.add_credentials('api', MAILGUN_API_KEY)
-    html_body = render_template("email/booking_request.html",
+    html_body = render_template(template_name,
                                 booking_request=booking_request)
 
     url = 'https://api.mailgun.net/v3/{}/messages'.format(MAILGUN_DOMAIN_NAME)
     data = {
         'from': 'GoKiteBaja <mailgun@{}>'.format(MAILGUN_DOMAIN_NAME),
-        'to': recipient,
-        'cc': booking_request.email,
+        'to': booking_request.email,
+        'cc': recipient,
         'bcc': "book@gokitebaja.com",
-        'subject': 'Your Booking Request has been received',
-        'text': 'Test message from Mailgun',
+        'subject': email_subject,
+        'text': email_subject,
         'html': html_body
         # 'html': '<html>HTML <strong>version</strong> of the body</html>'
     }
