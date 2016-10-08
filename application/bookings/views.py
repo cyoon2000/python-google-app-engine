@@ -69,6 +69,41 @@ def list():
         abort(404)
 
 
+@bookings_api.route("/confirms")
+def list_confirms():
+    token = request.args.get('page_token', None)
+    if token:
+        token = token.encode('utf-8')
+
+    # requests, next_page_token = get_model().list_booking_request(cursor=token)
+    confirms = get_model().list_booking_request_confirmed(100)
+
+    try: return render_template(
+        "booking-request/list_confirms.html",
+        confirms=confirms)
+        # confirms=confirms,
+        # next_page_token=next_page_token)
+    except TemplateNotFound:
+        abort(404)
+
+
+@bookings_api.route("/declines")
+def list_declines():
+    token = request.args.get('page_token', None)
+    if token:
+        token = token.encode('utf-8')
+
+    # requests, next_page_token = get_model().list_booking_request(cursor=token)
+    declines = get_model().list_booking_request_declined(100)
+
+    try: return render_template(
+        "booking-request/list_declines.html",
+        declines=declines)
+    # confirms=confirms,
+    # next_page_token=next_page_token)
+    except TemplateNotFound:
+        abort(404)
+
 # @bookings_api.route("/")
 # def list():
 #     token = request.args.get('page_token', None)

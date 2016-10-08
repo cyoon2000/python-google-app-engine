@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!--<h2> Confirmed Booking Requests </h2>-->
+<!--<a href="/bookings/add" class="btn btn-success btn-sm">-->
+<!--<i class="glyphicon glyphicon-plus"></i>-->
+<!--Add booking-->
+<!--</a>-->
+
+
+<div class="container">
+    <h2><span class="label label-primary">Confirmed Booking Requests</span></h2>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>Unit (Type)</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Guests</th>
+            <th>Ave Rate<br/> per night</th>
+            <th>Name</th>
+            <th>Date Requested</th>
+            <th>Date Confirmed</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for booking_request in confirms %}
+        <tr>
+            <td>{{booking_request.unitgroup_name}}</td>
+            <td>{{booking_request.checkin}}</td>
+            <td>{{booking_request.checkout}}</td>
+            <td>{{booking_request.guests}}</td>
+            <td>USD {{booking_request.avg_price}}</td>
+            <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
+            <td>{{booking_request.created_on}}</td>
+            <td>{{booking_request.updated_on}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+
+<hr/>
+
+<!--{% if next_page_token %}-->
+<!--<nav>-->
+    <!--<ul class="pager">-->
+        <!--<li><a href="?page_token={{next_page_token}}">More</a></li>-->
+    <!--</ul>-->
+<!--</nav>-->
+<!--{% endif %}-->
+
+{% endblock %}
