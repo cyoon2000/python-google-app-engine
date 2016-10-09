@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container">
+    <h2><span class="label label-primary">Bookings</span></h2>
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>Booking Code</th>
+            <th>Unit Name</th>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Guests</th>
+            <th>Booked Rate per night <br/>(rounded)</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Date Booked</th>
+            <th>Date Updated</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for booking in bookings %}
+        <tr>
+            <td><a href="/bookings/{{booking.id}}">{{booking.id}}</a></td>
+            <td>{{booking.unit_name}}</td>
+            <td>{{booking.begin_on}}</td>
+            <td>{{booking.end_on}}</td>
+            <td>{{booking.guests}}</td>
+            <td>USD {{booking.booked_rate}}</td>
+            <td>{{booking.first_name}} {{booking.last_name}}</td>
+            <td>{{booking.email}}</td>
+            <td>{{booking.created_on}}</td>
+            <td>{{booking.updated_on}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+    {% if next_page_token %}
+    <nav>
+    <ul class="pager">
+    <li><a href="?page_token={{next_page_token}}">More</a></li>
+    </ul>
+    </nav>
+    {% endif %}
+
+{% endblock %}

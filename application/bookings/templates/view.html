@@ -2,7 +2,10 @@
 
 {% block content %}
 
-<h3>Booking Information</h3>
+<h3>View Booking Detail</h3>
+
+<div class="col-xs-12" style="height:30px;"></div>
+
 
 <div class="btn-group">
     <a href="/bookings/{{booking.id}}/edit" class="btn btn-primary btn-sm">
@@ -15,24 +18,82 @@
     </a>
 </div>
 
-<div class="media">
-    <!--<div class="media-left">-->
-        <!--<img class="booking-image" src="http://placekitten.com/g/128/192">-->
-    <!--</div>-->
-    <div class="media-body">
-        <h4 class="booking-title">
-            {{booking.unit_name}}
-            <small>unit_id = {{booking.unit_id}}</small>
-        </h4>
-        <h5 class="booking-begin_on">{{booking.begin_on}}</h5>
-        <h5 class="booking-end_on">{{booking.end_on}}</h5>
-        <p>{{booking.status}}</p>
-        <p>{{booking.email}}</p>
-        <p>{{booking.first_name}}</p>
-        <p>{{booking.last_name}}</p>
-        <p>{{booking.email}}</p>
-        <p>{{booking.is_admin}}</p>
-    </div>
+<div class="col-xs-12" style="height:30px;"></div>
+
+<div class="row">
+    <div class="col-md-2"><strong>Booking Code</strong></div>
+    <div class="col-md-4">{{booking.id}}</div>
 </div>
+<div class="row">
+    <div class="col-md-2"><strong>Unit Name</strong></div>
+    <div class="col-md-4">{{booking.unit_name}}</div>
+</div>
+<hr/>
+<div class="row">
+    <div class="col-md-2"><strong>Check In</strong></div>
+    <div class="col-md-4">{{booking.begin_on}}</div>
+</div>
+<div class="row">
+    <div class="col-md-2"><strong>Check Out</strong></div>
+    <div class="col-md-4">{{booking.end_on}}</div>
+</div>
+
+<hr/>
+<div class="row">
+    <div class="col-md-2"><strong>Number of Guests</strong></div>
+    <div class="col-md-4">{{booking.guests}}</div>
+</div>
+<div class="row">
+    <div class="col-md-2"><strong>Booked Rate per night (rounded)</strong></div>
+    <div class="col-md-4">{{booking.booked_rate}}</div>
+</div>
+<div class="row">
+    <div class="col-md-2"><strong>Booked Date</strong></div>
+    <div class="col-md-4">{{booking.created_on}}</div>
+</div>
+<div class="row">
+    <div class="col-md-2"><strong>Updated Date</strong></div>
+    <div class="col-md-4">{{booking.updated_on}}</div>
+</div>
+
+<hr/>
+<div class="row">
+    <div class="col-md-2"><strong>First Name</strong></div>
+    <div class="col-md-4">{{booking.first_name}}</div>
+</div>
+<div class="row">
+    <div class="col-md-2"><strong>Last Name</strong></div>
+    <div class="col-md-4">{{booking.last_name}}</div>
+</div>
+<div class="row">
+    <div class="col-md-2"><strong>Email</strong></div>
+    <div class="col-md-4">{{booking.email}}</div>
+</div>
+
+<hr/>
+<div class="row">
+    <div class="col-md-2"><strong>Note</strong></div>
+    <div class="col-md-4">{{booking.note}}</div>
+</div>
+
+<!--<div class="media">-->
+    <!--&lt;!&ndash;<div class="media-left">&ndash;&gt;-->
+        <!--&lt;!&ndash;<img class="booking-image" src="http://placekitten.com/g/128/192">&ndash;&gt;-->
+    <!--&lt;!&ndash;</div>&ndash;&gt;-->
+    <!--<div class="media-body">-->
+        <!--<h4 class="booking-title">-->
+            <!--{{booking.unit_name}}-->
+            <!--<small>unit_id = {{booking.unit_id}}</small>-->
+        <!--</h4>-->
+        <!--<h5 class="booking-begin_on">{{booking.begin_on}}</h5>-->
+        <!--<h5 class="booking-end_on">{{booking.end_on}}</h5>-->
+        <!--<p>{{booking.status}}</p>-->
+        <!--<p>{{booking.email}}</p>-->
+        <!--<p>{{booking.first_name}}</p>-->
+        <!--<p>{{booking.last_name}}</p>-->
+        <!--<p>{{booking.email}}</p>-->
+        <!--<p>{{booking.is_admin}}</p>-->
+    <!--</div>-->
+<!--</div>-->
 
 {% endblock %}
