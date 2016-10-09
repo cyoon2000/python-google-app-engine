@@ -126,65 +126,42 @@ def view(id):
     return render_template("view.html", booking=booking)
 
 
-@bookings_api.route('/add', methods=['GET', 'POST'])
-def add():
-
-    # if request.method == 'POST':
-    #     data = request.form.to_dict(flat=True)
-    #     booking = get_model().create(data)
-    #
-    #     return redirect(url_for('.view', id=booking['id']))
-    # return render_template("form.html", action="Add", booking={})
-
-    form = forms.BookingForm()
-    units = model.get_units_by_resort(session['resort_id'])
-    form.unit_id.choices = [(r.id, r.display_name) for r in units]
-
-    if form.validate_on_submit():
-        data = request.form.to_dict(flat=True)
-        data.pop("csrf_token", None)
-        # populate unit_name from unit_id
-        data['unit_name'] = model.Unit.query.get(data['unit_id']).display_name
-        booking = get_model().create(data)
-        return redirect(url_for('.view', id=booking['id']))
-
-    return render_template('form.html', action="Add", form=form)
-
-
 @bookings_api.route('/<id>/edit', methods=['GET', 'POST'])
 def edit(id):
-    booking = get_model().read(id)
+    booking = model.Booking.query.get(id)
 
-    # if request.method == 'POST':
-    #     data = request.form.to_dict(flat=True)
-    #
-    #     booking = get_model().update(data, id)
-    #
-    #     return redirect(url_for('.view', id=booking['id']))
-
-    form = forms.BookingForm(obj=booking)
-    units = model.get_units_by_resort(session['resort_id'])
-    form.unit_id.choices = [(r.id, r.display_name) for r in units]
-
-    # pre-populate form with booking data
-    form.unit_id.data = booking['unit_id']
-    form.begin_on.data = booking['begin_on']
-    form.end_on.data = booking['end_on']
-    form.first_name.data = booking['first_name']
-    form.last_name.data = booking['last_name']
-    form.email.data = booking['email']
-
-    if form.validate_on_submit():
-        # TODO - FIXME - This does not work
-        # form.populate_obj(booking)
+    if request.method == 'POST':
         data = request.form.to_dict(flat=True)
-        data.pop("csrf_token", None)
-        # populate unit_name from unit_id
-        data['unit_name'] = model.Unit.query.get(data['unit_id']).display_name
         booking = model.update(data, id)
         return redirect(url_for('.view', id=booking['id']))
 
-    return render_template("form.html", action="Edit", booking=booking, form=form)
+    return render_template("booking/form_edit.html", action="Edit", booking=booking)
+
+
+@bookings_api.route('/add', methods=['GET', 'POST'])
+def add():
+
+    if request.method == 'POST':
+        data = request.form.to_dict(flat=True)
+        booking = get_model().create(data)
+
+        return redirect(url_for('.view', id=booking['id']))
+    return render_template("booking/form.html", action="Add", booking={})
+    # return render_template("booking/form.html", action="Edit", booking=booking)
+
+    # form = forms.BookingForm()
+    # units = model.get_units_by_resort(session['resort_id'])
+    # form.unit_id.choices = [(r.id, r.display_name) for r in units]
+    #
+    # if form.validate_on_submit():
+    #     data = request.form.to_dict(flat=True)
+    #     data.pop("csrf_token", None)
+    #     # populate unit_name from unit_id
+    #     data['unit_name'] = model.Unit.query.get(data['unit_id']).display_name
+    #     booking = get_model().create(data)
+    #     return redirect(url_for('.view', id=booking['id']))
+
+    # return render_template('booking/form.html', action="Add", form=form)
 
 
 @bookings_api.route('/<id>/delete')

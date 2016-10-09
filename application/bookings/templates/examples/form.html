@@ -1,0 +1,99 @@
+<!--{% from "_formhelpers.html" import render_field %}-->
+{% extends "base.html" %}
+
+{% block content %}
+<h3>{{action}} booking</h3>
+
+<form method="post" enctype="multipart/form-data">
+    <!--{{ form.hidden_tag() }}-->
+
+    <div class="form-group">
+        <label for="unit_name">Unit Name</label>
+        <input type="text" name="unit_name" id="unit_name" value="{{booking.unit_name}}" class="form-control"/>
+    </div>
+
+    <div class="form-group">
+        <label for="unit_id">Unit Id (Enter 12 for now)</label>
+        <input type="text" name="unit_id" id="unit_id" value="{{booking.unit_id}}" class="form-control"/>
+    </div>
+
+    <div class="row">
+        <div class='col-sm-4'>
+            <div class="form-group">
+                <div class='input-group date' id='datepicker1'>
+                    <input type="text" name="begin_on" id="begin_on" value="{{booking.begin_on}}" class="form-control"/>
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class='col-sm-4'>
+            <div class="form-group">
+                <div class='input-group date' id='datepicker2'>
+                    <input type="text" name="end_on" id="end_on" value="{{booking.end_on}}" class="form-control"/>
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!--<div class="form-group">-->
+        <!--<label for="begin_on">Begin Date</label>-->
+        <!--<input type="text" name="begin_on" id="begin_on" value="{{booking.begin_on}}" class="form-control"/>-->
+    <!--</div>-->
+    <!--<div class="form-group">-->
+        <!--<label for="end_on">End Date</label>-->
+        <!--<input type="text" name="end_on" id="end_on" value="{{booking.end_on}}" class="form-control"/>-->
+    <!--</div>-->
+    <!--<div class="form-group">-->
+        <!--<label for="status">Status</label>-->
+        <!--<input type="text" name="status" id="status" value="{{booking.status}}" class="form-control"/>-->
+    <!--</div>-->
+    <!--<div class="form-group">-->
+        <!--<label for="first_name">First Name</label>-->
+        <!--<input type="text" name="first_name" id="first_name" value="{{booking.first_name}}" class="form-control"/>-->
+    <!--</div>-->
+    <!--<div class="form-group">-->
+        <!--<label for="last_name">Last Name</label>-->
+        <!--<input type="text" name="last_name" id="last_name" value="{{booking.last_name}}" class="form-control"/>-->
+    <!--</div>-->
+    <!--<div class="form-group">-->
+        <!--<label for="email">Email</label>-->
+        <!--<input type="text" name="email" id="email" value="{{booking.email}}" class="form-control"/>-->
+    <!--</div>-->
+    <button type="submit" class="btn btn-success">Save</button>
+</form>
+
+<script type="text/javascript">
+            var checkin = '{{booking.begin_on}}';
+            var checkout = '{{booking.end_on}}';
+            $(function () {
+                $('#datepicker1').datepicker({
+                    setDate: checkin,
+                    format: 'yyyy-mm-dd',
+                    autoclose: true,
+                    todayHighlight: true,
+                    startDate: new Date(),
+                    orientation:'top auto'
+                });
+                $('#datepicker2').datepicker({
+                    setDate: checkout,
+                    format: 'yyyy-mm-dd',
+                    autoclose: true,
+                    todayHighlight: true,
+                    startDate: new Date(),
+                    orientation:'top auto'
+
+                });
+                //);
+            });
+</script>
+
+{% endblock %}
+
+
+

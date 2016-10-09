@@ -6,22 +6,41 @@
     <table class="table table-hover">
         <thead>
         <tr>
+            <th>Edit</th>
+            <th>Delete</th>
             <th>Booking Code</th>
             <th>Unit Name</th>
             <th>Check In</th>
             <th>Check Out</th>
             <th>Guests</th>
-            <th>Booked Rate per night <br/>(rounded)</th>
+            <th>Booked Rate <br/> per night(rounded)</th>
             <th>Name</th>
             <th>Email</th>
-            <th>Date Booked</th>
-            <th>Date Updated</th>
+            <!--<th>Booked On</th>-->
+            <!--<th>Updated On</th>-->
         </tr>
         </thead>
         <tbody>
         {% for booking in bookings %}
         <tr>
-            <td><a href="/bookings/{{booking.id}}">{{booking.id}}</a></td>
+            <td>
+                <div class="btn-group">
+                    <a href="/bookings/{{booking.id}}/edit" class="btn btn-primary btn-sm">
+                        <i class="glyphicon glyphicon-edit"></i>
+                        Edit
+                    </a>
+            </div>
+            </td>
+            <td>
+                <div class="btn-group">
+                    <a href="/bookings/{{booking.id}}/delete" class="btn btn-danger btn-sm">
+                        <i class="glyphicon glyphicon-trash"></i>
+                        Delete
+                    </a>
+                </div>
+            </td>
+
+            <td>{{booking.id}}</td>
             <td>{{booking.unit_name}}</td>
             <td>{{booking.begin_on}}</td>
             <td>{{booking.end_on}}</td>
@@ -29,8 +48,8 @@
             <td>USD {{booking.booked_rate}}</td>
             <td>{{booking.first_name}} {{booking.last_name}}</td>
             <td>{{booking.email}}</td>
-            <td>{{booking.created_on}}</td>
-            <td>{{booking.updated_on}}</td>
+            <!--<td>{{booking.created_on}}</td>-->
+            <!--<td>{{booking.updated_on}}</td>-->
         </tr>
         {% endfor %}
         </tbody>

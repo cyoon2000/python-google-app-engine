@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2><span class="label label-primary">{{action}} Bookings</span></h2>
+
+<hr/>
+<div class="row">
+    <div class="col-md-2"><strong>First Name</strong></div>
+    <div class="col-md-4">{{booking.first_name}}</div>
+</div>
+<div class="row">
+    <div class="col-md-2"><strong>Last Name</strong></div>
+    <div class="col-md-4">{{booking.last_name}}</div>
+</div>
+<div class="row">
+    <div class="col-md-2"><strong>Email</strong></div>
+    <div class="col-md-4">{{booking.email}}</div>
+</div>
+<hr/>
+<div class="row">
+    <div class="col-md-2"><strong>Booked Rate per night (rounded)</strong></div>
+    <div class="col-md-4">{{booking.booked_rate}}</div>
+</div>
+<div class="row">
+    <div class="col-md-2"><strong>Booked On</strong></div>
+    <div class="col-md-4">{{booking.created_on}}</div>
+</div>
+<div class="row">
+    <div class="col-md-2"><strong>Updated On</strong></div>
+    <div class="col-md-4">{{booking.updated_on}}</div>
+</div>
+<hr/>
+
+<form method="POST" enctype="multipart/form-data">
+
+    <div class="form-group">
+        <label for="unit_name">Unit Name</label>
+        <input type="text" name="unit_name" id="unit_name" value="{{booking.unit_name}}" class="form-control" readonly="readonly"/>
+    </div>
+
+    <div class="form-group">
+        <input type="hidden" name="unit_id" id="unit_id" value="{{booking.unit_id}}" class="form-control"/>
+    </div>
+
+    <div class="row">
+        <div class='col-sm-4'>
+            <div class="form-group">
+                <label for="begin_on">Check In</label>
+                <div class='input-group date' id='datepicker1'>
+                    <input type="text" name="begin_on" id="begin_on" value="{{booking.begin_on}}" class="form-control"/>
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class='col-sm-4'>
+            <div class="form-group">
+                <label for="end_on">Check Out</label>
+                <div class='input-group date' id='datepicker2'>
+                    <input type="text" name="end_on" id="end_on" value="{{booking.end_on}}" class="form-control"/>
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <script type="text/javascript">
+            var checkin = '{{booking.begin_on}}';
+            var checkout = '{{booking.end_on}}';
+            $(function () {
+                $('#datepicker1').datepicker({
+                    setDate: checkin,
+                    format: 'yyyy-mm-dd',
+                    autoclose: true,
+                    todayHighlight: true,
+                    startDate: new Date(),
+                    orientation:'top auto'
+                });
+                $('#datepicker2').datepicker({
+                    setDate: checkout,
+                    format: 'yyyy-mm-dd',
+                    autoclose: true,
+                    todayHighlight: true,
+                    startDate: new Date(),
+                    orientation:'top auto'
+
+                });
+                //);
+            });
+        </script>
+    </div>
+
+    <div class="form-group">
+    <label for="guests">Guests</label>
+    <input type="text" name="guests" id="guests" value="{{booking.guests}}" class="form-control"/>
+    </div>
+    <div class="form-group">
+    <label for="notes">Notes</label>
+    <input type="text" name="notes" id="notes" value="{{booking.notes}}" class="form-control"/>
+    </div>
+
+    <button type="submit" class="btn btn-success">Save</button>
+</form>
+
+{% endblock %}
+
+
+

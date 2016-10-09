@@ -1,6 +1,8 @@
 from datetime import datetime, date, timedelta
+# from dateutil import tz
 
 ISO_FORMAT_STRING = '%Y-%m-%d'
+# ISO_FORMAT_STRING_DATETIME = '%Y-%m-%d %H:%M:%S'
 ONE_DAY = 1
 ONE_WEEK = 7
 TWO_WEEKS = 14
@@ -69,3 +71,10 @@ def get_end_date(request, days=1):
 
     end_date = convert_string_to_date(end_date)
     return end_date
+
+# def get_local_time(utc_time):
+#     from_zone = tz.tzutc()
+#     to_zone = tz.tzlocal()
+#     # utc_time = datetime.strftime()
+#     utc = utc_time.replace(tzinfo=from_zone)
+#     return utc.astimezone(to_zone)
