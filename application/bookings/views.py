@@ -49,8 +49,8 @@ def after_request(response):
 #       g.user = model.User.query.get(session['user_id'])
 
 
-@bookings_api.route("/")
-def list():
+@bookings_api.route("/requests")
+def list_booking_requests():
     token = request.args.get('page_token', None)
     if token:
         token = token.encode('utf-8')
@@ -104,20 +104,20 @@ def list_declines():
     except TemplateNotFound:
         abort(404)
 
-# @bookings_api.route("/")
-# def list():
-#     token = request.args.get('page_token', None)
-#     if token:
-#         token = token.encode('utf-8')
-#
-#     bookings, next_page_token = get_model().list(cursor=token)
-#
-#     try: return render_template(
-#         "list.html",
-#         bookings=bookings,
-#         next_page_token=next_page_token)
-#     except TemplateNotFound:
-#         abort(404)
+@bookings_api.route("/")
+def list_bookings():
+    token = request.args.get('page_token', None)
+    if token:
+        token = token.encode('utf-8')
+
+    bookings, next_page_token = model.list_bookings(cursor=token)
+
+    try: return render_template(
+        "list_bookings.html",
+        bookings=bookings,
+        next_page_token=next_page_token)
+    except TemplateNotFound:
+        abort(404)
 
 
 @bookings_api.route('/<id>')

@@ -156,6 +156,8 @@ class Booking(Base):
     unit_name = db.Column(db.String(30))
     begin_on = db.Column(db.Date, nullable=False)
     end_on = db.Column(db.Date, nullable=False)
+    guests = db.Column(db.Integer)
+    booked_rate = db.Column(db.Integer)
     status = db.Column(db.String(30), default='CREATED')
     first_name = db.Column(db.String(30))
     last_name = db.Column(db.String(30))
@@ -163,13 +165,16 @@ class Booking(Base):
     is_admin = db.Column(db.Boolean, default=False)
     unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
     availabilities = db.relationship('Availability', backref='booking', lazy='dynamic')
-    #transaction_id = db.Column(db.String(255), unique=True)
+    notes = db.Column(db.String(256))
+    #transaction_id = db.Column(db.String(30), unique=True)
 
     def __init__(self, unit_id, unit_name, booking_request):
         self.unit_id = unit_id
         self.unit_name = unit_name
         self.begin_on = booking_request.checkin
         self.end_on = booking_request.checkout
+        self.guests = booking_request.guests
+        self.booked_rate = booking_request.avg_rate
         self.email = booking_request.email
         self.first_name = booking_request.first_name
         self.last_name = booking_request.last_name
@@ -266,10 +271,10 @@ def list_booking_request_declined(limit=5):
     return declines
 
 
-def list(limit=10, cursor=None):
+def list_bookings(limit=50, cursor=None):
     cursor = int(cursor) if cursor else 0
     query = (Booking.query
-             .order_by(Booking.unit_name)
+             .order_by(Booking.updated_on.desc())
              .limit(limit)
              .offset(cursor))
     bookings = builtin_list(map(from_sql, query.all()))
