@@ -165,6 +165,15 @@ class Booking(Base):
     availabilities = db.relationship('Availability', backref='booking', lazy='dynamic')
     #transaction_id = db.Column(db.String(255), unique=True)
 
+    def __init__(self, unit_id, unit_name, booking_request):
+        self.unit_id = unit_id
+        self.unit_name = unit_name
+        self.begin_on = booking_request.checkin
+        self.end_on = booking_request.checkout
+        self.email = booking_request.email
+        self.first_name = booking_request.first_name
+        self.last_name = booking_request.last_name
+
     def __repr__(self):
         return '<Booking (id = %r, unit_id = %, begin_on = %r, end_on = %r)>' % (self.id, self.unit_id, self.begin_on, self.end_on)
 
@@ -349,6 +358,15 @@ def get_unitgroups(resort_id):
 def get_units():
     return Unit.query.all()
 
+
+def get_units_by_group(unitgroup_id):
+    query = (Unit.query
+             .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
+             .filter(Unitgroup.id == unitgroup_id)
+             .filter(Unit.active == 1)
+             .order_by(Unit.id)
+    )
+    return query.all()
 
 
 def get_units_by_resort(resort_id):

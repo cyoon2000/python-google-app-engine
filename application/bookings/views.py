@@ -363,7 +363,6 @@ def search_unit(resortname, typename):
     begin_date = utils.get_begin_date(request)
     end_date = utils.get_end_date(request)
     guests = request.args.get('guests')
-    guests = request.args.get('guests')
     if not guests:
         guests = 2
 
@@ -425,6 +424,15 @@ def confirm():
         return 'Sorry, Invalid Request. bookingRequestId is required', 400
 
     booking_request = build_booking_request_for_email(id)
+
+    # create booking record from booking request, assign a unit.
+    logging.info('Confirmation :')
+    booking = create_booking_from_booking_request(booking_request)
+    if booking:
+        logging.info(booking)
+        return 'Confirmation Done. Successfully created booking.'
+    return 'Not able to find available unit. There is no available unit on those dates', 400
+
     booking_request.status = "CONFIRMED"
     booking_request = model.save_entity(booking_request)
 
@@ -477,6 +485,33 @@ def test_mail(groupname):
     #email_content = send_mail(booking_request, RESPONSE_CONFIRM, "")
     #email_content = send_mail(booking_request, RESPONSE_DECLINE, "We have availability after Jan 4th, 2016.")
     return email_content
+
+
+def is_unit_available(unit_id, checkin, checkout):
+    results = model.get_availabilities(unit_id, checkin, checkout)
+    results_by_unit = zip(*results)
+    # extract status field from result set
+    status_list = results_by_unit[2]
+    if sum(status_list) == 0:
+        return True
+    return False
+
+
+def create_booking_from_booking_request(booking_request):
+    unit = get_first_available_unit(booking_request.unitgroup_id, booking_request.checkin, booking_request.checkout)
+    if unit:
+        print unit.id
+        booking = model.Booking(unit.id, unit.name, booking_request)
+        return model.create_entity(booking)
+    return None
+
+
+def get_first_available_unit(unitgroup_id, checkin, checkout):
+    units = model.get_units_by_group(unitgroup_id)
+    for unit in units:
+        if is_unit_available(unit.id, checkin, checkout):
+            return unit
+    return None
 
 
 def build_booking_request_for_email(id):

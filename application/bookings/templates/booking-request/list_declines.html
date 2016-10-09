@@ -21,6 +21,7 @@
             <th>Name</th>
             <th>Date Requested</th>
             <th>Date Declined</th>
+            <th>Update and Confirm <span class="badge">coming soon</span></th>
         </tr>
         </thead>
         <tbody>
@@ -34,6 +35,7 @@
             <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
             <td>{{booking_request.created_on}}</td>
             <td>{{booking_request.updated_on}}</td>
+            <td><button type="button" class="btn btn-info btn-sm disabled" data-toggle="modal" data-target="#confirmModal" data-id="{{booking_request.id}}">Update and Confirm</button></td>
         </tr>
         {% endfor %}
         </tbody>
