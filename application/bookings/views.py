@@ -412,7 +412,7 @@ def book(groupname):
         booking_request = model.save_entity(booking_request)
         logging.info(get_model().BookingRequest.serialize_booking_request(booking_request))
 
-    return send_mail(booking_request, None, None)
+    return send_mail(booking_request, None, "")
     #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
 
 
@@ -426,17 +426,16 @@ def confirm():
     booking_request = build_booking_request_for_email(id)
 
     # create booking record from booking request, assign a unit.
-    logging.info('Confirmation :')
+    logging.info("CONFIRMATION Begin: id = %d, unitgroup = %s, email = %s", booking_request.id, booking_request.unitgroup_name, booking_request.email)
     booking = create_booking_from_booking_request(booking_request)
-    if booking:
-        logging.info(booking)
-        return 'Confirmation Done. Successfully created booking.'
-    return 'Not able to find available unit. There is no available unit on those dates', 400
+    if not booking:
+        raise RuntimeError(
+            'BookingRequest Confirmation error. No available unit : {} {}'.format(booking_request.id, booking_request.email))
 
     booking_request.status = "CONFIRMED"
     booking_request = model.save_entity(booking_request)
 
-    logging.info("sending CONFIRMATION email : id = %d, name = %s", booking_request.id, booking_request.unitgroup_name)
+    logging.info("CONFIRMATION Success: id = %d, unitgroup = %s, email = %s, booking_id = %d", booking_request.id, booking_request.unitgroup_name, booking_request.email, booking.id)
 
     return send_mail(booking_request, RESPONSE_CONFIRM, "")
 
@@ -500,7 +499,6 @@ def is_unit_available(unit_id, checkin, checkout):
 def create_booking_from_booking_request(booking_request):
     unit = get_first_available_unit(booking_request.unitgroup_id, booking_request.checkin, booking_request.checkout)
     if unit:
-        print unit.id
         booking = model.Booking(unit.id, unit.name, booking_request)
         return model.create_entity(booking)
     return None

@@ -174,7 +174,7 @@ class Booking(Base):
         self.begin_on = booking_request.checkin
         self.end_on = booking_request.checkout
         self.guests = booking_request.guests
-        self.booked_rate = booking_request.avg_rate
+        self.booked_rate = booking_request.avg_price
         self.email = booking_request.email
         self.first_name = booking_request.first_name
         self.last_name = booking_request.last_name
