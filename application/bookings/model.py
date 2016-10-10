@@ -133,8 +133,8 @@ class Availability(Base):
         return '<Availability (id = %r unit_id = %r date = %r status = %r)>' % (self.id, self.unit_id, self.date_slot, self.status)
 
     # FIXME - underlying design on Availability was changed on July 25
-    def is_available(self):
-        return True if self.status == 1 else False
+    # def is_available(self):
+    #     return True if self.status == 1 else False
 
 
 class Calendar(db.Model):
@@ -323,6 +323,35 @@ def update(data, id):
 def delete(id):
     Booking.query.filter_by(id=id).delete()
     db.session.commit()
+
+
+def create_booking(booking):
+    try:
+        db.session.add(booking)
+        db.session.flush()
+        # availabilities = get_availabilities(booking.unit_id, booking.begin_on, booking.end_on)
+        # create availability for each date slot
+        # booked = 1, blocked = 2
+        for single_date in utils.daterange(booking.begin_on, booking.end_on):
+            # change datetime to date
+            single_date = single_date.date()
+            availability = Availability(booking.unit_id, single_date, 1)
+            # availability.status = 1
+            availability.booking_id = booking.id
+            db.session.add(availability)
+            logging.info(availability)
+            logging.info('[Create Availability] saving availability: with booking id %r' % booking.id)
+
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        msg = "ERROR on [ Create ] Booking: email = " + booking.email + ", error = " + unicode(e)
+        logging.error(msg)
+        raise Exception(msg)
+        # return e
+
+    return from_sql(booking)
+
 
 # TODO - refactor with save_entity() below
 def create_entity(entity):

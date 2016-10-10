@@ -72,6 +72,11 @@ def get_end_date(request, days=1):
     end_date = convert_string_to_date(end_date)
     return end_date
 
+
+def daterange(start_date, end_date):
+    for n in range(int ((end_date - start_date).days)):
+        yield start_date + timedelta(n)
+
 # def get_local_time(utc_time):
 #     from_zone = tz.tzutc()
 #     to_zone = tz.tzlocal()

@@ -49,6 +49,12 @@ def after_request(response):
 #       g.user = model.User.query.get(session['user_id'])
 
 
+@bookings_api.errorhandler(Exception)
+def unhandled_exception(e):
+    logging.error('Exception: %s', unicode(e))
+    return render_template('500.html', msg=unicode(e)), 500
+
+
 @bookings_api.route("/requests")
 def list_booking_requests():
     token = request.args.get('page_token', None)
@@ -152,6 +158,9 @@ def add():
         checkout = utils.convert_string_to_date(data['end_on'])
         unit = model.Unit.query.filter(model.Unit.name == unit_name).one()
 
+        if not is_unit_available(unit.id, checkin, checkout):
+            return render_template("500.html", msg="Please check the availability and try again. The Unit is NOT available for the dates you specified.")
+
         logging.info("[Create] Booking Begin: unit name = %s, email = %s", unit.name, data['email'])
         unit_info = get_unit_info(unit.unitgroup_name, checkin, checkout)
         booking = model.Booking(unit.id, unit.name, unit_info)
@@ -160,7 +169,8 @@ def add():
         booking.last_name = data['last_name']
         booking.guests = data['guests']
         booking.notes = data['notes']
-        booking = model.create_entity(booking)
+        booking = model.create_booking(booking)
+
         logging.info("[Create] Booking Success: booking id = %d, unit name = %s, email = %s", booking['id'], unit.name, data['email'])
         return redirect(url_for('.view', id=booking['id']))
 
@@ -488,9 +498,11 @@ def is_unit_available(unit_id, checkin, checkout):
     results_by_unit = zip(*results)
     # extract status field from result set
     status_list = results_by_unit[2]
-    if sum(status_list) == 0:
-        return True
-    return False
+    print status_list
+    print sum(status_list)
+    if sum(status_list) > 0:
+        return False
+    return True
 
 
 def build_booking_from_booking_request(unit, booking_request):
