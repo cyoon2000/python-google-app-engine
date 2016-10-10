@@ -134,13 +134,14 @@ def view(id):
 
 @bookings_api.route('/<id>/edit', methods=['GET', 'POST'])
 def edit(id):
+    data = request.form.to_dict(flat=True)
     booking = model.Booking.query.get(id)
+    unit = model.Unit.query.filter(model.Unit.id == booking.unit_id).one()
 
     if request.method == 'POST':
-        logging.info("[Update] Booking Begin: unit name = %s, email = %s", booking.unit_name, booking.email)
-        data = request.form.to_dict(flat=True)
+        logging.info("[Update] Booking Begin: booking id = %r", id)
         booking = model.update(data, id)
-        logging.info("[Update] Booking Success: booking id = %d", booking['id'])
+        logging.info("[Update] Booking Success: booking id = %r", id)
         return redirect(url_for('.view', id=booking['id']))
 
     return render_template("booking/form_edit.html", action="Edit", booking=booking)
@@ -158,7 +159,7 @@ def add():
         checkout = utils.convert_string_to_date(data['end_on'])
         unit = model.Unit.query.filter(model.Unit.name == unit_name).one()
 
-        if not is_unit_available(unit.id, checkin, checkout):
+        if not model.is_unit_available(unit.id, checkin, checkout):
             return render_template("500.html", msg="Please check the availability and try again. The Unit is NOT available for the dates you specified.")
 
         logging.info("[Create] Booking Begin: unit name = %s, email = %s", unit.name, data['email'])
@@ -183,6 +184,27 @@ def delete(id):
     model.delete(id)
     logging.info("[Delete] Booking Success: booking id = %s", id)
     return redirect(url_for('.list_bookings'))
+
+
+@bookings_api.route("/calendar")
+def list_calendar():
+    begin_date = utils.get_todays_date()
+    end_date = utils.get_end_date(request, utils.TWO_WEEKS)
+    begin_date = utils.convert_string_to_date(utils.convert_date_to_string(begin_date))
+    end_date = utils.convert_string_to_date(utils.convert_date_to_string(end_date))
+    # end_date = utils.convert_date_to_string(end_date)
+
+    resort = model.Resort.query.get(session['resort_id'])
+    print resort
+    units = get_calendar(resort.name, begin_date, end_date)
+    unit = units[0]
+    print unit
+    # calendar_info.
+    # for unit in results.units:
+    #     print unit
+
+    # return render_template("calendar/list.html", units=units)
+    return render_template("calendar/list.html", units=units)
 
 
 # TODO - add calendar navigation prev/next
@@ -280,8 +302,28 @@ def get_calendar(name):
 
     begin_date = utils.get_begin_date(request)
     end_date = utils.get_end_date(request, utils.TWO_WEEKS)
+    data = get_calendar(name, begin_date, end_date)
+    return jsonify(results=data)
 
-    units = model.get_units_by_resort_name(name)
+
+    # units = model.get_units_by_resort_name(name)
+    # date_list = None
+    # data = []
+    # for unit in units:
+    #     results = model.get_availabilities(unit.id, begin_date, end_date)
+    #     results_by_unit = zip(*results)
+    #     if not date_list:
+    #         date_list = results_by_unit[0]
+    #     # extract status field from result set
+    #     status_list = results_by_unit[2]
+    #     calendar_info = get_content_model().CalendarInfo(unit, name, date_list, status_list)
+    #     data.append(calendar_info.serialize_calendar_info())
+    #
+    # return jsonify(results=data)
+
+
+def get_calendar(resort_name, begin_date, end_date):
+    units = model.get_units_by_resort_name(resort_name)
     date_list = None
     data = []
     for unit in units:
@@ -291,10 +333,11 @@ def get_calendar(name):
             date_list = results_by_unit[0]
         # extract status field from result set
         status_list = results_by_unit[2]
-        calendar_info = get_content_model().CalendarInfo(unit, name, date_list, status_list)
+        calendar_info = get_content_model().CalendarInfo(unit, resort_name, date_list, status_list)
         data.append(calendar_info.serialize_calendar_info())
 
-    return jsonify(results=data)
+    return data
+    # return jsonify(results=data)
 
 
 @bookings_api.route('/search')
@@ -493,16 +536,14 @@ def get_unit_info(groupname, checkin, checkout):
     return unit_info
 
 
-def is_unit_available(unit_id, checkin, checkout):
-    results = model.get_availabilities(unit_id, checkin, checkout)
-    results_by_unit = zip(*results)
-    # extract status field from result set
-    status_list = results_by_unit[2]
-    print status_list
-    print sum(status_list)
-    if sum(status_list) > 0:
-        return False
-    return True
+# def is_unit_available(unit_id, checkin, checkout):
+#     results = model.get_availabilities(unit_id, checkin, checkout)
+#     results_by_unit = zip(*results)
+#     # extract status field from result set
+#     status_list = results_by_unit[2]
+#     if sum(status_list) > 0:
+#         return False
+#     return True
 
 
 def build_booking_from_booking_request(unit, booking_request):
@@ -520,7 +561,7 @@ def build_booking_from_booking_request(unit, booking_request):
 def get_first_available_unit(unitgroup_id, checkin, checkout):
     units = model.get_units_by_group(unitgroup_id)
     for unit in units:
-        if is_unit_available(unit.id, checkin, checkout):
+        if model.is_unit_available(unit.id, checkin, checkout):
             return unit
     return None
 

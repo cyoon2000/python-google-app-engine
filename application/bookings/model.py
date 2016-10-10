@@ -312,14 +312,6 @@ def create(data):
     return from_sql(booking)
 
 
-def update(data, id):
-    entry = Booking.query.get(id)
-    for k, v in data.items():
-        setattr(entry, k, v)
-    db.session.commit()
-    return from_sql(entry)
-
-
 def delete(id):
     try:
         # availabilities = get_availabilities(booking.unit_id, booking.begin_on, booking.end_on)
@@ -338,27 +330,76 @@ def delete(id):
         logging.error(msg)
         raise Exception(msg)
 
+
 def create_booking(booking):
     try:
         db.session.add(booking)
         db.session.flush()
-        # availabilities = get_availabilities(booking.unit_id, booking.begin_on, booking.end_on)
         # create availability for each date slot
         # booked = 1, blocked = 2
         for single_date in utils.daterange(booking.begin_on, booking.end_on):
             # change datetime to date
             single_date = single_date.date()
             availability = Availability(booking.unit_id, single_date, 1)
-            # availability.status = 1
             availability.booking_id = booking.id
             db.session.add(availability)
-            logging.info(availability)
             logging.info('[Create Availability] saving availability: with booking id %r' % booking.id)
-
         db.session.commit()
     except Exception as e:
         db.session.rollback()
         msg = "ERROR on [ Create ] Booking: email = " + booking.email + ", error = " + unicode(e)
+        logging.error(msg)
+        raise Exception(msg)
+
+    return from_sql(booking)
+
+
+def update(data, id):
+    booking = Booking.query.get(id)
+    for k, v in data.items():
+        setattr(booking, k, v)
+    db.session.add(booking)
+    # db.session.flush()
+    # db.session.commit()
+
+    checkin = utils.convert_string_to_date(booking.begin_on)
+    checkout = utils.convert_string_to_date(booking.end_on)
+    unit = Unit.query.filter(Unit.id == booking.id).one()
+    print "*********"
+    print unit.id
+
+    try:
+        # delete all
+        availabilities = get_availabilities_by_booking_id(id)
+        for availability in availabilities:
+            logging.info(availability)
+            logging.info('[Delete Availability] deleting availability: date_slot = %s' % availability.date_slot)
+            db.session.delete(availability)
+
+        # validate availability
+        if not is_unit_available(unit.id, checkin, checkout):
+            msg = "ERROR on [ Update ] Booking: id = " + id + "Please check the availability and try again. The Unit is NOT available for the dates you specified."
+            logging.error(msg)
+            raise Exception(msg)
+
+        # create all
+        checkin = utils.convert_string_to_date(booking.begin_on)
+        checkout = utils.convert_string_to_date(booking.end_on)
+        # for single_date in utils.daterange(booking.begin_on, booking.end_on):
+        for single_date in utils.daterange(checkin, checkout):
+            # change datetime to date
+            print single_date
+            single_date = single_date.date()
+            availability = Availability(booking.unit_id, single_date, 1)
+            availability.booking_id = booking.id
+            logging.info(availability)
+            logging.info('[Create Availability] saving availability: with booking id %r' % booking.id)
+            db.session.add(availability)
+
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        msg = "ERROR on [ Update ] Booking: id = " + id + ", error = " + str(e)
         logging.error(msg)
         raise Exception(msg)
 
@@ -435,6 +476,18 @@ def get_calendar_date(date):
 
 def get_calendar_dates(begin, end):
     return Calendar.query.filter(Calendar.date_.between(begin, end)).all()
+
+
+# FIXME - does not work on 'blocked(2)'
+def is_unit_available(unit_id, checkin, checkout):
+    results = get_availabilities(unit_id, checkin, checkout)
+    results_by_unit = zip(*results)
+    # extract status field from result set
+    status_list = results_by_unit[2]
+    logging.info(status_list)
+    if sum(status_list) > 0:
+        return False
+    return True
 
 
 def get_availabilities_by_booking_id(booking_id):

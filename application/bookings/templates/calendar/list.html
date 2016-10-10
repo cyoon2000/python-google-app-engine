@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header text-center">
+    <h2>Availability Calendar
+    </h2>
+</div>
+
+<div class="table-responsive">
+<table class="table">
+    <thead>
+    <tr>
+        <th><span></span></th>
+        {% for info in units[0].statusInfoList %}
+            {% if units[0].statusInfoList.index(info) == 0 %}
+            <th colspan="7"><h4><span> {{ info.month }} {{ info.year }} </span></h4></th>
+            {% endif %}
+
+            {% if units[0].statusInfoList.index(info) == 13 %}
+            <th colspan="7" class="not_mapped_style" style="text-align:right"><h4><span>{{ info.month }} {{ info.year }}</span></h4></th>
+            {% endif %}
+        {% endfor %}
+    </tr>
+    <tr>
+        <th><span></span></th>
+        {% for info in units[0].statusInfoList %}
+            <th><span>{{ info.weekday }}</span></th>
+        {% endfor %}
+    </tr>
+    <tr>
+        <th><span></span></th>
+        {% for info in units[0].statusInfoList %}
+            <th><span>{{ info.day }}</span></th>
+        {% endfor %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for unit in units %}
+        <tr>
+        <td><strong>{{ unit.displayName }}</strong></td>
+        {% for info in unit.statusInfoList %}
+            {% if info.status %}
+                <!--available-->
+                <td class="info">{{ info.price }}</td>
+            {% else %}
+                <!--not available-->
+                <td class="danger">{{ info.price }}</td>
+            {% endif %}
+        {% endfor %}
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</div>
+<div>
+    <span class="badge alert-info">Available</span>
+    <span class="badge alert-danger">Not available</span>
+</div>
+<hr/>
+
+<span class="badge alert-default">Prices</span> exclude Tax <br/>
+{% if units[0].resortName == 'kurt' %}
+    <span class="badge alert-default">info</span>
+    Prices shown based on <strong>Double Occupancy</strong><br/>
+    <span class="badge alert-default">info</span>
+    Subtract 15 USD for <strong>Single Occupancy</strong> for Room 1 4 5 8 9 <br/>
+    <span class="badge alert-default">info</span>
+    Subtract 10 USD for <strong>Single Occupancy</strong> for Room 2 3 6 7 <br/>
+{% endif %}
+
+
+{% if units[0].resortName == 'bj' %}
+    <span class="badge alert-default">info</span>
+    Prices shown based on <strong>Double Occupancy</strong><br/>
+    <span class="badge alert-default">info</span>
+    Subtract 10 USD for <strong>Single Occupancy</strong> <br/>
+    <span class="badge alert-default">info</span>
+    Add 10 USD for <strong>Triple Occupancy</strong> ( for Room 2 3 4 5 6 only ) <br/>
+{% endif %}
+
+{% endblock %}
