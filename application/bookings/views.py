@@ -113,7 +113,7 @@ def list_bookings():
     bookings, next_page_token = model.list_bookings(cursor=token)
 
     try: return render_template(
-        "list_bookings.html",
+        "booking/list.html",
         bookings=bookings,
         next_page_token=next_page_token)
     except TemplateNotFound:
@@ -123,7 +123,7 @@ def list_bookings():
 @bookings_api.route('/<id>')
 def view(id):
     booking = get_model().read(id)
-    return render_template("view.html", booking=booking)
+    return render_template("booking/view.html", booking=booking)
 
 
 @bookings_api.route('/<id>/edit', methods=['GET', 'POST'])
@@ -131,8 +131,10 @@ def edit(id):
     booking = model.Booking.query.get(id)
 
     if request.method == 'POST':
+        logging.info("[Update] Booking Begin: unit name = %s, email = %s", booking.unit_name, booking.email)
         data = request.form.to_dict(flat=True)
         booking = model.update(data, id)
+        logging.info("[Update] Booking Success: booking id = %d", booking['id'])
         return redirect(url_for('.view', id=booking['id']))
 
     return render_template("booking/form_edit.html", action="Edit", booking=booking)
@@ -141,33 +143,34 @@ def edit(id):
 @bookings_api.route('/add', methods=['GET', 'POST'])
 def add():
 
+    units = model.get_units_by_resort(session['resort_id'])
+
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
-        booking = get_model().create(data)
+        unit_name = data['unit_name']
+        checkin = utils.convert_string_to_date(data['begin_on'])
+        checkout = utils.convert_string_to_date(data['end_on'])
+        unit = model.Unit.query.filter(model.Unit.name == unit_name).one()
 
+        logging.info("[Create] Booking Begin: unit name = %s, email = %s", unit.name, data['email'])
+        unit_info = get_unit_info(unit.unitgroup_name, checkin, checkout)
+        booking = model.Booking(unit.id, unit.name, unit_info)
+        booking.email = data['email']
+        booking.first_name = data['first_name']
+        booking.last_name = data['last_name']
+        booking = model.create_entity(booking)
+        logging.info("[Create] Booking Success: booking id = %d, unit name = %s, email = %s", booking['id'], unit.name, data['email'])
         return redirect(url_for('.view', id=booking['id']))
-    return render_template("booking/form.html", action="Add", booking={})
-    # return render_template("booking/form.html", action="Edit", booking=booking)
 
-    # form = forms.BookingForm()
-    # units = model.get_units_by_resort(session['resort_id'])
-    # form.unit_id.choices = [(r.id, r.display_name) for r in units]
-    #
-    # if form.validate_on_submit():
-    #     data = request.form.to_dict(flat=True)
-    #     data.pop("csrf_token", None)
-    #     # populate unit_name from unit_id
-    #     data['unit_name'] = model.Unit.query.get(data['unit_id']).display_name
-    #     booking = get_model().create(data)
-    #     return redirect(url_for('.view', id=booking['id']))
-
-    # return render_template('booking/form.html', action="Add", form=form)
+    return render_template("booking/form_add.html", action="Add", units=units, booking={})
 
 
 @bookings_api.route('/<id>/delete')
 def delete(id):
+    logging.info("[Delete] Booking Begin: booking id = %s", id)
     get_model().delete(id)
-    return redirect(url_for('.list'))
+    logging.info("[Delete] Booking Success: booking id = %s", id)
+    return redirect(url_for('.list_bookings'))
 
 
 # TODO - add calendar navigation prev/next
@@ -402,17 +405,24 @@ def confirm():
 
     booking_request = build_booking_request_for_email(id)
 
+    #
+    # FEATURE - "Automatic Booking' - HOLD OFF for now
+    #
     # create booking record from booking request, assign a unit.
-    logging.info("CONFIRMATION Begin: id = %d, unitgroup = %s, email = %s", booking_request.id, booking_request.unitgroup_name, booking_request.email)
-    booking = create_booking_from_booking_request(booking_request)
-    if not booking:
-        raise RuntimeError(
-            'BookingRequest Confirmation error. No available unit : {} {}'.format(booking_request.id, booking_request.email))
+    # logging.info("CONFIRMATION Begin: id = %d, unitgroup = %s, email = %s", booking_request.id, booking_request.unitgroup_name, booking_request.email)
+    # unit = get_first_available_unit(booking_request.unitgroup_id, booking_request.checkin, booking_request.checkout)
+    # logging.info("[first available unit] unit id = %d unit name = %s", unit.id, unit.name)
+    # if unit:
+    #     booking = build_booking_from_booking_request(unit, booking_request)
+    #     return model.create_entity(booking)
+    #     if not booking:
+    #         raise RuntimeError(
+    #         'BookingRequest Confirmation error. No available unit : {} {}'.format(booking_request.id, booking_request.email))
 
     booking_request.status = "CONFIRMED"
     booking_request = model.save_entity(booking_request)
 
-    logging.info("CONFIRMATION Success: id = %d, unitgroup = %s, email = %s, booking_id = %d", booking_request.id, booking_request.unitgroup_name, booking_request.email, booking.id)
+    logging.info("CONFIRMATION Success: id = %d, unitgroup = %s, email = %s", booking_request.id, booking_request.unitgroup_name, booking_request.email)
 
     return send_mail(booking_request, RESPONSE_CONFIRM, "")
 
@@ -462,6 +472,14 @@ def test_mail(groupname):
     #email_content = send_mail(booking_request, RESPONSE_DECLINE, "We have availability after Jan 4th, 2016.")
     return email_content
 
+# checkin and checkout is date
+def get_unit_info(groupname, checkin, checkout):
+    # checkin = utils.convert_string_to_date(checkin)
+    # checkout = utils.convert_string_to_date(checkout)
+    unitgroup = get_content_model().find_unit_by_name(groupname)
+    unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
+    return unit_info
+
 
 def is_unit_available(unit_id, checkin, checkout):
     results = model.get_availabilities(unit_id, checkin, checkout)
@@ -473,12 +491,16 @@ def is_unit_available(unit_id, checkin, checkout):
     return False
 
 
-def create_booking_from_booking_request(booking_request):
-    unit = get_first_available_unit(booking_request.unitgroup_id, booking_request.checkin, booking_request.checkout)
-    if unit:
-        booking = model.Booking(unit.id, unit.name, booking_request)
-        return model.create_entity(booking)
-    return None
+def build_booking_from_booking_request(unit, booking_request):
+    # checkin = utils.convert_date_to_string(booking_request.checkin)
+    # checkout = utils.convert_date_to_string(booking_request.checkout)
+    unit_info = get_unit_info(booking_request.unitgroup_name, booking_request.checkin, booking_request.checkout)
+    booking = model.Booking(unit.id, unit.name, unit_info)
+    booking.email = booking_request.email
+    booking.first_name = booking_request.first_name
+    booking.last_name = booking_request.last_name
+
+    return booking
 
 
 def get_first_available_unit(unitgroup_id, checkin, checkout):

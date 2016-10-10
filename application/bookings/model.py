@@ -168,16 +168,13 @@ class Booking(Base):
     notes = db.Column(db.String(256))
     #transaction_id = db.Column(db.String(30), unique=True)
 
-    def __init__(self, unit_id, unit_name, booking_request):
+    def __init__(self, unit_id, unit_name, unit_info):
         self.unit_id = unit_id
         self.unit_name = unit_name
-        self.begin_on = booking_request.checkin
-        self.end_on = booking_request.checkout
-        self.guests = booking_request.guests
-        self.booked_rate = booking_request.avg_price
-        self.email = booking_request.email
-        self.first_name = booking_request.first_name
-        self.last_name = booking_request.last_name
+        self.begin_on = unit_info.begin_date
+        self.end_on = unit_info.end_date
+        self.guests = unit_info.guests
+        self.booked_rate = unit_info.avg_price
 
     def __repr__(self):
         return '<Booking (id = %r, unit_id = %, begin_on = %r, end_on = %r)>' % (self.id, self.unit_id, self.begin_on, self.end_on)

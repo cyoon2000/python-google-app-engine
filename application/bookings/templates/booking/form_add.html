@@ -5,43 +5,35 @@
 <div class="col-xs-12" style="height:30px;"></div>
 <hr/>
 
-<div class="row">
-    <div class="col-md-2"><strong>First Name</strong></div>
-    <div class="col-md-4">{{booking.first_name}}</div>
-</div>
-<div class="row">
-    <div class="col-md-2"><strong>Last Name</strong></div>
-    <div class="col-md-4">{{booking.last_name}}</div>
-</div>
-<div class="row">
-    <div class="col-md-2"><strong>Email</strong></div>
-    <div class="col-md-4">{{booking.email}}</div>
-</div>
-<hr/>
-<div class="row">
-    <div class="col-md-2"><strong>Booked Rate per night (rounded)</strong></div>
-    <div class="col-md-4">{{booking.booked_rate}}</div>
-</div>
-<div class="row">
-    <div class="col-md-2"><strong>Booked On</strong></div>
-    <div class="col-md-4">{{booking.created_on}}</div>
-</div>
-<div class="row">
-    <div class="col-md-2"><strong>Updated On</strong></div>
-    <div class="col-md-4">{{booking.updated_on}}</div>
-</div>
-<hr/>
-
-<form method="POST" enctype="multipart/form-data">
+<form method="POST" action="{{ url_for('.add') }}" enctype="multipart/form-data">
+    <div class="form-group">
+        <label for="guests">First Name</label>
+        <input type="text" name="first_name" id="first_name" value="{{booking.first_name}}" class="form-control"/>
+    </div>
+    <div class="form-group">
+        <label for="guests">Last Name</label>
+        <input type="text" name="last_name" id="last_name" value="{{booking.last_name}}" class="form-control"/>
+    </div>
+    <div class="form-group">
+        <label for="email">Email</label>
+        <input type="text" name="email" id="email" value="{{booking.email}}" class="form-control"/>
+    </div>
+    <hr/>
 
     <div class="form-group">
         <label for="unit_name">Unit Name</label>
-        <input type="text" name="unit_name" id="unit_name" value="{{booking.unit_name}}" class="form-control" readonly="readonly"/>
+        <select class="form-control" id="unit_name" name="unit_name">
+
+            {% for unit in units %}
+            <option value="{{ unit.name }}">{{ unit.display_name }}</option>
+            {% endfor %}
+
+        </select>
     </div>
 
-    <div class="form-group">
-        <input type="hidden" name="unit_id" id="unit_id" value="{{booking.unit_id}}" class="form-control"/>
-    </div>
+    <!--<div class="form-group">-->
+        <!--<input type="hidden" name="unit_id" id="unit_id" value="{{booking.unit_id}}" class="form-control"/>-->
+    <!--</div>-->
 
     <div class="row">
         <div class='col-sm-4'>
@@ -93,12 +85,12 @@
     </div>
 
     <div class="form-group">
-    <label for="guests">Guests</label>
-    <input type="text" name="guests" id="guests" value="{{booking.guests}}" class="form-control"/>
+        <label for="guests">Guests</label>
+        <input type="text" name="guests" id="guests" value="{{booking.guests}}" class="form-control"/>
     </div>
     <div class="form-group">
-    <label for="notes">Notes</label>
-    <input type="text" name="notes" id="notes" value="{{booking.notes}}" class="form-control"/>
+        <label for="notes">Notes</label>
+        <input type="text" name="notes" id="notes" value="{{booking.notes}}" class="form-control"/>
     </div>
 
     <button type="submit" class="btn btn-info">Save</button>

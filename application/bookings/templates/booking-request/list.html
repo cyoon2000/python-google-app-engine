@@ -1,23 +1,20 @@
 {% extends "base.html" %}
 {% block content %}
 
-<h2> Manage Booking Requests </h2>
-<!--<a href="/bookings/add" class="btn btn-success btn-sm">-->
-    <!--<i class="glyphicon glyphicon-plus"></i>-->
-    <!--Add booking-->
-<!--</a>-->
+<div class="page-header text-center">
+    <h2>Manage Booking Requests
+    </h2>
+</div>
 
 
 <div class="container">
     <h2><span class="label label-primary">Waiting for Your Response</span></h2>
 
     <ul>
-        <li>When you <strong>confirm</strong>, a confirmation email will be sent to the customer.</li>
+        <li>When you <strong>confirm</strong>, a confirmation email will be sent to the customer. New booking will be automatically created. </li>
         <li>When you <strong>decline</strong>, you will have opportunity to add personal message such as suggesting different dates to the email to the customer.</li>
     </ul>
 
-    <!--<p>When you <strong>confirm</strong>, a confirmation email will be sent to the customer.</p>-->
-    <!--<p>When you <strong>decline</strong>, you will have opportunity to add personal message such as suggesting different dates to the email to the customer.</p>-->
     <table class="table table-hover">
         <thead>
         <tr>
@@ -52,7 +49,11 @@
     </table>
 
     <hr/>
-    <h2><span class="label label-primary">Confirmed Recently</span></h2>
+    <h2><span class="label label-primary">Confirmed Recently</span>
+        <small><a href="/bookings/confirms">
+            Full view
+        </a></small>
+    </h2>
     <table class="table table-hover">
         <thead>
         <tr>
@@ -83,7 +84,11 @@
     </table>
 
     <hr/>
-    <h2><span class="label label-primary"> Declined Recently</span></h2>
+    <h2><span class="label label-primary"> Declined Recently</span>
+        <small><a href="/bookings/declines">
+            Full view
+        </a></small>
+    </h2>
     <table class="table table-hover">
         <thead>
         <tr>
