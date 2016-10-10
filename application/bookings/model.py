@@ -321,9 +321,22 @@ def update(data, id):
 
 
 def delete(id):
-    Booking.query.filter_by(id=id).delete()
-    db.session.commit()
+    try:
+        # availabilities = get_availabilities(booking.unit_id, booking.begin_on, booking.end_on)
+        availabilities = get_availabilities_by_booking_id(id)
+        for availability in availabilities:
+            logging.info(availability)
+            logging.info('[Delete Availability] deleting availability: date_slot = %s' % availability.date_slot)
+            db.session.delete(availability)
 
+        logging.info('[Delete Booking] deleting booking: id = %r' % id)
+        Booking.query.filter_by(id=id).delete()
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        msg = "ERROR on [ Delete ] Booking: id = " + id + ", error = " + unicode(e)
+        logging.error(msg)
+        raise Exception(msg)
 
 def create_booking(booking):
     try:
@@ -348,7 +361,6 @@ def create_booking(booking):
         msg = "ERROR on [ Create ] Booking: email = " + booking.email + ", error = " + unicode(e)
         logging.error(msg)
         raise Exception(msg)
-        # return e
 
     return from_sql(booking)
 
@@ -423,6 +435,13 @@ def get_calendar_date(date):
 
 def get_calendar_dates(begin, end):
     return Calendar.query.filter(Calendar.date_.between(begin, end)).all()
+
+
+def get_availabilities_by_booking_id(booking_id):
+    query = (Availability.query
+                .filter(Availability.booking_id == booking_id)
+            )
+    return query.all()
 
 
 # 0 = avail, 1 = booked, 2= blocked

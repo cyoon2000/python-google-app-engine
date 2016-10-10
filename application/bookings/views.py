@@ -180,7 +180,7 @@ def add():
 @bookings_api.route('/<id>/delete')
 def delete(id):
     logging.info("[Delete] Booking Begin: booking id = %s", id)
-    get_model().delete(id)
+    model.delete(id)
     logging.info("[Delete] Booking Success: booking id = %s", id)
     return redirect(url_for('.list_bookings'))
 
