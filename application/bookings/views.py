@@ -158,6 +158,8 @@ def add():
         booking.email = data['email']
         booking.first_name = data['first_name']
         booking.last_name = data['last_name']
+        booking.guests = data['guests']
+        booking.notes = data['notes']
         booking = model.create_entity(booking)
         logging.info("[Create] Booking Success: booking id = %d, unit name = %s, email = %s", booking['id'], unit.name, data['email'])
         return redirect(url_for('.view', id=booking['id']))
