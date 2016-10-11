@@ -255,11 +255,12 @@ class PriceInfo(object):
 
 
 class StatusInfo(object):
-    def __init__(self, unit, date, status):
+    def __init__(self, unit, date, status, booking_id=None):
         self.unit = unit
         self.date_slot = date
         self.status = True if status == 0 else False
         self.price = None
+        self.booking_id = booking_id
 
         self.build_price()
 
@@ -277,33 +278,20 @@ class StatusInfo(object):
             'year': self.date_slot.year,
             'weekday': utils.name_weekday(self.date_slot.weekday()),
             'status': self.status,
-            'price': self.price
+            'price': self.price,
+            'booking_id': self.booking_id
         }
 
 
 class CalendarInfo(object):
-    def __init__(self, unit, resortname, date_list, status_list):
+    def __init__(self, unit, resortname, status_info_list):
         self.unit = unit
         self.resortname = resortname
-        self.date_list = date_list
-        self.status_list = status_list
-        self.status_info_list = []
+        self.status_info_list = status_info_list
         self.first_date_str = None
-
-        self.build_status_info_list()
 
     def __repr__(self):
         return "(unit = %r : status_list = %r)" % (self.unit, self.status_list)
-
-    def build_status_info_list(self):
-        if self.date_list:
-            date_ = self.date_list[0]
-            self.first_date_str = utils.convert_date_to_string(date_)
-            i = 0
-            for date_ in self.date_list:
-                status_info = StatusInfo(self.unit, date_, self.status_list[i])
-                self.status_info_list.append(status_info)
-                i += 1
 
     def serialize_calendar_info(self):
         unit = self.unit

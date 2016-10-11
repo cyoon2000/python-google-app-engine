@@ -333,16 +333,19 @@ def get_calendar(name):
 
 def get_calendar(resort_name, begin_date, end_date):
     units = model.get_units_by_resort_name(resort_name)
-    date_list = None
     data = []
     for unit in units:
         results = model.get_availabilities(unit.id, begin_date, end_date)
-        results_by_unit = zip(*results)
-        if not date_list:
-            date_list = results_by_unit[0]
-        # extract status field from result set
-        status_list = results_by_unit[2]
-        calendar_info = get_content_model().CalendarInfo(unit, resort_name, date_list, status_list)
+        # sample result : (datetime.date(2016, 10, 11), 12, 1, 62, 31)
+        status_info_list = []
+        for result in results:
+            date_ = result[0]
+            status = result[2]
+            booking_id = result[4]
+            status_info = get_content_model().StatusInfo(unit, date_, status, booking_id)
+            status_info_list.append(status_info)
+
+        calendar_info = get_content_model().CalendarInfo(unit, resort_name, status_info_list)
         data.append(calendar_info.serialize_calendar_info())
 
     return data
