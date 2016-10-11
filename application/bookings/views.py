@@ -423,20 +423,15 @@ def search_unit(resortname, typename):
 @bookings_api.route('/book/<groupname>', methods=['POST'])
 def book(groupname):
 
-    # input = request.get_json()
-    # input = request.get_data()
-    # if not input:
-    #     return 'Empty Data', 400
-    # checkin = input['checkin']
-    # checkout = input['checkout']
-    # guests = input['guests']
+    if not request.form:
+        return 'Empty Data', 400
 
-    checkin = request.args.get('from')
-    checkout = request.args.get('to')
-    guests = request.args.get('guests')
-    email = request.args.get('email')
-    firstname = request.args.get('firstname')
-    lastname = request.args.get('lastname')
+    checkin = request.form['from']
+    checkout = request.form['to']
+    guests = request.form['guests']
+    email = request.form['email']
+    firstname = request.form['firstname']
+    lastname = request.form['lastname']
 
     checkin = utils.convert_string_to_date(checkin)
     checkout = utils.convert_string_to_date(checkout)
