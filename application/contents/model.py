@@ -288,6 +288,7 @@ class CalendarInfo(object):
         self.date_list = date_list
         self.status_list = status_list
         self.status_info_list = []
+        self.first_date_str = None
 
         self.build_status_info_list()
 
@@ -296,6 +297,8 @@ class CalendarInfo(object):
 
     def build_status_info_list(self):
         if self.date_list:
+            # begin_date_str =
+            self.first_date_str = self.date_list[0]
             i = 0
             for date_ in self.date_list:
                 status_info = StatusInfo(self.unit, date_, self.status_list[i])
@@ -309,6 +312,7 @@ class CalendarInfo(object):
         return {
             'displayName': self.unit.display_name,
             'resortName': self.resortname,
+            'first_date': self.first_date_str,
             'statusInfoList': self.serialize_status_info_list()
         }
 

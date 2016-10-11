@@ -2,8 +2,34 @@
 {% block content %}
 
 <div class="page-header text-center">
-    <h2>Availability Calendar
+    <h2>Manage Calendar
     </h2>
+</div>
+
+<div class="row text-center">
+    <div class="col-md-2"></div>
+    <div class="col-md-8">
+        <a href="/bookings/calendar/{{ units[0].resortName }}/2016-10-01" class="btn btn-info calendar-mo">Oct</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/2016-11-01" class="btn btn-info calendar-mo">Nov</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/2016-12-01" class="btn btn-info calendar-mo">Dec</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/2017-01-01" class="btn btn-info calendar-mo">Jan</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/2017-02-01" class="btn btn-info calendar-mo">Feb</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/2017-03-01" class="btn btn-info calendar-mo">Mar</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/2017-04-01" class="btn btn-info calendar-mo">Apr</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/2017-05-01" class="btn btn-info calendar-mo">May</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/2017-06-01" class="btn btn-info calendar-mo">June</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/2017-07-01" class="btn btn-info calendar-mo">Jul</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/2017-08-01" class="btn btn-info calendar-mo">Aug</a>
+    </div>
+    <div class="col-md-2"></div>
+</div>
+<div class="row">
+    <div class="col-md-6">
+        <a href="/bookings/calendar/{{ units[0].resortName }}/{{ units[0].first_date }}?prev=true" class="btn btn-primary">Previous</a>
+    </div>
+    <div class="col-md-6" align="right">
+        <a href="/bookings/calendar/{{ units[0].resortName }}/{{ units[0].first_date }}?next=true" class="btn btn-primary">Next</a>
+    </div>
 </div>
 
 <div class="table-responsive">
@@ -79,3 +105,12 @@
 {% endif %}
 
 {% endblock %}
+
+<script>
+        get_next_day = function(from_d) {
+      var utc;
+      utc = new Date(from_d);
+      utc.setDate(utc.getDate() + 1);
+      return utc.toJSON().slice(0, 10);
+    };
+</script>

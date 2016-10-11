@@ -187,23 +187,32 @@ def delete(id):
 
 
 @bookings_api.route("/calendar")
-def list_calendar():
+def list_calendar_default():
     begin_date = utils.get_todays_date()
-    end_date = utils.get_end_date(request, utils.TWO_WEEKS)
-    begin_date = utils.convert_string_to_date(utils.convert_date_to_string(begin_date))
-    end_date = utils.convert_string_to_date(utils.convert_date_to_string(end_date))
-    # end_date = utils.convert_date_to_string(end_date)
-
+    begin_date = utils.convert_date_to_string(begin_date)
     resort = model.Resort.query.get(session['resort_id'])
-    print resort
-    units = get_calendar(resort.name, begin_date, end_date)
-    unit = units[0]
-    print unit
-    # calendar_info.
-    # for unit in results.units:
-    #     print unit
 
-    # return render_template("calendar/list.html", units=units)
+    return list_calendar(resort.name, begin_date)
+
+
+@bookings_api.route("/calendar/<resort_name>/<begin_date>")
+def list_calendar(resort_name, begin_date):
+    begin_date = utils.convert_string_to_date(begin_date)
+    # end_date = utils.get_end_date_from_begin_date(begin_date, utils.TWO_WEEKS)
+
+    if request.args.get('prev'):
+        # rewind two weeks
+        begin_date = utils.get_end_date_from_begin_date(begin_date, utils.TWO_WEEKS_BEFORE)
+
+    elif request.args.get('next'):
+        # forward two weeks
+        begin_date = utils.get_end_date_from_begin_date(begin_date, utils.TWO_WEEKS)
+    else:
+        # current date
+        pass
+
+    end_date = utils.get_end_date_from_begin_date(begin_date, utils.TWO_WEEKS)
+    units = get_calendar(resort_name, begin_date, end_date)
     return render_template("calendar/list.html", units=units)
 
 

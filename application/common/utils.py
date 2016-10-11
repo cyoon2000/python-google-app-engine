@@ -6,6 +6,7 @@ ISO_FORMAT_STRING = '%Y-%m-%d'
 ONE_DAY = 1
 ONE_WEEK = 7
 TWO_WEEKS = 14
+TWO_WEEKS_BEFORE = -14
 
 weekday_dict = {0: 'Mo', 1: 'Tu', 2: 'We', 3: 'Th', 4: 'Fr', 5: 'Sa', 6: 'Su'}
 
@@ -71,6 +72,11 @@ def get_end_date(request, days=1):
 
     end_date = convert_string_to_date(end_date)
     return end_date
+
+
+def get_end_date_from_begin_date(begin_date, days=1):
+    end_date = get_after_date(begin_date, days)
+    return convert_string_to_date(convert_date_to_string(end_date))
 
 
 def daterange(start_date, end_date):
