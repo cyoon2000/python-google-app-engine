@@ -255,7 +255,7 @@ class PriceInfo(object):
 
 
 class StatusInfo(object):
-    def __init__(self, unit, date, status, booking_id=None):
+    def __init__(self, unit, date, status, booking_id):
         self.unit = unit
         self.date_slot = date
         self.status = True if status == 0 else False
@@ -279,7 +279,7 @@ class StatusInfo(object):
             'weekday': utils.name_weekday(self.date_slot.weekday()),
             'status': self.status,
             'price': self.price,
-            'booking_id': self.booking_id
+            'bookingId': self.booking_id
         }
 
 

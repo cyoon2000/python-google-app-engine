@@ -67,10 +67,28 @@
         {% for info in unit.statusInfoList %}
             {% if info.status %}
                 <!--available-->
-                <td class="info">{{ info.price }}</td>
+                <!--<td class="info">-->
+                <td>
+                    <button type="button" class="btn btn-info btn-sm" center-block data-toggle="modal" data-target="#editStatusModal">
+                    <!--<button type="button" class="btn btn-info btn-sm" center-block data-toggle="modal" data-target="#editStatusModal" data-id="{{ info.availId }}">-->
+                    {{ info.price }}
+                    </button>
+                </td>
             {% else %}
                 <!--not available-->
-                <td class="danger">{{ info.price }}</td>
+                <!--<td class="danger">-->
+                <td>
+                    {% if info.bookingId %}
+                        <a href="/bookings/{{ info.bookingId }}/modal" data-target="#bookingModal" class="btn btn-danger btn-sm" enter-block data-toggle="modal">
+                        {{ info.price }}
+                            </a>
+                        <!--</button>-->
+                    {% else %}
+                        <button type="button" class="btn btn-default btn-sm" center-block data-toggle="modal" data-target="#editStatusModal">
+                        {{ info.price }}
+                        </button>
+                    {% endif %}
+                </td>
             {% endif %}
         {% endfor %}
         </tr>
@@ -80,7 +98,8 @@
 </div>
 <div>
     <span class="badge alert-info">Available</span>
-    <span class="badge alert-danger">Not available</span>
+    <span class="badge alert-danger">Booked</span>
+    <span class="badge alert-default">Blocked by Admin</span>
 </div>
 <hr/>
 
@@ -104,13 +123,46 @@
     Add 10 USD for <strong>Triple Occupancy</strong> ( for Room 2 3 4 5 6 only ) <br/>
 {% endif %}
 
-{% endblock %}
 
-<script>
-        get_next_day = function(from_d) {
-      var utc;
-      utc = new Date(from_d);
-      utc.setDate(utc.getDate() + 1);
-      return utc.toJSON().slice(0, 10);
-    };
-</script>
+<!-- View Booking Modal -->
+<div class="modal fade modal-lg" id="bookingModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+        </div>
+
+        <!--<div class="modal-header">-->
+            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
+        <!--</div>-->
+        <!--<div class="modal-body">-->
+            <!--<div class="modal-content">-->
+            <!--</div>-->
+        <!--</div>-->
+        <!--<div class="modal-footer">-->
+            <!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
+        <!--</div>-->
+    </div>
+</div>
+
+<!-- Edit Status Modal -->
+<div class="modal fade" id="editStatusModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Edit Status</h4>
+            </div>
+            <div class="modal-body">
+                <p>You are about to change the status of this date. </p>
+                <!--<form id="confirmForm" method="post">-->
+                    <!--<input type="hidden" name="bookingRequestId" id="bookingRequestId" value=""/>-->
+                <!--</form>-->
+            </div>
+            <div class="modal-footer">
+                <button id="confirmEdit" type="button" class="btn btn-info" data-dismiss="modal">Change</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

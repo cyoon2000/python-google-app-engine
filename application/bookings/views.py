@@ -132,6 +132,13 @@ def view(id):
     return render_template("booking/view.html", booking=booking)
 
 
+# this returns just body w/o menu
+@bookings_api.route('/<id>/modal')
+def view_booking_modal(id):
+    booking = get_model().read(id)
+    return render_template("booking/view_modal.html", booking=booking)
+
+
 @bookings_api.route('/<id>/edit', methods=['GET', 'POST'])
 def edit(id):
     data = request.form.to_dict(flat=True)
