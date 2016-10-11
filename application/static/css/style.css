@@ -34,6 +34,12 @@
   animation:flashAvailable 0.5s ease;
 }
 
+.table-responsive.calendar .btn-info,
+.table-responsive.calendar .btn-default,
+.table-responsive.calendar .btn-danger {
+    width: 45px;
+}
+
 /* animation for the time slot to flash red */
 @keyframes flashBooked {
   0%, 100%  { background:#f2dede; transform:scale(1); }
