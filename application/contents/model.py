@@ -297,8 +297,8 @@ class CalendarInfo(object):
 
     def build_status_info_list(self):
         if self.date_list:
-            # begin_date_str =
-            self.first_date_str = self.date_list[0]
+            date_ = self.date_list[0]
+            self.first_date_str = utils.convert_date_to_string(date_)
             i = 0
             for date_ in self.date_list:
                 status_info = StatusInfo(self.unit, date_, self.status_list[i])
