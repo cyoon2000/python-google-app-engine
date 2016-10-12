@@ -521,7 +521,7 @@ def test_mail(groupname):
     checkin = "2016-11-01"
     checkout = "2016-11-05"
     guests = 2
-    email = "cherieyoun@gmail.com"
+    email = "gokitebaja@gmail.com"
 
     checkin = utils.convert_string_to_date(checkin)
     checkout = utils.convert_string_to_date(checkout)
@@ -535,9 +535,9 @@ def test_mail(groupname):
     booking_request.first_name = "Frodo"
     booking_request.last_name = "Baggins"
 
-    email_content = send_mail(booking_request, None, "")
+    #email_content = send_mail(booking_request, None, "")
     #email_content = send_mail(booking_request, RESPONSE_CONFIRM, "")
-    #email_content = send_mail(booking_request, RESPONSE_DECLINE, "We have availability after Jan 4th, 2016.")
+    email_content = send_mail(booking_request, RESPONSE_DECLINE, "We have availability after Jan 4th, 2016.")
     return email_content
 
 # checkin and checkout is date
@@ -629,7 +629,8 @@ def send_complex_message(recipient, email_data, email_subject):
 
     url = 'https://api.mailgun.net/v3/{}/messages'.format(MAILGUN_DOMAIN_NAME)
     data = {
-        'from': 'GoKiteBaja <mailgun@{}>'.format(MAILGUN_DOMAIN_NAME),
+        # 'from': 'GoKiteBaja <mailgun@{}>'.format(MAILGUN_DOMAIN_NAME),
+        'from': 'GoKiteBaja <book@{}>'.format(MAILGUN_DOMAIN_NAME),
         'to': email_data.booking_request.email,
         'cc': recipient,
         'bcc': "book@gokitebaja.com",

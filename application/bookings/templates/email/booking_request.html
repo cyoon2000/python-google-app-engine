@@ -73,33 +73,43 @@
 
                 <table width="100%" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                    <td class="content-block aligncenter" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: center; margin: 0; padding: 0 0 20px; border-top-color:grey ;border-top-style:dotted;border-top-width:1px; border-bottom-color:grey;border-bottom-width:1px;border-bottom-style:dotted;" align="center" valign="top">
+                    <td class="content-block aligncenter" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif;
+                        box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: center; margin: 0; padding: 0 0 20px;"
+                        align="center" valign="top">
                     <h2 class="aligncenter" style="font-family: 'Tangerine', cursive; box-sizing: border-box; font-size: 32px; color: #000; line-height: 1.2em; font-weight: 400; text-align: center; margin: 40px 0 0;" align="center">
                     <!--Thank you {{ booking_request.first_name }}!-->
-                        <font color="gray">{{ email_data.subject }}</font>
+                        <font>{{ email_data.subject }}</font>
                     </h2>
                     <!--Your booking request has been sent to the resort.-->
-                    <h4> {{ email_data.status }} </h4>
-                    {{ email_data.comment }}
+                    <!--<h4>-->
+                    <div align="center" style="color:#363636;font-family:SQMarket-Medium,HelveticaNeue-Medium,'Helvetica Neue Medium',Helvetica-Bold,Helvetica,Arial,sans-serif;font-size:14px;font-weight:500;line-height:24px;margin:0;padding:0;text-align:center;text-decoration:none">
+                        {{ email_data.status }} <br/>
+                        {{ email_data.comment }}
+                    </div>
+                    <!--</h4>-->
                     </td></tr>
 
                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                        <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                        <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;
+                        border-top-color:grey; border-top-style:dotted; border-top-width:1px;"
+                        valign="top">
                         <h2 class="aligncenter" style="font-family: 'Tangerine', cursive; box-sizing: border-box; font-size: 32px; color: #000; line-height: 1.2em; font-weight: 400; text-align: center; margin: 40px 0 0;" align="center">
                         {{ email_data.booking_request.unit_info.unit.displayName }} <br/>
                         at {{ email_data.booking_request.unit_info.resort.displayName }} </h2>
                         </td>
                     </tr>
-                <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
+                <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
+                    <td class="content-block" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 0 0 20px;" valign="top">
                     <!--<h4 class="aligncenter" style="font-family: 'Helvetica Neue',Helvetica,Arial,'Lucida Grande',sans-serif; box-sizing: border-box; font-size: 18px; color: #000; line-height: 1.2em; font-weight: 400; text-align: center; margin: 40px 0 0;" align="center">-->
-                    <h4 class="aligncenter" style="font-family: 'Helvetica Neue',Helvetica,Arial,'Lucida Grande',sans-serif; box-sizing: border-box; font-size: 18px; color: #000; line-height: 1.2em; font-weight: 400; text-align: center; margin: 40px 0 0;" align="center">
-                        <font color="gray">Check In </font> {{ email_data.booking_request.checkin }}<br/>
-                        <font color="gray">Check Out </font> {{ email_data.booking_request.checkout }} <br/>
-                        <small>( For {{ email_data.booking_request.guests }} guests ) </small><br/>
-                    </h4>
+                    <!--<h4 class="aligncenter" style="font-family: 'Helvetica Neue',Helvetica,Arial,'Lucida Grande',sans-serif; box-sizing: border-box; font-size: 18px; color: #000; line-height: 1.2em; font-weight: 400; text-align: center; margin: 40px 0 0;" align="center">-->
+                    <div align="center" style="color:#363636;font-family:SQMarket-Medium,HelveticaNeue-Medium,'Helvetica Neue Medium',Helvetica-Bold,Helvetica,Arial,sans-serif;font-size:14px;font-weight:500;line-height:24px;margin:0;padding:0;text-align:center;text-decoration:none">
+                        Check In : {{ email_data.booking_request.checkin }} <br/>
+                        Check Out : {{ email_data.booking_request.checkout }} <br/>
+                        For {{ email_data.booking_request.guests }} guests
+                    </div>
                 </td></tr>
                 <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td class="content-block aligncenter" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: center; margin: 0; padding: 0 0 20px;" align="center" valign="top">
-                    <table class="invoice" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; text-align: left; width: 80%; margin: 40px auto;">
+                    <table class="invoice" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; text-align: left; width: 80%; margin: 10px auto;">
                         <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 5px 0;" valign="top">
                             {{ email_data.booking_request.first_name }} {{ email_data.booking_request.last_name }}<br style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;" />
                             {{ email_data.booking_request.email }}<br style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;" />
@@ -107,7 +117,7 @@
                         <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;"><td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; margin: 0; padding: 5px 0;" valign="top">
                         <table class="invoice-items" cellpadding="0" cellspacing="0" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; width: 100%; margin: 0;">
                             <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
-                                <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; border-top-width: 1px; border-top-color: #eee; border-top-style: solid; margin: 0; padding: 5px 0;" valign="top">Avg Price per Night</td>
+                                <td style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; border-top-width: 1px; border-top-color: #eee; border-top-style: solid; margin: 0; padding: 5px 0;" valign="top">Avg Rate per Night</td>
                                 <td class="alignright" style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; vertical-align: top; text-align: right; border-top-width: 1px; border-top-color: #eee; border-top-style: solid; margin: 0; padding: 5px 0;" align="right" valign="top">$ {{ email_data.booking_request.unit_info.avg_price }}</td>
                             </tr>
                             <tr style="font-family: 'Helvetica Neue',Helvetica,Arial,sans-serif; box-sizing: border-box; font-size: 14px; margin: 0;">
