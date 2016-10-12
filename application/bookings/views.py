@@ -220,44 +220,57 @@ def list_calendar(resort_name, begin_date):
 
     end_date = utils.get_end_date_from_begin_date(begin_date, utils.TWO_WEEKS)
     units = get_calendar(resort_name, begin_date, end_date)
-    return render_template("calendar/list.html", units=units)
+
+    # get bookings in this period
+    bookings = model.get_bookings(begin_date, end_date)
+
+    return render_template("calendar/list.html", units=units, bookings=bookings)
 
 
 # TODO - add calendar navigation prev/next
-@bookings_api.route('/edit-calendar')
-def edit_calendar_deprecated():
-    begin_date = utils.get_begin_date(request)
-    end_date = utils.get_end_date(request, utils.TWO_WEEKS)
-
-    resort = model.Resort.query.get(session['resort_id'])
-    units = model.get_units_by_resort(resort.id)
-
-    dates = model.get_calendar_dates(begin_date, end_date)
-    bookings = model.get_bookings(begin_date, end_date)
-
-    return render_template("edit_calendar.html", resort=resort, units=units, dates=dates, bookings=bookings)
+# @bookings_api.route('/edit-calendar')
+# def edit_calendar_deprecated():
+#     begin_date = utils.get_begin_date(request)
+#     end_date = utils.get_end_date(request, utils.TWO_WEEKS)
+#
+#     resort = model.Resort.query.get(session['resort_id'])
+#     units = model.get_units_by_resort(resort.id)
+#
+#     dates = model.get_calendar_dates(begin_date, end_date)
+#     bookings = model.get_bookings(begin_date, end_date)
+#
+#     return render_template("edit_calendar.html", resort=resort, units=units, dates=dates, bookings=bookings)
 
 
 @bookings_api.route('/calendar/edit', methods=['GET', 'POST'])
 def edit_availability():
-    id = input['id']
-    print "****"
-    print input
+    if not request.form:
+        return 'Empty Data', 400
 
-    if id:
-        avail = model.Availability.query.get(input['id'])
-        #avail = model.delete_entity(avail)
+    avail_id = request.form['avail_id']
+    unit_id = request.form['unit_id']
+    date_slot = request.form['date_slot']
+    status = request.form['status']
 
-    else:
-        return None
-        ##avail = model.Availability.query.get(input['id'])
-        ##avail.status = -1 if input['booked'] is True else 1
-        ##avail = model.save_entity(avail)
+    # current status is available -> block (make it unavailable)
+    # create availability record
+    if status == 'True':
         # 2=blocked
-        # avail = model.Availability(input['unit_id'], input['date_slot'], 2)
-        # avail = model.save_entity(avail)
-        # logging.info(serialize_availability(avail))
+        avail = model.Availability(unit_id, date_slot, 2)
+        avail = model.save_entity(avail)
+        logging.info("<Calendar> [Create] Availability Success.")
 
+    # current status is unavailable -> unblock (make it available)
+    # delete availability record
+    else:
+        if not avail_id:
+            logging.error('Invalid Data - Empty avail_id. Trying to unblock the date, and the availability_id is NOT FOUND = %s', date_slot)
+            return 'Invalid Data - Empty avail_id. Trying to unblock the date, and the availability_id is NOT FOUND ', 500
+        avail = model.Availability.query.get(avail_id)
+        avail = model.delete_entity(avail)
+        logging.info("<Calendar> [Delete] Availability Success.")
+
+    logging.info(serialize_availability(avail))
     return jsonify(data=serialize_availability(avail))
 
 
