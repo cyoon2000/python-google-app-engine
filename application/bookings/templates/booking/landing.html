@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header text-center">
+    <h2>Manage Bookings
+        <a href="/bookings/add" class="btn btn-info btn-sm">
+            <i class="glyphicon glyphicon-plus"></i>
+            New Booking
+        </a>
+    </h2>
+</div>
+
+{% include "booking/list.html" %}
+
+{% endblock %}

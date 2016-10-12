@@ -119,7 +119,7 @@ def list_bookings():
     bookings, next_page_token = model.list_bookings(cursor=token)
 
     try: return render_template(
-        "booking/list.html",
+        "booking/landing.html",
         bookings=bookings,
         next_page_token=next_page_token)
     except TemplateNotFound:
@@ -224,7 +224,7 @@ def list_calendar(resort_name, begin_date):
     # get bookings in this period
     bookings = model.get_bookings(begin_date, end_date)
 
-    return render_template("calendar/list.html", units=units, bookings=bookings)
+    return render_template("calendar/landing.html", units=units, bookings=bookings)
 
 
 # TODO - add calendar navigation prev/next

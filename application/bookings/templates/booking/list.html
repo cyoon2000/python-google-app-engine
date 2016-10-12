@@ -1,15 +1,6 @@
-{% extends "base.html" %}
 {% block content %}
 
 <div class="container">
-    <div class="page-header text-center">
-    <h2>Manage Bookings
-        <a href="/bookings/add" class="btn btn-info btn-sm">
-            <i class="glyphicon glyphicon-plus"></i>
-            New Booking
-        </a>
-    </h2>
-    </div>
 
     <div class="col-xs-12" style="height:30px;"></div>
 
@@ -39,7 +30,7 @@
                         <i class="glyphicon glyphicon-edit"></i>
                         Edit
                     </a>
-            </div>
+                </div>
             </td>
             <td>
                 <div class="btn-group">
@@ -66,12 +57,5 @@
     </table>
 </div>
 
-    {% if next_page_token %}
-    <nav>
-    <ul class="pager">
-    <li><a href="?page_token={{next_page_token}}">More</a></li>
-    </ul>
-    </nav>
-    {% endif %}
-
 {% endblock %}
+
