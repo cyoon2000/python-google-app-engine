@@ -186,6 +186,7 @@
         $('#queue').DataTable( {
             "order": [[ 6, "asc" ]],
             "columnDefs": [
+              { orderable: false, targets: [7, 8] },
               {
                 "targets": 1,
                 "data": "begin_date",
@@ -224,9 +225,8 @@
                     day = date.toLocaleString(locale, { weekday: "short" });
                     return day + " " + month + " " + date.getDate() + ", " + date.getFullYear();
                 }
-              },
-
-              ],
+              }
+            ],
         }
         );
     });
