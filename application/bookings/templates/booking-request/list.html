@@ -15,7 +15,9 @@
         <li>When you <strong>decline</strong>, you will have opportunity to add personal message such as suggesting different dates to the email to the customer.</li>
     </ul>
 
-    <table class="table table-hover">
+    <div class="col-xs-12" style="height:15px;"></div>
+
+    <table id="queue" class="table table-striped table-bordered">
         <thead>
         <tr>
             <th>Unit (Type)</th>
@@ -38,7 +40,7 @@
             <td>{{booking_request.guests}}</td>
             <td>USD {{booking_request.avg_price}}</td>
             <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
-            <td>{{booking_request.created_on}}</td>
+            <td>{{booking_request.updated_on}}</td>
             <!--<td><button type="button" class="btn btn-success btn-sm" id="confirmButton" value="{{booking_request.id}}">Confirm</button></td>-->
             <!--<td><a href="/bookings/confirm/{{booking_request.id}}" class="btn btn-success btn-sm">Confirm</button></a>-->
             <td><button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#confirmModal" data-id="{{booking_request.id}}">Confirm</button></td>
@@ -180,6 +182,55 @@
 {% endif %}
 
 <script>
+    $(document).ready(function() {
+        $('#queue').DataTable( {
+            "order": [[ 6, "asc" ]],
+            "columnDefs": [
+              {
+                "targets": 1,
+                "data": "begin_date",
+                "render": function ( data ) {
+                    var date = new Date(data);
+                    // var month = date.getMonth() + 1;
+                    // return (month.length > 1 ? month : "0" + month) + "/" + date.getDate() + "/" + date.getFullYear();
+                    locale = "en-us",
+                    month = date.toLocaleString(locale, { month: "short" });
+                    day = date.toLocaleString(locale, { weekday: "short" });
+                    return day + " " + month + " " + date.getDate() + ", " + date.getFullYear();
+                }
+              },
+              {
+                "targets": 2,
+                "data": "end_date",
+                "render": function ( data ) {
+                    var date = new Date(data);
+                    // var month = date.getMonth() + 1;
+                    // return (month.length > 1 ? month : "0" + month) + "/" + date.getDate() + "/" + date.getFullYear();
+                    locale = "en-us",
+                    month = date.toLocaleString(locale, { month: "short" });
+                    day = date.toLocaleString(locale, { weekday: "short" });
+                    return day + " " + month + " " + date.getDate() + ", " + date.getFullYear();
+                }
+              },
+              {
+                "targets": 6,
+                "data": "updated_on",
+                "render": function ( data ) {
+                    var date = new Date(data);
+                    // var month = date.getMonth() + 1;
+                    // return (month.length > 1 ? month : "0" + month) + "/" + date.getDate() + "/" + date.getFullYear();
+                    locale = "en-us",
+                    month = date.toLocaleString(locale, { month: "short" });
+                    day = date.toLocaleString(locale, { weekday: "short" });
+                    return day + " " + month + " " + date.getDate() + ", " + date.getFullYear();
+                }
+              },
+
+              ],
+        }
+        );
+    });
+
     $('#confirmModal').on('show.bs.modal', function(e) {
 
         //get data-id attribute of the clicked element

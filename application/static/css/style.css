@@ -34,6 +34,7 @@
   animation:flashAvailable 0.5s ease;
 }
 
+/* calendar table button */
 .table-responsive.calendar .btn-info,
 .table-responsive.calendar .btn-default,
 .table-responsive.calendar .btn-danger {

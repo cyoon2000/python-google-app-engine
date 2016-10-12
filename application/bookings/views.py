@@ -62,8 +62,8 @@ def list_booking_requests():
         token = token.encode('utf-8')
 
     requests, next_page_token = get_model().list_booking_request(cursor=token)
-    confirms = get_model().list_booking_request_confirmed()
-    declines = get_model().list_booking_request_declined()
+    confirms = get_model().list_booking_request_confirmed(5)
+    declines = get_model().list_booking_request_declined(5)
 
     try: return render_template(
         "booking-request/list.html",

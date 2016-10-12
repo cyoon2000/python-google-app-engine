@@ -236,11 +236,11 @@ class EmailData(object):
         self.comment = comment
 
 
-def list_booking_request(limit=20, cursor=None):
+def list_booking_request(limit=100, cursor=None):
     cursor = int(cursor) if cursor else 0
     query = (BookingRequest.query
              .filter(BookingRequest.status == 'CREATED')
-             .order_by(BookingRequest.created_on)
+             .order_by(BookingRequest.updated_on)
              .limit(limit)
              .offset(cursor))
     bookings = builtin_list(map(from_sql, query.all()))
@@ -248,7 +248,7 @@ def list_booking_request(limit=20, cursor=None):
     return (bookings, next_page)
 
 
-def list_booking_request_confirmed(limit=5):
+def list_booking_request_confirmed(limit=100):
     query = (BookingRequest.query
              .filter(BookingRequest.status == 'CONFIRMED')
              .order_by(BookingRequest.updated_on.desc())
@@ -258,7 +258,7 @@ def list_booking_request_confirmed(limit=5):
     return confirms
 
 
-def list_booking_request_declined(limit=5):
+def list_booking_request_declined(limit=100):
     query = (BookingRequest.query
              .filter(BookingRequest.status == 'DECLINED')
              .order_by(BookingRequest.updated_on.desc())
@@ -268,7 +268,7 @@ def list_booking_request_declined(limit=5):
     return declines
 
 
-def list_bookings(limit=50, cursor=None):
+def list_bookings(limit=100, cursor=None):
     cursor = int(cursor) if cursor else 0
     query = (Booking.query
              .order_by(Booking.updated_on.desc())
