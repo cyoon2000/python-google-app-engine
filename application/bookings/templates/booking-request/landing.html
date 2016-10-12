@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header text-center">
+    <h2>Manage Booking Requests</h2>
+</div>
+
+<h2><span class="label label-primary">Waiting for Your Response</span></h2>
+
+<ul>
+    <li>When you <strong>confirm</strong>, a confirmation email will be sent to the customer. When you confirm, we highly recommend to <a href="/bookings/add">create new booking</a> to maintain your Availability Calendar. </li>
+    <li>When you <strong>decline</strong>, you will have opportunity to add personal message such as suggesting different dates to the email to the customer.</li>
+</ul>
+
+<div class="col-xs-12" style="height:15px;"></div>
+
+{% include "booking-request/list.html" %}
+
+<hr/>
+<h2><span class="label label-primary">Confirmed Recently</span>
+    <small><a href="/bookings/confirms">
+        Full view
+    </a></small>
+</h2>
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th>Unit (Type)</th>
+        <th>Check In</th>
+        <th>Check Out</th>
+        <th>Guests</th>
+        <th>Ave Rate<br/> per night</th>
+        <th>Name</th>
+        <th>Date Requested</th>
+        <th>Date Confirmed</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for booking_request in confirms %}
+    <tr>
+        <td>{{booking_request.unitgroup_name}}</td>
+        <td>{{booking_request.checkin}}</td>
+        <td>{{booking_request.checkout}}</td>
+        <td>{{booking_request.guests}}</td>
+        <td>USD {{booking_request.avg_price}}</td>
+        <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
+        <td>{{booking_request.created_on}}</td>
+        <td>{{booking_request.updated_on}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<hr/>
+<h2><span class="label label-primary"> Declined Recently</span>
+    <small><a href="/bookings/declines">
+        Full view
+    </a></small>
+</h2>
+<table class="table table-hover">
+    <thead>
+    <tr>
+        <th>Unit (Type)</th>
+        <th>Check In</th>
+        <th>Check Out</th>
+        <th>Guests</th>
+        <th>Ave Rate<br/> per night</th>
+        <th>Name</th>
+        <th>Date Requested</th>
+        <th>Date Declined</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for booking_request in declines %}
+    <tr>
+        <td>{{booking_request.unitgroup_name}}</td>
+        <td>{{booking_request.checkin}}</td>
+        <td>{{booking_request.checkout}}</td>
+        <td>{{booking_request.guests}}</td>
+        <td>USD {{booking_request.avg_price}}</td>
+        <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
+        <td>{{booking_request.created_on}}</td>
+        <td>{{booking_request.updated_on}}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<!-- confirm Modal -->
+<div class="modal fade" id="confirmModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Confirm Booking Request</h4>
+            </div>
+            <div class="modal-body">
+                <p>The confirmation email will be sent shortly to the customer. You will also receive the copy of the email.</p>
+                <form id="confirmForm" method="post">
+                    <input type="hidden" name="bookingRequestId" id="bookingRequestId" value=""/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmFormSubmit" type="button" class="btn btn-success" data-dismiss="modal">Confirm</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- decline Modal -->
+<div class="modal fade" id="declineModal" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Decline Booking Request</h4>
+            </div>
+            <div class="modal-body">
+                <p>The email will be sent shortly to the customer. You will also receive the copy of the email.</p>
+                <p>Feel free to add a message here (such as suggesting different dates or different units). Your message will be added to the email.</p>
+                <form id="myForm" method="post">
+                    <label for="comment">Comment:</label>
+                    <input type="text" class="form-control" name="comment" id="comment">
+                    <input type="hidden" name="bookingRequestId" id="bookingRequestId" value=""/>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button id="myFormSubmit" type="button" class="btn btn-danger" data-dismiss="modal">Decline</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<hr/>
+
+{% endblock %}

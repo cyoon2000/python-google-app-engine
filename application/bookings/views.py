@@ -66,11 +66,12 @@ def list_booking_requests():
     declines = get_model().list_booking_request_declined(5)
 
     try: return render_template(
-        "booking-request/list.html",
+        "booking-request/landing.html",
         requests=requests,
         confirms=confirms,
         declines=declines,
-        next_page_token=next_page_token)
+        next_page_token=next_page_token
+    )
     except TemplateNotFound:
         abort(404)
 
