@@ -167,7 +167,7 @@ def add():
         unit = model.Unit.query.filter(model.Unit.name == unit_name).one()
 
         if not model.is_unit_available(unit.id, checkin, checkout):
-            return render_template("500.html", msg="Please check the availability and try again. The Unit is NOT available for the dates you specified.")
+            return render_template("500.html", msg="Please check the availability and try again. The Unit is NOT available at least for a day.")
 
         logging.info("[Create] Booking Begin: unit name = %s, email = %s", unit.name, data['email'])
         unit_info = get_unit_info(unit.unitgroup_name, checkin, checkout)
@@ -225,7 +225,7 @@ def list_calendar(resort_name, begin_date):
 
 # TODO - add calendar navigation prev/next
 @bookings_api.route('/edit-calendar')
-def edit_calendar():
+def edit_calendar_deprecated():
     begin_date = utils.get_begin_date(request)
     end_date = utils.get_end_date(request, utils.TWO_WEEKS)
 
@@ -236,6 +236,29 @@ def edit_calendar():
     bookings = model.get_bookings(begin_date, end_date)
 
     return render_template("edit_calendar.html", resort=resort, units=units, dates=dates, bookings=bookings)
+
+
+@bookings_api.route('/calendar/edit', methods=['GET', 'POST'])
+def edit_availability():
+    id = input['id']
+    print "****"
+    print input
+
+    if id:
+        avail = model.Availability.query.get(input['id'])
+        #avail = model.delete_entity(avail)
+
+    else:
+        return None
+        ##avail = model.Availability.query.get(input['id'])
+        ##avail.status = -1 if input['booked'] is True else 1
+        ##avail = model.save_entity(avail)
+        # 2=blocked
+        # avail = model.Availability(input['unit_id'], input['date_slot'], 2)
+        # avail = model.save_entity(avail)
+        # logging.info(serialize_availability(avail))
+
+    return jsonify(data=serialize_availability(avail))
 
 
 @bookings_api.route("/resorts/<id>/units")
@@ -257,60 +280,37 @@ def get_calendar_date(datestr):
     return jsonify(data=serialize_calendar_date(calendar.date_))
 
 
-# input datestr is iso format string
-# begin and end
-# @bookings_api.route("/calendar")
-# def get_calendar_dates():
-#     begin_date = request.args.get('begin')
-#     end_date = request.args.get('end')
+# DEPRECATED - Not using Angular anymore
+# # Return JSON
+# # Sample data: http://localhost:8080/bookings/availability/unit/10?from=2016-07-01&to=2016-07-10
+# @bookings_api.route("/availability/unit/<id>")
+# def get_availabilities(id):
 #
-#     begin_date = utils.convert_string_to_date(begin_date)
-#     if not end_date:
-#         end_date = utils.get_default_end_date(begin_date)
-#     else:
-#         end_date = utils.convert_string_to_date(end_date)
+#     begin_date = utils.get_begin_date(request)
+#     end_date = utils.get_end_date(request, utils.TWO_WEEKS)
 #
-#     return get_calendar_dates(begin_date, end_date)
-
-
-# input date is date
-# def get_calendar_dates(begin_date, end_date):
-#     dates = model.get_calendar_dates(begin_date, end_date)
-#     data = [serialize_calendar_date(r.date_) for r in dates]
+#     results = model.get_availabilities(id, begin_date, end_date)
+#     data = [serialize_availability(r) for r in results]
 #     return jsonify(data=data)
-
-
-# Return JSON
-# Sample data: http://localhost:8080/bookings/availability/unit/10?from=2016-07-01&to=2016-07-10
-@bookings_api.route("/availability/unit/<id>")
-def get_availabilities(id):
-
-    begin_date = utils.get_begin_date(request)
-    end_date = utils.get_end_date(request, utils.TWO_WEEKS)
-
-    results = model.get_availabilities(id, begin_date, end_date)
-    data = [serialize_availability(r) for r in results]
-    return jsonify(data=data)
-
-
-@bookings_api.route('/availability/<unit_id>', methods=['POST'])
-def update_availability(unit_id):
-    input = json.loads(request.data)
-    if input['id']:
-        avail = model.Availability.query.get(input['id'])
-        avail = model.delete_entity(avail)
-
-    else:
-        #avail = model.Availability.query.get(input['id'])
-        #avail.status = -1 if input['booked'] is True else 1
-        #avail = model.save_entity(avail)
-        # 2=blocked
-        avail = model.Availability(input['unit_id'], input['date_slot'], 2)
-        avail = model.save_entity(avail)
-        logging.info(serialize_availability(avail))
-
-    return jsonify(data=serialize_availability(avail))
-    # return jsonify(data="Success")
+#
+#
+# @bookings_api.route('/availability/<unit_id>', methods=['POST'])
+# def update_availability(unit_id):
+#     input = json.loads(request.data)
+#     if input['id']:
+#         avail = model.Availability.query.get(input['id'])
+#         avail = model.delete_entity(avail)
+#
+#     else:
+#         #avail = model.Availability.query.get(input['id'])
+#         #avail.status = -1 if input['booked'] is True else 1
+#         #avail = model.save_entity(avail)
+#         # 2=blocked
+#         avail = model.Availability(input['unit_id'], input['date_slot'], 2)
+#         avail = model.save_entity(avail)
+#         logging.info(serialize_availability(avail))
+#
+#     return jsonify(data=serialize_availability(avail))
 
 
 @bookings_api.route("/calendar/resort/<name>")
@@ -322,22 +322,6 @@ def get_calendar(name):
     return jsonify(results=data)
 
 
-    # units = model.get_units_by_resort_name(name)
-    # date_list = None
-    # data = []
-    # for unit in units:
-    #     results = model.get_availabilities(unit.id, begin_date, end_date)
-    #     results_by_unit = zip(*results)
-    #     if not date_list:
-    #         date_list = results_by_unit[0]
-    #     # extract status field from result set
-    #     status_list = results_by_unit[2]
-    #     calendar_info = get_content_model().CalendarInfo(unit, name, date_list, status_list)
-    #     data.append(calendar_info.serialize_calendar_info())
-    #
-    # return jsonify(results=data)
-
-
 def get_calendar(resort_name, begin_date, end_date):
     units = model.get_units_by_resort_name(resort_name)
     data = []
@@ -347,16 +331,17 @@ def get_calendar(resort_name, begin_date, end_date):
         status_info_list = []
         for result in results:
             date_ = result[0]
+            unit_id = result[1]
             status = result[2]
+            availability_id = result[3]
             booking_id = result[4]
-            status_info = get_content_model().StatusInfo(unit, date_, status, booking_id)
+            status_info = get_content_model().StatusInfo(unit, date_, status, unit_id, availability_id, booking_id)
             status_info_list.append(status_info)
 
         calendar_info = get_content_model().CalendarInfo(unit, resort_name, status_info_list)
         data.append(calendar_info.serialize_calendar_info())
 
     return data
-    # return jsonify(results=data)
 
 
 @bookings_api.route('/search')
@@ -548,16 +533,6 @@ def get_unit_info(groupname, checkin, checkout):
     unitgroup = get_content_model().find_unit_by_name(groupname)
     unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
     return unit_info
-
-
-# def is_unit_available(unit_id, checkin, checkout):
-#     results = model.get_availabilities(unit_id, checkin, checkout)
-#     results_by_unit = zip(*results)
-#     # extract status field from result set
-#     status_list = results_by_unit[2]
-#     if sum(status_list) > 0:
-#         return False
-#     return True
 
 
 def build_booking_from_booking_request(unit, booking_request):

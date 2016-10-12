@@ -25,10 +25,10 @@
 </div>
 <div class="row">
     <div class="col-md-6">
-        <a href="/bookings/calendar/{{ units[0].resortName }}/{{ units[0].first_date }}?prev=true" class="btn btn-primary">Previous</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/{{ units[0].firstDate }}?prev=true" class="btn btn-primary">Previous</a>
     </div>
     <div class="col-md-6" align="right">
-        <a href="/bookings/calendar/{{ units[0].resortName }}/{{ units[0].first_date }}?next=true" class="btn btn-primary">Next</a>
+        <a href="/bookings/calendar/{{ units[0].resortName }}/{{ units[0].firstDate }}?next=true" class="btn btn-primary">Next</a>
     </div>
 </div>
 
@@ -66,28 +66,35 @@
         <td><strong>{{ unit.displayName }}</strong></td>
         {% for info in unit.statusInfoList %}
             {% if info.status %}
-                <!--available-->
-                <!--<td class="info">-->
+                <!-- available -->
                 <td>
-                    <button type="button" class="btn btn-info btn-sm" center-block data-toggle="modal" data-target="#editStatusModal">
-                    <!--<button type="button" class="btn btn-info btn-sm" center-block data-toggle="modal" data-target="#editStatusModal" data-id="{{ info.availId }}">-->
-                    {{ info.price }}
-                    </button>
+                    <a data-toggle="modal" data-target="#editStatusModal" center-block data-toggle="modal"
+                        data-unit_id="{{ info.unitId }}"
+                        data-date_slot="{{ info.date }}"
+                        data-avail_id="{{ info.availId }}"
+                        data-status="{{ info.status }}"
+                        class="btn btn-info btn-sm">
+                        {{ info.price }}
+                    </a>
                 </td>
             {% else %}
-                <!--not available-->
-                <!--<td class="danger">-->
                 <td>
-                    {% if info.bookingId %}
-                        <a href="/bookings/{{ info.bookingId }}/modal" data-target="#bookingModal" class="btn btn-danger btn-sm" enter-block data-toggle="modal">
+                {% if info.bookingId %}
+                    <!-- booked -->
+                    <a href="/bookings/{{ info.bookingId }}/modal" data-target="#bookingModal" class="btn btn-danger btn-sm" enter-block data-toggle="modal">
                         {{ info.price }}
-                            </a>
-                        <!--</button>-->
-                    {% else %}
-                        <button type="button" class="btn btn-default btn-sm" center-block data-toggle="modal" data-target="#editStatusModal">
+                        </a>
+                {% else %}
+                    <!-- unavailable -->
+                    <a data-toggle="modal" data-target="#editStatusModal" center-block data-toggle="modal"
+                       data-unit_id="{{ info.unitId }}"
+                       data-date_slot="{{ info.date }}"
+                       data-avail_id="{{ info.availId }}"
+                       data-status="{{ info.status }}"
+                       class="btn btn-default btn-sm">
                         {{ info.price }}
-                        </button>
-                    {% endif %}
+                    </a>
+                {% endif %}
                 </td>
             {% endif %}
         {% endfor %}
@@ -99,7 +106,7 @@
 <div>
     <span class="badge alert-info">Available</span>
     <span class="badge alert-danger">Booked</span>
-    <span class="badge alert-default">Blocked by Admin</span>
+    <span class="badge alert-default">Unavailable</span> (Marked as unavailable by Admin)
 </div>
 <hr/>
 
@@ -152,17 +159,72 @@
                 <h4 class="modal-title">Edit Status</h4>
             </div>
             <div class="modal-body">
-                <p>You are about to change the status of this date. </p>
-                <!--<form id="confirmForm" method="post">-->
-                    <!--<input type="hidden" name="bookingRequestId" id="bookingRequestId" value=""/>-->
-                <!--</form>-->
+                <p>You are about to change the status to <span id ="message"/> for this date. </p>
+                <form id="confirmForm" method="post">
+                    <input type="hidden" name="avail_id" id="avail_id" value=""/>
+                    <input type="hidden" name="unit_id" id="unit_id" value=""/>
+                    <input type="hidden" name="date_slot" id="date_slot" value=""/>
+                    <input type="hidden" name="status" id="status" value=""/>
+                </form>
             </div>
             <div class="modal-footer">
-                <button id="confirmEdit" type="button" class="btn btn-success" data-dismiss="modal">Confirm</button>
+                <button id="confirmFormSubmit" type="button" class="btn btn-success" data-dismiss="modal">Confirm</button>
                 <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+
+    $('#editStatusModal').on('show.bs.modal', function(e) {
+
+        //get data-id attribute of the clicked element
+        var action_name = $(e.relatedTarget).data('action_name');
+        var unit_id = $(e.relatedTarget).data('unit_id');
+        var date_slot = $(e.relatedTarget).data('date_slot');
+        var avail_id = $(e.relatedTarget).data('avail_id');
+        var status = $(e.relatedTarget).data('status');
+        console.log (action_name)
+        console.log (unit_id)
+        console.log (date_slot)
+        console.log (avail_id)
+        console.log (status)
+
+        // set message properly depending on the current status
+        if (status) {
+            $('.modal-body #message').text('unavailable');
+        } else {
+            $('.modal-body #message').text('available');
+        }
+        //populate the textbox
+        $(e.currentTarget).find('input[name="action_name"]').val(action_name);
+        $(e.currentTarget).find('input[name="avail_id"]').val(avail_id);
+        $(e.currentTarget).find('input[name="unit_id"]').val(unit_id);
+        $(e.currentTarget).find('input[name="date_slot"]').val(date_slot);
+        $(e.currentTarget).find('input[name="status"]').val(status);
+    });
+
+
+    $('#confirmFormSubmit').click(function(e){
+        e.preventDefault();
+
+
+
+        $.ajax({
+            url: "/bookings/calendar/edit",
+            type: "POST",
+            data: $("#confirmForm").serialize(),
+            success: function(data){
+                console.log(data)
+                alert("Update Success")
+            },
+            error: function(XMLHttpRequest, textStatus, errorThrown) {
+                alert(errorThrown);
+                console.log(data)
+            }
+        });
+    });
+</script>
 
 {% endblock %}

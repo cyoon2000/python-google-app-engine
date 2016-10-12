@@ -255,13 +255,14 @@ class PriceInfo(object):
 
 
 class StatusInfo(object):
-    def __init__(self, unit, date, status, booking_id):
+    def __init__(self, unit, date, status, unit_id, availability_id, booking_id):
         self.unit = unit
         self.date_slot = date
         self.status = True if status == 0 else False
         self.price = None
+        self.unit_id = unit_id
+        self.availability_id = availability_id
         self.booking_id = booking_id
-
         self.build_price()
 
     def __repr__(self):
@@ -272,6 +273,8 @@ class StatusInfo(object):
 
     def serialize(self):
         return {
+            'unitId': self.unit_id,
+            'date': utils.convert_date_to_string(self.date_slot),
             'day': self.date_slot.day,
             # ouput month name instead of number
             'month': self.date_slot.strftime("%B"),
@@ -279,8 +282,9 @@ class StatusInfo(object):
             'weekday': utils.name_weekday(self.date_slot.weekday()),
             'status': self.status,
             'price': self.price,
+            'availId': self.availability_id,
             'bookingId': self.booking_id
-        }
+            }
 
 
 class CalendarInfo(object):
@@ -288,7 +292,7 @@ class CalendarInfo(object):
         self.unit = unit
         self.resortname = resortname
         self.status_info_list = status_info_list
-        self.first_date_str = None
+        self.first_date = status_info_list[0].date_slot
 
     def __repr__(self):
         return "(unit = %r : status_list = %r)" % (self.unit, self.status_list)
@@ -300,7 +304,7 @@ class CalendarInfo(object):
         return {
             'displayName': self.unit.display_name,
             'resortName': self.resortname,
-            'first_date': self.first_date_str,
+            'firstDate': utils.convert_date_to_string(self.first_date),
             'statusInfoList': self.serialize_status_info_list()
         }
 
