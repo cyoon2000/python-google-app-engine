@@ -229,18 +229,6 @@ def list_calendar(resort_name, begin_date):
     # get bookings in this period
     bookings = model.get_bookings(begin_date, end_date)
 
-
-    print "---------"
-    print begin_date
-    print end_date
-    print "---------"
-
-    for booking in bookings:
-        print booking.begin_on
-        print booking.end_on
-        print "####"
-
-
     return render_template("calendar/landing.html", units=units, bookings=bookings)
 
 
