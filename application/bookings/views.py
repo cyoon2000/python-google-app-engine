@@ -51,9 +51,13 @@ def after_request(response):
 
 @bookings_api.errorhandler(Exception)
 def unhandled_exception(e):
-    logging.error('Exception: %s', unicode(e))
+    logging.error(unicode(e))
     return render_template('500.html', msg=unicode(e)), 500
 
+
+# @bookings_api.route("/test")
+# def test():
+#     return render_template('test.html', msg="test"), 200
 
 @bookings_api.route("/requests")
 def list_booking_requests():
@@ -134,10 +138,10 @@ def view(id):
 
 
 # this returns just body w/o menu
-@bookings_api.route('/<id>/modal')
+@bookings_api.route('/<id>/partial')
 def view_booking_modal(id):
     booking = get_model().read(id)
-    return render_template("booking/view_modal.html", booking=booking)
+    return render_template("booking/view_partial.html", booking=booking)
 
 
 @bookings_api.route('/<id>/edit', methods=['GET', 'POST'])
@@ -224,6 +228,18 @@ def list_calendar(resort_name, begin_date):
 
     # get bookings in this period
     bookings = model.get_bookings(begin_date, end_date)
+
+
+    print "---------"
+    print begin_date
+    print end_date
+    print "---------"
+
+    for booking in bookings:
+        print booking.begin_on
+        print booking.end_on
+        print "####"
+
 
     return render_template("calendar/landing.html", units=units, bookings=bookings)
 
@@ -468,10 +484,12 @@ def book(groupname):
 @bookings_api.route('/confirm', methods=['POST'])
 def confirm():
     id = request.form['bookingRequestId']
+    logging.info('[CONFIRM Booking Request] Begin: id = %r', id)
     if not id:
         return 'Sorry, Invalid Request. bookingRequestId is required', 400
 
     booking_request = build_booking_request_for_email(id)
+    logging.info(booking_request)
 
     #
     # FEATURE - "Automatic Booking' - HOLD OFF for now
@@ -490,7 +508,7 @@ def confirm():
     booking_request.status = "CONFIRMED"
     booking_request = model.save_entity(booking_request)
 
-    logging.info("CONFIRMATION Success: id = %d, unitgroup = %s, email = %s", booking_request.id, booking_request.unitgroup_name, booking_request.email)
+    logging.info("[CONFIRM Booking Request] : id = %d, unitgroup = %s, email = %s", booking_request.id, booking_request.unitgroup_name, booking_request.email)
 
     return send_mail(booking_request, RESPONSE_CONFIRM, "")
 

@@ -75,7 +75,7 @@
                 <td>
                 {% if info.bookingId %}
                     <!-- booked -->
-                    <a href="/bookings/{{ info.bookingId }}/modal" data-target="#bookingModal" class="btn btn-danger btn-sm" enter-block data-toggle="modal">
+                    <a href="/bookings/{{ info.bookingId }}/partial" data-target="#bookingModal" class="btn btn-danger btn-sm" enter-block data-toggle="modal">
                         {{ info.price }}
                         </a>
                 {% else %}
@@ -126,21 +126,18 @@
 
 
 <!-- View Booking Modal -->
-<div class="modal fade modal-lg" id="bookingModal" role="dialog">
+<div class="modal fade" id="bookingModal" role="dialog">
     <div class="modal-dialog">
-        <div class="modal-content">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
         </div>
-
-        <!--<div class="modal-header">-->
-            <!--<button type="button" class="close" data-dismiss="modal">&times;</button>-->
-        <!--</div>-->
-        <!--<div class="modal-body">-->
-            <!--<div class="modal-content">-->
-            <!--</div>-->
-        <!--</div>-->
-        <!--<div class="modal-footer">-->
-            <!--<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>-->
-        <!--</div>-->
+        <div class="modal-body">
+            <div class="modal-content">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
     </div>
 </div>
 
@@ -170,7 +167,6 @@
 </div>
 
 <script>
-
     $('#editStatusModal').on('show.bs.modal', function(e) {
 
         //get data-id attribute of the clicked element
@@ -202,8 +198,6 @@
 
     $('#confirmFormSubmit').click(function(e){
         e.preventDefault();
-
-
 
         $.ajax({
             url: "/bookings/calendar/edit",

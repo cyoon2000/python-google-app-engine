@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy import UniqueConstraint
+from sqlalchemy import func, or_
 from sqlalchemy.sql import text
 from database import db
 from application.contents.data import read_data_resorts, read_data_units, read_data_unitnames
@@ -537,12 +538,20 @@ def get_availability(unit_id, date_slot):
     return availabilities
 
 
-# TODO - implement "See More..." button if there are more than N bookings
-def get_bookings(begin_date, end_date):
+# get bookings that begins in this period (checking in this period)
+def get_bookings_begin(begin_date, end_date):
     query = (Booking.query
              .filter(Booking.begin_on.between(begin_date, end_date))
              .order_by(Booking.begin_on, Booking.unit_id)
-             # .limit())
+    )
+    return query.all()
+
+
+# get bookings that exist in this period
+def get_bookings(begin_date, end_date):
+    query = (Booking.query
+             .filter(or_(Booking.begin_on.between(begin_date, end_date), func.ADDDATE(Booking.end_on, -1).between(begin_date, end_date)))
+             .order_by(Booking.begin_on, Booking.unit_id)
     )
     return query.all()
 
