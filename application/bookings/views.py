@@ -13,6 +13,12 @@ from urllib import urlencode
 
 import httplib2
 import webapp2
+import stripe
+
+
+# Set your secret key: remember to change this to your live secret key in production
+# See your keys here: https://dashboard.stripe.com/account/apikeys
+stripe.api_key = "sk_test_BQokikJOvBiI2HlWgH4olfQ2"
 
 # MAILGUN_DOMAIN_NAME = 'sandbox9831351ae46f4ed3b48fdefa8e053e40.mailgun.org'
 MAILGUN_DOMAIN_NAME = 'gokitebaja.com'
@@ -445,6 +451,16 @@ def book(groupname):
     email = request.form['email']
     firstname = request.form['firstname']
     lastname = request.form['lastname']
+    stripe_token = request.form['stripe_token']
+    print "*****"
+    print stripe_token
+
+    customer_id = create_stripe_customer(stripe_token, email)
+
+    # TODO - save customer_id to database
+
+    # TODO - charge later
+    charge_customer(customer_id, 150)
 
     checkin = utils.convert_string_to_date(checkin)
     checkout = utils.convert_string_to_date(checkout)
@@ -686,3 +702,28 @@ def serialize_calendar_date(calendar_date):
         'weekday': calendar_date.weekday(), # Monday is 0 and Sunday is 6
         'isodate': calendar_date.isoformat()
     }
+
+
+def create_stripe_customer(stripe_token, email):
+    logging.info("[Stripe : Create Customer]")
+    customer = stripe.Customer.create(
+        email=email,
+        source=stripe_token,
+        description="Test customer"
+    )
+    logging.info(customer)
+    return customer.id
+
+
+def charge_customer(customer_id, amount):
+    logging.info("[Stripe : Charge]")
+    charge = stripe.Charge.create(
+        customer=customer_id,
+        amount=amount,
+        currency='usd',
+        description='Test Charge'
+    )
+    logging.info(charge)
+    return charge
+
+
