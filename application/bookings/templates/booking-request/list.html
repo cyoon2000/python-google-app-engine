@@ -26,9 +26,8 @@
             <td>USD {{booking_request.avg_price}}</td>
             <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
             <td>{{booking_request.updated_on}}</td>
-            <!--<td><button type="button" class="btn btn-success btn-sm" id="confirmButton" value="{{booking_request.id}}">Confirm</button></td>-->
-            <!--<td><a href="/bookings/confirm/{{booking_request.id}}" class="btn btn-success btn-sm">Confirm</button></a>-->
-            <td><button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#confirmModal" data-id="{{booking_request.id}}">Confirm</button></td>
+            <td><a href="/bookings/add?bookingRequestId={{booking_request.id}}" target="_blank" class="btn btn-success btn-sm">Confirm</button></a>
+            <!--<td><button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#confirmModal" data-id="{{booking_request.id}}">Confirm</button></td>-->
             <td><button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#declineModal" data-id="{{booking_request.id}}">Decline</button></td>
         </tr>
         {% endfor %}

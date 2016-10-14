@@ -20,44 +20,38 @@
     </div>
     <hr/>
 
-    <div class="form-group">
-        <label for="unit_name">Unit Name</label>
-        <select class="form-control" id="unit_name" name="unit_name">
-
-            {% for unit in units %}
-            <option value="{{ unit.name }}">{{ unit.display_name }}</option>
-            {% endfor %}
-
-        </select>
-    </div>
-
-    <!--<div class="form-group">-->
-        <!--<input type="hidden" name="unit_id" id="unit_id" value="{{booking.unit_id}}" class="form-control"/>-->
-    <!--</div>-->
-
     <div class="row">
-        <div class='col-sm-4'>
+        <div class='col-sm-3'>
             <div class="form-group">
                 <label for="begin_on">Check In</label>
                 <div class='input-group date' id='datepicker1'>
-                    <input type="text" name="begin_on" id="begin_on" value="{{booking.begin_on}}" class="form-control"/>
+                    <input type="text" name="begin_on" id="begin_on" value="{{ booking.begin_on.strftime('%Y-%m-%d') if booking.begin_on  }}" class="form-control"/>
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
                 </div>
             </div>
         </div>
-        <div class='col-sm-4'>
+        <div class='col-sm-3'>
+        <div class="form-group">
+            <label for="end_on">Check Out</label>
+            <div class='input-group date' id='datepicker2'>
+                <input type="text" name="end_on" id="end_on" value="{{ booking.end_on.strftime('%Y-%m-%d') if booking.end_on  }}" class="form-control"/>
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+            </div>
+        </div>
+        </div>
+        <div class='col-sm-3'>
             <div class="form-group">
-                <label for="end_on">Check Out</label>
-                <div class='input-group date' id='datepicker2'>
-                    <input type="text" name="end_on" id="end_on" value="{{booking.end_on}}" class="form-control"/>
-                    <span class="input-group-addon">
-                        <span class="glyphicon glyphicon-calendar"></span>
-                    </span>
+                <label for="guests">Guests</label>
+                <div class='input-group guests'>
+                    <input type="text" name="guests" id="guests" value="{{booking.guests}}" class="form-control"/>
                 </div>
             </div>
         </div>
+
         <script type="text/javascript">
             var checkin = '{{booking.begin_on}}';
             var checkout = '{{booking.end_on}}';
@@ -85,15 +79,25 @@
     </div>
 
     <div class="form-group">
-        <label for="guests">Guests</label>
-        <input type="text" name="guests" id="guests" value="{{booking.guests}}" class="form-control"/>
+        <label for="unit_name">Select Unit</label>
+        <select class="form-control" id="unit_name" name="unit_name">
+
+            {% for unit in units %}
+            <option value="{{ unit.name }}">{{ unit.display_name }}</option>
+            {% endfor %}
+
+        </select>
+        <span class="label label-default">Note</span> The selected Unit must be available to be able to proceed to next step.
     </div>
+
     <div class="form-group">
         <label for="notes">Notes</label>
         <input type="text" name="notes" id="notes" value="{{booking.notes}}" class="form-control"/>
     </div>
 
-    <button type="submit" class="btn btn-info">Save</button>
+    <hr/>
+
+    <button type="submit" class="btn btn-success btn-lg">Create Booking</button>
 </form>
 
 {% endblock %}

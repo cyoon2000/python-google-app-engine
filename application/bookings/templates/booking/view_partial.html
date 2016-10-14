@@ -1,6 +1,13 @@
 {% block content %}
 
-<h2><span class="label label-primary">View Booking</span></h2>
+{% if confirm %}
+<h4><span class="label label-success">Success</span> Booking is successfuly created! </h4>
+<!--<h3><span class="label label-success">Success</span> <small>Booking is created! </small></h3>-->
+<br/>
+
+{% endif %}
+
+<h2><span class="label label-primary">Booking Information</span></h2>
 
 <div class="col-xs-12" style="height:30px;"></div>
 <hr/>
@@ -24,11 +31,11 @@
 </div>
 <div class="row">
     <div class="col-md-2"><strong>Booked On</strong></div>
-    <div class="col-md-4">{{booking.created_on}}</div>
+    <div class="col-md-4">{{booking.created_on.strftime('%Y-%m-%d')}}</div>
 </div>
 <div class="row">
     <div class="col-md-2"><strong>Updated On</strong></div>
-    <div class="col-md-4">{{booking.updated_on}}</div>
+    <div class="col-md-4">{{booking.updated_on.strftime('%Y-%m-%d')}}</div>
 </div>
 <hr/>
 

@@ -55,10 +55,11 @@ def after_request(response):
 #       g.user = model.User.query.get(session['user_id'])
 
 
-@bookings_api.errorhandler(Exception)
-def unhandled_exception(e):
-    logging.error(unicode(e))
-    return render_template('500.html', msg=unicode(e)), 500
+# @bookings_api.errorhandler(Exception)
+# def unhandled_exception(e):
+#     logging.error("############# ERROR ###############")
+#     logging.error(unicode(e))
+#     return render_template('500.html', msg=unicode(e)), 500
 
 
 # @bookings_api.route("/test")
@@ -142,6 +143,10 @@ def view(id):
     booking = get_model().read(id)
     return render_template("booking/view.html", booking=booking)
 
+@bookings_api.route('/<id>/confirm')
+def view_confirm(id):
+    booking = get_model().read(id)
+    return render_template("booking/view.html", booking=booking, confirm=True)
 
 # this returns just body w/o menu
 @bookings_api.route('/<id>/partial')
@@ -169,6 +174,11 @@ def edit(id):
 def add():
 
     units = model.get_units_by_resort(session['resort_id'])
+    booking = None
+
+    booking_request_id = request.args.get('bookingRequestId')
+    if booking_request_id:
+        booking = build_booking_from_booking_request(booking_request_id)
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
@@ -191,9 +201,9 @@ def add():
         booking = model.create_booking(booking)
 
         logging.info("[Create] Booking Success: booking id = %d, unit name = %s, email = %s", booking['id'], unit.name, data['email'])
-        return redirect(url_for('.view', id=booking['id']))
+        return redirect(url_for('.view_confirm', id=booking['id']))
 
-    return render_template("booking/form_add.html", action="Add", units=units, booking={})
+    return render_template("booking/form_add.html", action="Add", units=units, booking=booking)
 
 
 @bookings_api.route('/<id>/delete')
@@ -484,7 +494,7 @@ def book(groupname):
     #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
 
 
-# No comment will be added for confirm email
+# No comment will be added for /bo email
 @bookings_api.route('/confirm', methods=['POST'])
 def confirm():
     id = request.form['bookingRequestId']
@@ -492,23 +502,8 @@ def confirm():
     if not id:
         return 'Sorry, Invalid Request. bookingRequestId is required', 400
 
-    booking_request = build_booking_request_for_email(id)
+    booking_request = build_booking_request(id)
     logging.info(booking_request)
-
-    #
-    # FEATURE - "Automatic Booking' - HOLD OFF for now
-    #
-    # create booking record from booking request, assign a unit.
-    # logging.info("CONFIRMATION Begin: id = %d, unitgroup = %s, email = %s", booking_request.id, booking_request.unitgroup_name, booking_request.email)
-    # unit = get_first_available_unit(booking_request.unitgroup_id, booking_request.checkin, booking_request.checkout)
-    # logging.info("[first available unit] unit id = %d unit name = %s", unit.id, unit.name)
-    # if unit:
-    #     booking = build_booking_from_booking_request(unit, booking_request)
-    #     return model.create_entity(booking)
-    #     if not booking:
-    #         raise RuntimeError(
-    #         'BookingRequest Confirmation error. No available unit : {} {}'.format(booking_request.id, booking_request.email))
-
     booking_request.status = "CONFIRMED"
     booking_request = model.save_entity(booking_request)
 
@@ -525,7 +520,7 @@ def decline():
         return 'Sorry, Invalid Request. bookingRequestId is required', 400
     comment = request.form['comment']
 
-    booking_request = build_booking_request_for_email(id)
+    booking_request = build_booking_request(id)
     booking_request.status = "DECLINED"
     booking_request = model.save_entity(booking_request)
 
@@ -564,18 +559,24 @@ def test_mail(groupname):
 
 # checkin and checkout is date
 def get_unit_info(groupname, checkin, checkout):
-    # checkin = utils.convert_string_to_date(checkin)
-    # checkout = utils.convert_string_to_date(checkout)
+    # checkin = utils.convert_date_to_string(utils.convert_string_to_date(checkin))
+    # checkout = utils.convert_date_to_string(utils.convert_string_to_date(checkout))
     unitgroup = get_content_model().find_unit_by_name(groupname)
     unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
+    logging.info(checkin)
+    logging.info("Retrieving UnitInfo.... %r %r %r", groupname, checkin, checkout)
+    logging.info(unit_info)
+
     return unit_info
 
 
-def build_booking_from_booking_request(unit, booking_request):
-    # checkin = utils.convert_date_to_string(booking_request.checkin)
-    # checkout = utils.convert_date_to_string(booking_request.checkout)
-    unit_info = get_unit_info(booking_request.unitgroup_name, booking_request.checkin, booking_request.checkout)
-    booking = model.Booking(unit.id, unit.name, unit_info)
+# build booking instance from BookingRequest. Unit is not determined yet at this time
+def build_booking_from_booking_request(booking_request_id):
+
+    booking_request = build_booking_request(booking_request_id)
+
+    # build Booking instance from BookingRequest
+    booking = model.Booking(None, None, booking_request.unit_info)
     booking.email = booking_request.email
     booking.first_name = booking_request.first_name
     booking.last_name = booking_request.last_name
@@ -591,7 +592,7 @@ def get_first_available_unit(unitgroup_id, checkin, checkout):
     return None
 
 
-def build_booking_request_for_email(id):
+def build_booking_request(id):
     booking_request = get_model().BookingRequest.query.get(id)
 
     checkin = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkin))

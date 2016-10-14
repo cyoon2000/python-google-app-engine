@@ -24,11 +24,11 @@
 </div>
 <div class="row">
     <div class="col-md-2"><strong>Booked On</strong></div>
-    <div class="col-md-4">{{booking.created_on}}</div>
+    <div class="col-md-4">{{booking.created_on.strftime('%Y-%m-%d')}}</div>
 </div>
 <div class="row">
     <div class="col-md-2"><strong>Updated On</strong></div>
-    <div class="col-md-4">{{booking.updated_on}}</div>
+    <div class="col-md-4">{{booking.updated_on.strftime('%Y-%m-%d')}}</div>
 </div>
 <hr/>
 
