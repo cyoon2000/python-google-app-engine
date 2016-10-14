@@ -170,25 +170,21 @@
     $('#editStatusModal').on('show.bs.modal', function(e) {
 
         //get data-id attribute of the clicked element
-        var action_name = $(e.relatedTarget).data('action_name');
+        //var action_name = $(e.relatedTarget).data('action_name');
         var unit_id = $(e.relatedTarget).data('unit_id');
         var date_slot = $(e.relatedTarget).data('date_slot');
         var avail_id = $(e.relatedTarget).data('avail_id');
         var status = $(e.relatedTarget).data('status');
-        console.log (action_name)
-        console.log (unit_id)
-        console.log (date_slot)
-        console.log (avail_id)
         console.log (status)
 
         // set message properly depending on the current status
-        if (status) {
+        if (status | status == 'True') {
             $('.modal-body #message').text('unavailable');
         } else {
             $('.modal-body #message').text('available');
         }
         //populate the textbox
-        $(e.currentTarget).find('input[name="action_name"]').val(action_name);
+        //$(e.currentTarget).find('input[name="action_name"]').val(action_name);
         $(e.currentTarget).find('input[name="avail_id"]').val(avail_id);
         $(e.currentTarget).find('input[name="unit_id"]').val(unit_id);
         $(e.currentTarget).find('input[name="date_slot"]').val(date_slot);
