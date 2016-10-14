@@ -360,49 +360,47 @@ def update(data, id):
     for k, v in data.items():
         setattr(booking, k, v)
     db.session.add(booking)
-    # db.session.flush()
-    # db.session.commit()
+    db.session.flush()
+    db.session.commit()
 
-    checkin = utils.convert_string_to_date(booking.begin_on)
-    checkout = utils.convert_string_to_date(booking.end_on)
-    unit = Unit.query.filter(Unit.id == booking.id).one()
-    print "*********"
-    print unit.id
-
-    try:
-        # delete all
-        availabilities = get_availabilities_by_booking_id(id)
-        for availability in availabilities:
-            logging.info(availability)
-            logging.info('[Delete Availability] deleting availability: date_slot = %s' % availability.date_slot)
-            db.session.delete(availability)
-
-        # validate availability
-        if not is_unit_available(unit.id, checkin, checkout):
-            msg = "ERROR on [ Update ] Booking: id = " + id + "Please check the availability and try again. The Unit is NOT available for the dates you specified."
-            logging.error(msg)
-            raise Exception(msg)
-
-        # create all
-        checkin = utils.convert_string_to_date(booking.begin_on)
-        checkout = utils.convert_string_to_date(booking.end_on)
-        # for single_date in utils.daterange(booking.begin_on, booking.end_on):
-        for single_date in utils.daterange(checkin, checkout):
-            # change datetime to date
-            print single_date
-            single_date = single_date.date()
-            availability = Availability(booking.unit_id, single_date, 1)
-            availability.booking_id = booking.id
-            logging.info(availability)
-            logging.info('[Create Availability] saving availability: with booking id %r' % booking.id)
-            db.session.add(availability)
-
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        msg = "ERROR on [ Update ] Booking: id = " + id + ", error = " + str(e)
-        logging.error(msg)
-        raise Exception(msg)
+    # checkin = utils.convert_string_to_date(booking.begin_on)
+    # checkout = utils.convert_string_to_date(booking.end_on)
+    # unit = Unit.query.filter(Unit.id == booking.id).one()
+    #
+    # try:
+    #     # delete all
+    #     availabilities = get_availabilities_by_booking_id(id)
+    #     for availability in availabilities:
+    #         logging.info(availability)
+    #         logging.info('[Delete Availability] deleting availability: date_slot = %s' % availability.date_slot)
+    #         db.session.delete(availability)
+    #
+    #     # validate availability
+    #     if not is_unit_available(unit.id, checkin, checkout):
+    #         msg = "ERROR on [ Update ] Booking: id = " + id + "Please check the availability and try again. The Unit is NOT available for the dates you specified."
+    #         logging.error(msg)
+    #         raise Exception(msg)
+    #
+    #     # create all
+    #     checkin = utils.convert_string_to_date(booking.begin_on)
+    #     checkout = utils.convert_string_to_date(booking.end_on)
+    #     # for single_date in utils.daterange(booking.begin_on, booking.end_on):
+    #     for single_date in utils.daterange(checkin, checkout):
+    #         # change datetime to date
+    #         print single_date
+    #         single_date = single_date.date()
+    #         availability = Availability(booking.unit_id, single_date, 1)
+    #         availability.booking_id = booking.id
+    #         logging.info(availability)
+    #         logging.info('[Create Availability] saving availability: with booking id %r' % booking.id)
+    #         db.session.add(availability)
+    #
+    #     db.session.commit()
+    # except Exception as e:
+    #     db.session.rollback()
+    #     msg = "ERROR on [ Update ] Booking: id = " + id + ", error = " + str(e)
+    #     logging.error(msg)
+    #     raise Exception(msg)
 
     return from_sql(booking)
 

@@ -1,10 +1,9 @@
 {% block content %}
 
-{% if confirm %}
-<h4><span class="label label-success">Success</span> Booking is successfuly created! </h4>
-<!--<h3><span class="label label-success">Success</span> <small>Booking is created! </small></h3>-->
-<br/>
-
+{% if action == "Add" %}
+    <h4><span class="label label-success">Success</span> <small>Booking Created Successfully </small></h4><br/>
+{% elif action == "Edit" %}
+    <h4><span class="label label-success">Success</span> <small>Booking Updated Successfully </small></h4><br/>
 {% endif %}
 
 <h2><span class="label label-primary">Booking Information</span></h2>

@@ -143,10 +143,12 @@ def view(id):
     booking = get_model().read(id)
     return render_template("booking/view.html", booking=booking)
 
-@bookings_api.route('/<id>/confirm')
-def view_confirm(id):
+
+@bookings_api.route('/<id>/<action>')
+def view_confirm(id, action):
     booking = get_model().read(id)
-    return render_template("booking/view.html", booking=booking, confirm=True)
+    return render_template("booking/view.html", booking=booking, action=action)
+
 
 # this returns just body w/o menu
 @bookings_api.route('/<id>/partial')
@@ -163,11 +165,13 @@ def edit(id):
 
     if request.method == 'POST':
         logging.info("[Update] Booking Begin: booking id = %r", id)
+        logging.info(data)
         booking = model.update(data, id)
         logging.info("[Update] Booking Success: booking id = %r", id)
-        return redirect(url_for('.view', id=booking['id']))
+        return redirect(url_for('.view_confirm', id=booking['id'], action="Edit"))
 
-    return render_template("booking/form_edit.html", action="Edit", booking=booking)
+    # return render_template("booking/form_edit.html", action="Edit", booking=booking)
+    return render_template("booking/form_add.html", action="Edit", booking=booking)
 
 
 @bookings_api.route('/add', methods=['GET', 'POST'])
@@ -201,7 +205,7 @@ def add():
         booking = model.create_booking(booking)
 
         logging.info("[Create] Booking Success: booking id = %d, unit name = %s, email = %s", booking['id'], unit.name, data['email'])
-        return redirect(url_for('.view_confirm', id=booking['id']))
+        return redirect(url_for('.view_confirm', id=booking['id'], action="Add"))
 
     return render_template("booking/form_add.html", action="Add", units=units, booking=booking)
 
