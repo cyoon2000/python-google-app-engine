@@ -92,7 +92,7 @@
 
     <div class="form-group">
         <label for="notes">Notes</label>
-        <input type="text" name="notes" id="notes" value="{{booking.notes}}" class="form-control"/>
+        <input type="text" name="notes" id="notes" value="{{ booking.notes | default('', true) }}" class="form-control"/>
     </div>
 
     <hr/>
