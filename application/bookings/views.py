@@ -195,7 +195,8 @@ def add():
             return render_template("500.html", msg="Please check the availability and try again. The Unit is NOT available at least for a day.")
 
         logging.info("[Create] Booking Begin: unit name = %s, email = %s", unit.name, data['email'])
-        unit_info = get_unit_info(unit.unitgroup_name, checkin, checkout)
+        unit_info = build_unit_info(unit.unitgroup_name, checkin, checkout)
+
         booking = model.Booking(unit.id, unit.name, unit_info)
         booking.email = data['email']
         booking.first_name = data['first_name']
@@ -561,18 +562,6 @@ def test_mail(groupname):
     email_content = send_mail(booking_request, RESPONSE_DECLINE, "We have availability after Jan 4th, 2016.")
     return email_content
 
-# checkin and checkout is date
-def get_unit_info(groupname, checkin, checkout):
-    # checkin = utils.convert_date_to_string(utils.convert_string_to_date(checkin))
-    # checkout = utils.convert_date_to_string(utils.convert_string_to_date(checkout))
-    unitgroup = get_content_model().find_unit_by_name(groupname)
-    unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
-    logging.info(checkin)
-    logging.info("Retrieving UnitInfo.... %r %r %r", groupname, checkin, checkout)
-    logging.info(unit_info)
-
-    return unit_info
-
 
 # build booking instance from BookingRequest. Unit is not determined yet at this time
 def build_booking_from_booking_request(booking_request_id):
@@ -599,13 +588,31 @@ def get_first_available_unit(unitgroup_id, checkin, checkout):
 def build_booking_request(id):
     booking_request = get_model().BookingRequest.query.get(id)
 
-    checkin = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkin))
-    checkout = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkout))
-    unitgroup = get_content_model().find_unit_by_name(booking_request.unitgroup_name)
-    unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
-    booking_request.unit_info = unit_info
+    # checkin = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkin))
+    # checkout = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkout))
+    # unitgroup = get_content_model().find_unit_by_name(booking_request.unitgroup_name)
+    # unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
+    booking_request.unit_info = build_unit_info(booking_request.unitgroup_name, booking_request.checkin, booking_request.checkout)
     return booking_request
 
+
+def build_unit_info(unitgroup_name, checkin, checkout):
+    checkin = utils.convert_string_to_date(utils.convert_date_to_string(checkin))
+    checkout = utils.convert_string_to_date(utils.convert_date_to_string(checkout))
+    unitgroup = get_content_model().find_unit_by_name(unitgroup_name)
+    return get_content_model().UnitInfo(unitgroup, checkin, checkout)
+
+# checkin and checkout is date
+# def get_unit_info(groupname, checkin, checkout):
+#     # checkin = utils.convert_date_to_string(utils.convert_string_to_date(checkin))
+#     # checkout = utils.convert_date_to_string(utils.convert_string_to_date(checkout))
+#     unitgroup = get_content_model().find_unit_by_name(groupname)
+#     unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
+#     logging.info(checkin)
+#     logging.info("Retrieving UnitInfo.... %r %r %r", groupname, checkin, checkout)
+#     logging.info(unit_info)
+
+    return unit_info
 
 def send_mail(booking_request, response_type, comment):
     # TODO get recipient from content API (email for resort)

@@ -178,7 +178,7 @@ class Booking(Base):
         self.booked_rate = unit_info.avg_price
 
     def __repr__(self):
-        return '<Booking (id = %r, unit_id = %, begin_on = %r, end_on = %r)>' % (self.id, self.unit_id, self.begin_on, self.end_on)
+        return '<Booking (id = %r, unit_id = %r, begin_on = %r, end_on = %r)>' % (self.id, self.unit_id, self.begin_on, self.end_on)
 
 
 class BookingRequest(Base):
@@ -287,51 +287,6 @@ def read(id):
     return from_sql(result)
 
 
-def create(data):
-    booking = Booking(**data)
-    # db.session.add(booking)
-    # db.session.commit()
-    # db.session.begin()
-    try:
-        db.session.add(booking)
-        db.session.flush()
-        availabilities = get_availabilities(booking.unit_id, booking.begin_on, booking.end_on)
-        for availability in availabilities:
-            # if availability.is_available() is False:
-            #    raise Exception("Cannot create booking")
-            # booked = 1, blocked = 2
-            availability.status = 1
-            availability.booking_id = booking.id
-            db.session.add(availability)
-            print 'saving availability: with booking id %r' % booking.id
-            print availability
-
-        db.session.commit()
-    except:
-        db.session.rollback()
-
-    return from_sql(booking)
-
-
-def delete(id):
-    try:
-        # availabilities = get_availabilities(booking.unit_id, booking.begin_on, booking.end_on)
-        availabilities = get_availabilities_by_booking_id(id)
-        for availability in availabilities:
-            logging.info(availability)
-            logging.info('[Delete Availability] deleting availability: date_slot = %s' % availability.date_slot)
-            db.session.delete(availability)
-
-        logging.info('[Delete Booking] deleting booking: id = %r' % id)
-        Booking.query.filter_by(id=id).delete()
-        db.session.commit()
-    except Exception as e:
-        db.session.rollback()
-        msg = "ERROR on [ Delete ] Booking: id = " + id + ", error = " + unicode(e)
-        logging.error(msg)
-        raise Exception(msg)
-
-
 def create_booking(booking):
     try:
         db.session.add(booking)
@@ -403,6 +358,25 @@ def update(data, id):
     #     raise Exception(msg)
 
     return from_sql(booking)
+
+
+def delete(id):
+    try:
+        # availabilities = get_availabilities(booking.unit_id, booking.begin_on, booking.end_on)
+        availabilities = get_availabilities_by_booking_id(id)
+        for availability in availabilities:
+            logging.info(availability)
+            logging.info('[Delete Availability] deleting availability: date_slot = %s' % availability.date_slot)
+            db.session.delete(availability)
+
+        logging.info('[Delete Booking] deleting booking: id = %r' % id)
+        Booking.query.filter_by(id=id).delete()
+        db.session.commit()
+    except Exception as e:
+        db.session.rollback()
+        msg = "ERROR on [ Delete ] Booking: id = " + id + ", error = " + unicode(e)
+        logging.error(msg)
+        raise Exception(msg)
 
 
 # TODO - refactor with save_entity() below
