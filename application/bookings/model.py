@@ -494,20 +494,24 @@ def get_availabilities(unit_id, begin_date, end_date):
 
 # 0 = avail, 1 = booked, 2= blocked
 def get_availability(unit_id, date_slot):
-    # query = (Availability.query
-    #          .filter(Availability.unit_id == unit_id)
-    #          .filter(Availability.date_slot == date))
-    # return query.one()
-    cmd = '''
-        select IFNULL((
-            select distinct status from  availability a
-                where a.date_slot = :date and unit_id = :unit_id), 0);
-        '''
-    availabilities = db.session.execute(
-        text(cmd),
-        {'unit_id': unit_id,
-         'date': date_slot})
-    return availabilities
+    query = (Availability.query
+              .filter(Availability.unit_id == unit_id)
+              .filter(Availability.date_slot == date_slot))
+    list = query.all()
+    if list:
+        return list[0]
+    return None
+    # return query.limit(1).all()
+#     cmd = '''
+#         select IFNULL((
+#             select distinct status from  availability a
+#                 where a.date_slot = :date and unit_id = :unit_id), 0);
+#         '''
+#     availabilities = db.session.execute(
+#         text(cmd),
+#         {'unit_id': unit_id,
+#          'date': date_slot})
+#     return availabilities
 
 
 # get bookings that begins in this period (checking in this period)

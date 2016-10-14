@@ -58,39 +58,37 @@
     {% for unit in units %}
         <tr>
         <td><strong>{{ unit.displayName }}</strong></td>
-        {% for info in unit.statusInfoList %}
-            {% if info.status %}
-                <!-- available -->
-                <td>
-                    <a data-toggle="modal" data-target="#editStatusModal" center-block data-toggle="modal"
-                        data-unit_id="{{ info.unitId }}"
-                        data-date_slot="{{ info.date }}"
-                        data-avail_id="{{ info.availId }}"
-                        data-status="{{ info.status }}"
-                        class="btn btn-info btn-sm">
-                        {{ info.price }}
-                    </a>
-                </td>
-            {% else %}
-                <td>
-                {% if info.bookingId %}
-                    <!-- booked -->
-                    <a href="/bookings/{{ info.bookingId }}/partial" data-target="#bookingModal" class="btn btn-danger btn-sm" enter-block data-toggle="modal">
-                        {{ info.price }}
+            {% for info in unit.statusInfoList %}
+            <td id="{{ info.unitId }}_{{ info.date }}">
+                    {% if info.status %}
+                        <!----------------- available -------------->
+                        <a data-toggle="modal" data-target="#editStatusModal" center-block data-toggle="modal"
+                                data-unit_id="{{ info.unitId }}"
+                                data-date_slot="{{ info.date }}"
+                                data-avail_id="{{ info.availId }}"
+                                data-status="{{ info.status }}"
+                                class="btn btn-info btn-sm">
+                                {{ info.price }}
                         </a>
-                {% else %}
-                    <!-- unavailable -->
-                    <a data-toggle="modal" data-target="#editStatusModal" center-block data-toggle="modal"
-                       data-unit_id="{{ info.unitId }}"
-                       data-date_slot="{{ info.date }}"
-                       data-avail_id="{{ info.availId }}"
-                       data-status="{{ info.status }}"
-                       class="btn btn-default btn-sm">
-                        {{ info.price }}
-                    </a>
-                {% endif %}
-                </td>
-            {% endif %}
+                    {% else %}
+                        {% if info.bookingId %}
+                        <!----------------- boooked -------------->
+                            <a href="/bookings/{{ info.bookingId }}/partial" data-target="#bookingModal" class="btn btn-danger btn-sm" enter-block data-toggle="modal">
+                                {{ info.price }}
+                            </a>
+                        {% else %}
+                        <!----------------- NOT available -------------->
+                            <a data-toggle="modal" data-target="#editStatusModal" center-block data-toggle="modal"
+                               data-unit_id="{{ info.unitId }}"
+                               data-date_slot="{{ info.date }}"
+                               data-avail_id="{{ info.availId }}"
+                               data-status="{{ info.status }}"
+                               class="btn btn-default btn-sm">
+                                {{ info.price }}
+                            </a>
+                        {% endif %}
+                    {% endif %}
+            </td>
         {% endfor %}
         </tr>
     {% endfor %}
@@ -195,17 +193,35 @@
     $('#confirmFormSubmit').click(function(e){
         e.preventDefault();
 
+        unit_id = $("#unit_id").val()
+        date_slot = $("#date_slot").val()
+        status = $("#status").val()
+
         $.ajax({
             url: "/bookings/calendar/edit",
             type: "POST",
             data: $("#confirmForm").serialize(),
-            success: function(data){
-                console.log(data)
-                alert("Update Success")
+            success: function(rsp){
+                console.log(rsp)
+                unit_id = rsp.data.unit_id
+                date_slot = rsp.data.date_slot
+                booked = rsp.data.booked
+                // re-render after success
+                var $this = $('#' + unit_id + '_' + date_slot);
+                $this.find('.btn').removeClass('btn-info');
+                $this.find('.btn').removeClass('btn-default');
+                if (booked) {
+                    console.log ('update to gray')
+                    $this.find('.btn').addClass('btn-default')
+                } else {
+                    console.log ('update to blue')
+                    $this.find('.btn').addClass('btn-info')
+                }
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 alert(errorThrown);
-                console.log(data)
+                console.log(errorThrown)
+                alert("There was problem. Please refresh the page and try again.")
             }
         });
     });

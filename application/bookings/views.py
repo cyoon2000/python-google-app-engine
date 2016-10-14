@@ -277,24 +277,21 @@ def edit_availability():
     unit_id = request.form['unit_id']
     date_slot = request.form['date_slot']
     status = request.form['status']
+    avail = model.get_availability(unit_id, date_slot)
 
-    # current status is available -> block (make it unavailable)
-    # create availability record
-    if status == 'True':
-        # 2=blocked
+    # this is like 'toggle'
+    if not avail:
+        logging.info("<Calendar> [Create] Availability Begin")
         avail = model.Availability(unit_id, date_slot, 2)
         avail = model.save_entity(avail)
-        logging.info("<Calendar> [Create] Availability Success.")
-
-    # current status is unavailable -> unblock (make it available)
-    # delete availability record
+        logging.info("<Calendar> [Create] Availability (Status = %d) Success", status)
     else:
-        if not avail_id:
-            logging.error('Invalid Data - Empty avail_id. Trying to unblock the date, and the availability_id is NOT FOUND = %s', date_slot)
-            return 'Invalid Data - Empty avail_id. Trying to unblock the date, and the availability_id is NOT FOUND ', 500
-        avail = model.Availability.query.get(avail_id)
-        avail = model.delete_entity(avail)
-        logging.info("<Calendar> [Delete] Availability Success.")
+        logging.info("<Calendar> [Delete] Availability Begin")
+        avail = model.Availability.query.get(avail.id)
+        model.delete_entity(avail)
+        # availability record is deleted but need to set status = 0 (available) so UI can re-render the result
+        avail.status = 0
+        logging.info("<Calendar> [Delete] Availability (id = %r) Success", id)
 
     logging.info(serialize_availability(avail))
     return jsonify(data=serialize_availability(avail))
