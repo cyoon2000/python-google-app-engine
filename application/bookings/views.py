@@ -207,21 +207,26 @@ def add():
             return render_template("500.html", msg="Please check the availability and try again. The Unit is NOT available at least for a day.")
 
         logging.info("[Create] Booking Begin: unit name = %s, email = %s", unit.name, data['email'])
-        unit_info = build_unit_info(unit.unitgroup_name, checkin, checkout)
 
+        # build object
+        unit_info = build_unit_info(unit.unitgroup_name, checkin, checkout)
         booking = model.Booking(unit.id, unit.name, unit_info)
         booking.email = data['email']
         booking.first_name = data['first_name']
         booking.last_name = data['last_name']
         booking.guests = data['guests']
         booking.notes = data['notes']
-        booking.booking_request_id = data['booking_request_id']
-        booking = model.create_booking(booking)
 
+        # set booking_request_id only if exists
+        if data['booking_request_id']:
+            booking.booking_request_id = data['booking_request_id']
+
+        booking = model.create_booking(booking)
         booking = model.Booking.query.get(booking['id'])
 
-        # send email confirmation
-        confirm(booking.booking_request_id, unit_info)
+        # send email confirmation if a BookingRequest is associated
+        if booking.booking_request_id:
+            confirm(booking.booking_request_id, unit_info)
 
         # return redirect(url_for('.view_confirm', id=booking['id'], action="Add"))
         return redirect(url_for('.view_confirm', id=booking.id, action="Add"))
