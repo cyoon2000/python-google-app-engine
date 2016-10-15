@@ -654,6 +654,7 @@ def send_mail(booking_request, response_type, comment):
         if booking_request.first_name:
             subject = "Thank you " + booking_request.first_name + "!"
         status = "Your booking request has been confirmed by the resort."
+        comment = "If you have any question regarding this confirmation, please contact the resort directly."
         email_data = get_model().EmailData(booking_request, subject, status, comment)
         email_content = send_complex_message(recipient, email_data, EMAIL_SUBJECT_CONFIRM)
     elif response_type == RESPONSE_DECLINE:
