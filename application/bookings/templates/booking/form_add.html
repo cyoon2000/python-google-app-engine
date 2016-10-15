@@ -86,6 +86,7 @@
         <div class="form-group">
             <input type="hidden" name="id" id="id" value="{{booking.id}}" class="form-control"/>
             <input type="hidden" name="unit_id" id="unit_id" value="{{booking.unit_id}}" class="form-control"/>
+            <input type="hidden" name="booking_request_id" id="booking_request_id" value="{{booking.booking_request_id}}" class="form-control"/>
         </div>
 
         {% if action == 'Edit' %}
@@ -113,6 +114,7 @@
     <button type="submit" class="btn btn-success btn-lg">{{ action }} Booking</button>
 </form>
 
+</div>
 
 <script type="text/javascript">
     var action = '{{ action }}';

@@ -35,6 +35,12 @@ bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
 @bookings_api.before_request
 def before_request():
+    # ping mysql connection
+    # try: model.ping_mysql()
+    # except Exception as e:
+    #     logging.error(e)
+    #     model.ping_mysql()
+
     # TODO - save resort_id in session upon login
     session['resort_name'] = 'kirk'
     # resort = model.Resort.query.filter_by(name=session['resort_name']).one()
@@ -181,8 +187,14 @@ def add():
     booking = None
 
     booking_request_id = request.args.get('bookingRequestId')
+
     if booking_request_id:
         booking = build_booking_from_booking_request(booking_request_id)
+        booking.booking_request_id = booking_request_id
+
+        # for dropdown: re-populate units from given unitgroup
+        booking_request = get_model().BookingRequest.query.get(booking_request_id)
+        units = model.get_units_by_group(booking_request.unitgroup_id)
 
     if request.method == 'POST':
         data = request.form.to_dict(flat=True)
@@ -203,12 +215,32 @@ def add():
         booking.last_name = data['last_name']
         booking.guests = data['guests']
         booking.notes = data['notes']
+        booking.booking_request_id = data['booking_request_id']
         booking = model.create_booking(booking)
 
-        logging.info("[Create] Booking Success: booking id = %d, unit name = %s, email = %s", booking['id'], unit.name, data['email'])
-        return redirect(url_for('.view_confirm', id=booking['id'], action="Add"))
+        booking = model.Booking.query.get(booking['id'])
+
+        # send email confirmation
+        confirm(booking.booking_request_id, unit_info)
+
+        # return redirect(url_for('.view_confirm', id=booking['id'], action="Add"))
+        return redirect(url_for('.view_confirm', id=booking.id, action="Add"))
 
     return render_template("booking/form_add.html", action="Add", units=units, booking=booking)
+
+
+def build_content_for_email(booking, unit_info):
+    booking_info = model.BookingInfo(booking.unit_name, booking.begin_on, booking.end_on, booking.guests)
+    booking_info.avg_price = unit_info.avg_price
+    booking_info.nights = unit_info.nights
+    booking_info.first_name = booking.first_name
+    booking_info.last_name = booking.last_name
+    booking_info.email = booking.email
+    # meta data
+    booking_info.resort_name = unit_info.resort.displayName
+    booking_info.unit_Name = unit_info.unit.displayName
+    booking_info.resort_email = unit_info.resort.email
+    return booking_info
 
 
 @bookings_api.route('/<id>/delete')
@@ -492,22 +524,24 @@ def book(groupname):
         booking_request = model.save_entity(booking_request)
         logging.info(get_model().BookingRequest.serialize_booking_request(booking_request))
 
+
     return send_mail(booking_request, None, "")
     #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
 
 
+# Now called from "Create Booking" flow.
 # No comment will be added for /bo email
-@bookings_api.route('/confirm', methods=['POST'])
-def confirm():
-    id = request.form['bookingRequestId']
-    logging.info('[CONFIRM Booking Request] Begin: id = %r', id)
-    if not id:
-        return 'Sorry, Invalid Request. bookingRequestId is required', 400
+# @bookings_api.route('/confirm', methods=['POST'])
+def confirm(booking_request_id, unit_info):
+    logging.info('[CONFIRM Booking Request] Begin: booking_request_id = %r', booking_request_id)
 
-    booking_request = build_booking_request(id)
-    logging.info(booking_request)
-    booking_request.status = "CONFIRMED"
-    booking_request = model.save_entity(booking_request)
+    # booking_request = build_booking_request(id)
+    # logging.info(booking_request)
+    booking_request = model.BookingRequest.query.get(booking_request_id)
+    if booking_request:
+        booking_request.status = "CONFIRMED"
+        booking_request = model.save_entity(booking_request)
+        booking_request.unit_info = unit_info
 
     logging.info("[CONFIRM Booking Request] : id = %d, unitgroup = %s, email = %s", booking_request.id, booking_request.unitgroup_name, booking_request.email)
 
@@ -584,11 +618,6 @@ def get_first_available_unit(unitgroup_id, checkin, checkout):
 
 def build_booking_request(id):
     booking_request = get_model().BookingRequest.query.get(id)
-
-    # checkin = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkin))
-    # checkout = utils.convert_string_to_date(utils.convert_date_to_string(booking_request.checkout))
-    # unitgroup = get_content_model().find_unit_by_name(booking_request.unitgroup_name)
-    # unit_info = get_content_model().UnitInfo(unitgroup, checkin, checkout)
     booking_request.unit_info = build_unit_info(booking_request.unitgroup_name, booking_request.checkin, booking_request.checkout)
     return booking_request
 
@@ -614,9 +643,11 @@ def build_unit_info(unitgroup_name, checkin, checkout):
 def send_mail(booking_request, response_type, comment):
     # TODO get recipient from content API (email for resort)
     recipient = 'book@gokitebaja.com'
+    subject = "Thank you!"
 
     if response_type == RESPONSE_CONFIRM:
-        subject = "Thank you " + booking_request.first_name + "!"
+        if booking_request.first_name:
+            subject = "Thank you " + booking_request.first_name + "!"
         status = "Your booking request has been confirmed by the resort."
         email_data = get_model().EmailData(booking_request, subject, status, comment)
         email_content = send_complex_message(recipient, email_data, EMAIL_SUBJECT_CONFIRM)

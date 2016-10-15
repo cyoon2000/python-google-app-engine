@@ -167,6 +167,7 @@ class Booking(Base):
     unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
     availabilities = db.relationship('Availability', backref='booking', lazy='dynamic')
     notes = db.Column(db.String(256))
+    booking_request_id = db.Column(db.Integer, db.ForeignKey('booking_request.id'))
     #transaction_id = db.Column(db.String(30), unique=True)
 
     def __init__(self, unit_id, unit_name, unit_info):
@@ -210,8 +211,8 @@ class BookingRequest(Base):
         self.email = email
 
     def __repr__(self):
-        return "(unitgroup name = %s : checkin = %s checkout = %s guests = %s price = %s)" \
-               % (self.unitgroup_name, self.checkin, self.checkout,  self.guests, self.unit_info.avg_price)
+        return "(unitgroup name = %s : checkin = %s checkout = %s guests = %s)" \
+               % (self.unitgroup_name, self.checkin, self.checkout,  self.guests)
 
     def serialize_booking_request(self):
         unit_info = self.unit_info
@@ -227,6 +228,22 @@ class BookingRequest(Base):
             'email': self.email,
             'avg_price': self.avg_price
         }
+
+
+class BookingInfo():
+    def __init__(self, checkin, checkout, guests, unitgroup_name):
+        self.unitgroup_name = unitgroup_name
+        self.checkin = checkin
+        self.checkout = checkout
+        self.guests = guests
+        self.avg_price = None
+        self.first_name = None
+        self.last_name = None
+        self.email = None
+        # meta data
+        self.resort_name = None
+        self.unit_Name = None
+        self.resort_email = None
 
 
 class EmailData(object):
@@ -300,6 +317,7 @@ def create_booking(booking):
             availability.booking_id = booking.id
             db.session.add(availability)
             logging.info('[Create Availability] saving availability: with booking id %r' % booking.id)
+        logging.info("[Create] Booking Success: booking id = %s", booking.id)
         db.session.commit()
     except Exception as e:
         db.session.rollback()
@@ -591,6 +609,9 @@ def search_by_unit_group(unitgroup_name, begin_date, end_date):
          'end': end_date})
     return units
 
+
+def ping_mysql():
+    db.session.execute('select 1')
 
 # IMPORTANT :
 # RUN ONLY ONCE - which should happen in local DEV, not in PROD server. (invoked from __init___)
