@@ -6,9 +6,8 @@ from . import model, forms
 
 from flask import current_app, Blueprint, session, redirect, render_template, request, url_for, flash
 from flask import jsonify, json
-from flask_wtf import Form
+from functools import wraps
 from application.common import utils
-
 from urllib import urlencode
 
 import httplib2
@@ -33,6 +32,17 @@ RESPONSE_DECLINE = "decline"
 
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # if g.user is None:
+        if not is_loggied_in():
+            return redirect(url_for('.login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+
 @bookings_api.before_request
 def before_request():
     # ping mysql connection
@@ -53,27 +63,53 @@ def after_request(response):
     response.headers.add('Access-Control-Allow-Origin', '*')
     return response
 
-# @bookings_api.before_request
-# def before_request2():
-#     g.user = None
-#     g.resort = None
-#     if 'user_id' in session:
-#       g.user = model.User.query.get(session['user_id'])
+
+@bookings_api.route('/login', methods=['GET', 'POST'])
+def login():
+    error = None
+    if request.method == 'POST':
+        if valid_login(request.form['username'],
+                       request.form['password']):
+            session['logged_in'] = True
+            return redirect(url_for(".list_inbox"))
+        else:
+            error = 'Invalid username/password'
+    # the code below is executed if the request method
+    # was GET or the credentials were invalid
+    return render_template('login.html', error=error)
 
 
-# @bookings_api.errorhandler(Exception)
+@bookings_api.route('/logout')
+def logout():
+    session.pop('logged_in', None)
+    return render_template('login.html', error=error, action="logout")
+
+
+def valid_login(username, password):
+    return True
+    # user = model.User.query.filter(username=username).first()
+    # if user.password == password:
+    #     return True
+    # return False
+
+
+def is_loggied_in():
+    if session.get('logged_in'):
+        if session['logged_in']:
+            return True
+    return False
+
+
+@bookings_api.errorhandler(Exception)
 # def unhandled_exception(e):
 #     logging.error("############# ERROR ###############")
 #     logging.error(unicode(e))
 #     return render_template('500.html', msg=unicode(e)), 500
 
 
-# @bookings_api.route("/test")
-# def test():
-#     return render_template('test.html', msg="test"), 200
-
-@bookings_api.route("/requests")
-def list_booking_requests():
+@bookings_api.route("/inbox")
+@login_required
+def list_inbox():
     token = request.args.get('page_token', None)
     if token:
         token = token.encode('utf-8')
@@ -94,6 +130,7 @@ def list_booking_requests():
 
 
 @bookings_api.route("/confirms")
+@login_required
 def list_confirms():
     token = request.args.get('page_token', None)
     if token:
@@ -112,6 +149,7 @@ def list_confirms():
 
 
 @bookings_api.route("/declines")
+@login_required
 def list_declines():
     token = request.args.get('page_token', None)
     if token:
@@ -128,7 +166,9 @@ def list_declines():
     except TemplateNotFound:
         abort(404)
 
+
 @bookings_api.route("/")
+@login_required
 def list_bookings():
     token = request.args.get('page_token', None)
     if token:
@@ -145,12 +185,14 @@ def list_bookings():
 
 
 @bookings_api.route('/<id>')
+@login_required
 def view(id):
     booking = get_model().read(id)
     return render_template("booking/view.html", booking=booking)
 
 
 @bookings_api.route('/<id>/<action>')
+@login_required
 def view_confirm(id, action):
     booking = get_model().read(id)
     return render_template("booking/view.html", booking=booking, action=action)
@@ -158,12 +200,14 @@ def view_confirm(id, action):
 
 # this returns just body w/o menu
 @bookings_api.route('/<id>/partial')
+@login_required
 def view_booking_modal(id):
     booking = get_model().read(id)
     return render_template("booking/view_partial.html", booking=booking)
 
 
 @bookings_api.route('/<id>/edit', methods=['GET', 'POST'])
+@login_required
 def edit(id):
     data = request.form.to_dict(flat=True)
     booking = model.Booking.query.get(id)
@@ -181,6 +225,7 @@ def edit(id):
 
 
 @bookings_api.route('/add', methods=['GET', 'POST'])
+@login_required
 def add():
 
     units = model.get_units_by_resort(session['resort_id'])
@@ -249,6 +294,7 @@ def build_content_for_email(booking, unit_info):
 
 
 @bookings_api.route('/<id>/delete')
+@login_required
 def delete(id):
     logging.info("[Delete] Booking Begin: booking id = %s", id)
     model.delete(id)
@@ -257,6 +303,7 @@ def delete(id):
 
 
 @bookings_api.route("/calendar")
+@login_required
 def list_calendar_default():
     begin_date = utils.get_todays_date()
     begin_date = utils.convert_date_to_string(begin_date)
@@ -264,7 +311,7 @@ def list_calendar_default():
 
     return list_calendar(resort.name, begin_date)
 
-
+# TODO - make seprate end point for Webapp and Admin
 @bookings_api.route("/calendar/<resort_name>/<begin_date>")
 def list_calendar(resort_name, begin_date):
     begin_date = utils.convert_string_to_date(begin_date)
@@ -290,22 +337,9 @@ def list_calendar(resort_name, begin_date):
     return render_template("calendar/landing.html", units=units, bookings=bookings)
 
 
-# TODO - add calendar navigation prev/next
-# @bookings_api.route('/edit-calendar')
-# def edit_calendar_deprecated():
-#     begin_date = utils.get_begin_date(request)
-#     end_date = utils.get_end_date(request, utils.TWO_WEEKS)
-#
-#     resort = model.Resort.query.get(session['resort_id'])
-#     units = model.get_units_by_resort(resort.id)
-#
-#     dates = model.get_calendar_dates(begin_date, end_date)
-#     bookings = model.get_bookings(begin_date, end_date)
-#
-#     return render_template("edit_calendar.html", resort=resort, units=units, dates=dates, bookings=bookings)
-
 
 @bookings_api.route('/calendar/edit', methods=['GET', 'POST'])
+@login_required
 def edit_availability():
     if not request.form:
         return 'Empty Data', 400
@@ -332,6 +366,7 @@ def edit_availability():
 
     logging.info(serialize_availability(avail))
     return jsonify(data=serialize_availability(avail))
+
 
 
 @bookings_api.route("/resorts/<id>/units")

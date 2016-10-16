@@ -31,6 +31,21 @@ class Base(db.Model):
     updated_by = db.Column(db.String(64), default=lambda: 'admin')
 
 
+class User(Base):
+    __tablename__ = 'users'
+    id = db.Column(db.Integer, primary_key = True)
+    username = db.Column(db.String(32), index = True, unique=True)
+    email = db.Column(db.String(64), index=True, unique=True)
+    password_hash = db.Column(db.String(128))
+
+    # TODO - encrypt later
+    # def hash_password(self, password):
+    #     self.password_hash = pwd_context.encrypt(password)
+    #
+    # def verify_password(self, password):
+    #     return pwd_context.verify(password, self.password_hash)
+
+
 class Resort(Base):
     __tablename__ = 'resort'
 
