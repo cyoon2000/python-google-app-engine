@@ -74,6 +74,7 @@ def login():
                        request.form['password']):
             session['logged_in'] = True
             session['resort_id'] = get_resort_id(request.form['username'])
+            session['nickname'] = request.form['username']
             return redirect(url_for(".list_inbox"))
         else:
             error = 'Invalid username/password'

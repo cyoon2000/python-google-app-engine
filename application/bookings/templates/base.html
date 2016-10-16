@@ -22,39 +22,67 @@
 
 </head>
 <body>
-<div class="navbar navbar-default">
-<!--<div class="navbar navbar-inverse">-->
-    <div class="container-fluid">
-        <div class="navbar-header">
-            <!--<div class="navbar-brand">GoKiteBaja</div>-->
-            <a class="navbar-brand" href="#">
-                <img alt="GoKiteBaja" src="/static/img/gokitebaja-logo-header.png">
-                <!--<img alt="GoKiteBaja" src="/static/img/logo-badge.png">-->
-            </a>
-        </div>
-        <!--<ul class="nav navbar-nav">-->
-        <ul class="nav nav-pills" role="tablist">
-            <!--<li><a href="/bookings/requests" >Booking Request Emails</a></li>-->
-            <li class="dropdown">
-                <a class="dropdown-toggle" data-toggle="dropdown" href="#">Booking Request Emails
-                    <span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                    <li><a href="/bookings/inbox">Inbox</a></li>
-                    <li><a href="/bookings/confirms">Confirmed</a></li>
-                    <li><a href="/bookings/declines">Declined</a></li>
-                </ul>
-            </li>
-            <li><a href="/bookings">Bookings</a></li>
-            <li><a href="/bookings/calendar">Calendar</a></li>
-        </ul>
+<!--<div class="navbar navbar-default">-->
+    <!--<div class="container-fluid">-->
+        <!--<div class="navbar-header">-->
+            <!--&lt;!&ndash;<div class="navbar-brand">GoKiteBaja</div>&ndash;&gt;-->
+            <!--<a class="navbar-brand" href="#">-->
+                <!--<img alt="GoKiteBaja" src="/static/img/gokitebaja-logo-header.png">-->
+                <!--&lt;!&ndash;<img alt="GoKiteBaja" src="/static/img/logo-badge.png">&ndash;&gt;-->
+            <!--</a>-->
+        <!--</div>-->
+        <!--<ul class="nav nav-pills" role="tablist">-->
+            <!--&lt;!&ndash;<li><a href="/bookings/requests" >Booking Request Emails</a></li>&ndash;&gt;-->
+            <!--<li class="dropdown">-->
+                <!--<a class="dropdown-toggle" data-toggle="dropdown" href="#">Booking Request Emails-->
+                    <!--<span class="caret"></span></a>-->
+                <!--<ul class="dropdown-menu">-->
+                    <!--<li><a href="/bookings/inbox">Inbox</a></li>-->
+                    <!--<li><a href="/bookings/confirms">Confirmed</a></li>-->
+                    <!--<li><a href="/bookings/declines">Declined</a></li>-->
+                <!--</ul>-->
+            <!--</li>-->
+            <!--<li><a href="/bookings">Bookings</a></li>-->
+            <!--<li><a href="/bookings/calendar">Calendar</a></li>-->
+        <!--</ul>-->
+    <!--</div>-->
+<!--</div>-->
+
+<ul class="topnav" id="myTopnav">
+    <li><a href="/bookings/inbox">Booking Email Inbox</a></li>
+    <li><a href="/bookings/">Bookings</a></li>
+    <li><a href="/bookings/calendar">Calendar</a></li>
+
+    <div class="pull-right">
+        <!--{% if nick_name %}-->
+            Welcome! <li><a href="/bookings/logout">Sign Out</a></li>
+        <!--{% else %}-->
+            <li><a href="/bookings/logout">Sign Out</a></li>
+        <!--{% endif %}-->
     </div>
-</div>
+    <li class="icon">
+        <a href="javascript:void(0);" onclick="myFunction()">&#9776;</a>
+    </li>
+</ul>
+
 <div class="container">
     {% block content %}{% endblock %}
 </div>
 </body>
 </html>
 <script>
+/* Toggle between adding and removing the "responsive" class to topnav when the user clicks on the icon */
+function myFunction() {
+    var x = document.getElementById("myTopnav");
+    if (x.className === "topnav") {
+        x.className += " responsive";
+    } else {
+        x.className = "topnav";
+    }
+}
+
+
+
 // "active" function works, but link stops working!
 //$('.navbar li').click(function(e) {
 //    $('.navbar li.active').removeClass('active');
