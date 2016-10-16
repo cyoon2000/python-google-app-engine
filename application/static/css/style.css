@@ -2,12 +2,15 @@
     Login page
 */
 /* Bordered form */
-form {
+/*
+form.login {
     border: 3px solid #f1f1f1;
 }
+*/
 
 /* Full-width inputs */
-input[type=text], input[type=password] {
+
+input.login[type=text], input.login[type=password] {
     width: 100%;
     padding: 12px 20px;
     margin: 8px 0;
@@ -16,8 +19,9 @@ input[type=text], input[type=password] {
     box-sizing: border-box;
 }
 
+
 /* Set a style for all buttons */
-button {
+button.ocean-full {
     background-color: #62BDC1;
     color: white;
     padding: 14px 20px;
