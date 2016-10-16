@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="page-header text-center">
+    <h2>Calendar Admin</h2>
+</div>
+
+<ul>
+    {% for resort in resorts %}
+    <li><a href="/bookings/calendar/{{ resort.name }}">{{ resort.display_name }}</a></li>
+    {% endfor %}
+</ul>
+
+<hr/>
+
+{% endblock %}

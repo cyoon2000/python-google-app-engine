@@ -296,29 +296,29 @@ def list_booking_request(status, resort_id, limit=100):
     return bookings
 
 
-def list_bookings_all(limit=100, cursor=None):
-    cursor = int(cursor) if cursor else 0
+# def list_bookings_all(limit=100, cursor=None):
+def list_bookings_all(limit=100):
+    # cursor = int(cursor) if cursor else 0
     query = (Booking.query
              .order_by(Booking.updated_on.desc())
-             .limit(limit)
-             .offset(cursor))
+             .limit(limit))
+             # .offset(cursor))
     bookings = builtin_list(map(from_sql, query.all()))
-    next_page = cursor + limit if len(bookings) == limit else None
-    return (bookings, next_page)
+    # next_page = cursor + limit if len(bookings) == limit else None
+    # return (bookings, next_page)
+    return bookings
 
 
-def list_bookings(resort_id, limit=100, cursor=None):
-    cursor = int(cursor) if cursor else 0
+def list_bookings(resort_id, limit=100):
     query = (Booking.query
              .join(Unit, Unit.id == Booking.unit_id)
              .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
              .filter(Unitgroup.resort_id == resort_id)
              .order_by(Booking.updated_on.desc())
-             .limit(limit)
-             .offset(cursor))
+             .limit(limit))
     bookings = builtin_list(map(from_sql, query.all()))
-    next_page = cursor + limit if len(bookings) == limit else None
-    return (bookings, next_page)
+    # next_page = cursor + limit if len(bookings) == limit else None
+    return bookings
 
 
 # get bookings that begins in this period (checking in this period)

@@ -9,6 +9,7 @@ from flask import jsonify, json
 from functools import wraps
 from application.common import utils
 from urllib import urlencode
+from jinja2 import BaseLoader, TemplateNotFound
 
 import httplib2
 import webapp2
@@ -73,8 +74,15 @@ def login():
         if valid_login(request.form['username'],
                        request.form['password']):
             session['logged_in'] = True
-            session['resort_id'] = get_resort_id(request.form['username'])
-            session['nickname'] = request.form['username']
+            # admin login
+            if request.form['username'] == 'admin':
+                session['is_admin'] = True
+                return redirect(url_for(".list_inbox"))
+            # resort login
+            session['resort_id'] = get_resort_id_by_username(request.form['username'])
+            resort = model.Resort.query.get(session['resort_id'])
+            session['resort_name'] = resort.name
+            session['nickname'] = resort.display_name
             return redirect(url_for(".list_inbox"))
         else:
             error = 'Invalid username/password'
@@ -85,7 +93,17 @@ def login():
 
 @bookings_api.route('/logout')
 def logout():
-    session.pop('logged_in', None)
+    error = None
+    if session.get('logged_in'):
+        session.pop('logged_in', None)
+    if session.get('is_admin'):
+        session.pop('is_admin', None)
+    if session.get('resort_id'):
+        session.pop('resort_id', None)
+    if session.get('resort_name'):
+        session.pop('resort_name', None)
+    if session.get('nickname'):
+        session.pop('nickname', None)
     return render_template('login.html', error=error, action="logout")
 
 
@@ -94,10 +112,10 @@ def valid_login(username, password):
         return True
     if username in RESORTS and password == username:
         return True
+    return False
     # user = model.User.query.filter(username=username).first()
     # if user.password == password:
     #     return True
-    return False
 
 
 def is_loggied_in():
@@ -107,15 +125,26 @@ def is_loggied_in():
     return False
 
 
+def is_admin():
+    if session.get('is_admin'):
+        return session['is_admin']
+
+
 # TODO - save in db
-def get_resort_id(username):
+def get_resort_id_by_username(username):
     return RESORTS.index(username)
 
 
-def is_admin():
-    if session['resort_id'] == 0:
-        return True
-    return False
+def get_session_resort_name():
+    if session.get('resort_name'):
+        return session['resort_name']
+    return None
+
+
+def get_session_resort_id():
+    if session.get('resort_id'):
+        return session['resort_id']
+    return None
 
 
 @bookings_api.errorhandler(Exception)
@@ -132,7 +161,7 @@ def list_inbox():
     # if token:
     #     token = token.encode('utf-8')
 
-    resort_id = session['resort_id']
+    resort_id = get_session_resort_id()
 
     if is_admin():
         requests = model.list_booking_request_all(model.BOOKING_STATUS_REQUESTED)
@@ -154,14 +183,14 @@ def list_inbox():
 
 
 @bookings_api.route("/confirms")
-@login_required
+# @login_required
 def list_confirms():
-    token = request.args.get('page_token', None)
-    if token:
-        token = token.encode('utf-8')
+    # token = request.args.get('page_token', None)
+    # if token:
+    #     token = token.encode('utf-8')
 
     # requests, next_page_token = get_model().list_booking_request(cursor=token)
-    confirms = get_model().list_booking_request_confirmed(100)
+    confirms = model.list_booking_request_confirmed(100)
 
     try: return render_template(
         "booking-request/list_confirms.html",
@@ -173,14 +202,14 @@ def list_confirms():
 
 
 @bookings_api.route("/declines")
-@login_required
+# @login_required
 def list_declines():
-    token = request.args.get('page_token', None)
-    if token:
-        token = token.encode('utf-8')
+    # token = request.args.get('page_token', None)
+    # if token:
+    #     token = token.encode('utf-8')
 
     # requests, next_page_token = get_model().list_booking_request(cursor=token)
-    declines = get_model().list_booking_request_declined(100)
+    declines = model.list_booking_request_declined(100)
 
     try: return render_template(
         "booking-request/list_declines.html",
@@ -194,33 +223,33 @@ def list_declines():
 @bookings_api.route("/")
 @login_required
 def list_bookings():
-    token = request.args.get('page_token', None)
-    if token:
-        token = token.encode('utf-8')
+    # token = request.args.get('page_token', None)
+    # if token:
+    #     token = token.encode('utf-8')
 
-    resort_id = session['resort_id']
     if is_admin():
-        bookings, next_page_token = model.list_bookings_all(cursor=token)
+        # bookings, next_page_token = model.list_bookings_all()
+        bookings = model.list_bookings_all()
     else:
-        bookings, next_page_token = model.list_bookings(resort_id, cursor=token)
+        resort_id = get_session_resort_id()
+        bookings = model.list_bookings(resort_id)
 
     try: return render_template(
         "booking/landing.html",
-        bookings=bookings,
-        next_page_token=next_page_token)
+        bookings=bookings)
     except TemplateNotFound:
         abort(404)
 
 
 @bookings_api.route('/<id>')
-@login_required
+# @login_required
 def view(id):
     booking = get_model().read(id)
     return render_template("booking/view.html", booking=booking)
 
 
 @bookings_api.route('/<id>/<action>')
-@login_required
+# @login_required
 def view_confirm(id, action):
     booking = get_model().read(id)
     return render_template("booking/view.html", booking=booking, action=action)
@@ -228,14 +257,14 @@ def view_confirm(id, action):
 
 # this returns just body w/o menu
 @bookings_api.route('/<id>/partial')
-@login_required
+# @login_required
 def view_booking_modal(id):
     booking = get_model().read(id)
     return render_template("booking/view_partial.html", booking=booking)
 
 
 @bookings_api.route('/<id>/edit', methods=['GET', 'POST'])
-@login_required
+# @login_required
 def edit(id):
     data = request.form.to_dict(flat=True)
     booking = model.Booking.query.get(id)
@@ -255,8 +284,11 @@ def edit(id):
 @bookings_api.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
+    resort_id = get_session_resort_id()
+    if not resort_id:
+        return redirect(url_for('.login', next=request.url))
 
-    units = model.get_units_by_resort(session['resort_id'])
+    units = model.get_units_by_resort(resort_id)
     booking = None
 
     booking_request_id = request.args.get('bookingRequestId')
@@ -322,7 +354,7 @@ def build_content_for_email(booking, unit_info):
 
 
 @bookings_api.route('/<id>/delete')
-@login_required
+# @login_required
 def delete(id):
     logging.info("[Delete] Booking Begin: booking id = %s", id)
     model.delete(id)
@@ -335,13 +367,23 @@ def delete(id):
 def list_calendar_default():
     begin_date = utils.get_todays_date()
     begin_date = utils.convert_date_to_string(begin_date)
-    resort = model.Resort.query.get(session['resort_id'])
 
+    if is_admin():
+        resorts = model.get_resorts()
+        return render_template("calendar/admin.html", resorts=resorts)
+
+    resort = model.Resort.query.get(session['resort_id'])
     return list_calendar(resort.name, begin_date)
 
 
+@bookings_api.route("/calendar/<resort_name>")
+def list_calendar_by_resort(resort_name):
+    begin_date = utils.get_default_begin_date()
+    return list_calendar(resort_name, utils.convert_date_to_string(begin_date))
+
+
 @bookings_api.route("/calendar/<resort_name>/<begin_date>")
-@login_required
+# @login_required
 def list_calendar(resort_name, begin_date):
     begin_date = utils.convert_string_to_date(begin_date)
     # end_date = utils.get_end_date_from_begin_date(begin_date, utils.TWO_WEEKS)
@@ -358,20 +400,19 @@ def list_calendar(resort_name, begin_date):
         pass
 
     end_date = utils.get_end_date_from_begin_date(begin_date, utils.TWO_WEEKS)
+
+    resort = model.get_resort_by_name(resort_name)
+    if not resort:
+        return render_template("500.html", msg="Page does not exist.")
+
     units = get_calendar(resort_name, begin_date, end_date)
-
-    # get bookings in this period
-    if is_admin():
-        bookings = model.get_bookings_all(begin_date, end_date)
-    else:
-        bookings = model.get_bookings(session['resort_id'], begin_date, end_date)
-
+    bookings = model.get_bookings(resort.id, begin_date, end_date)
 
     return render_template("calendar/landing.html", units=units, bookings=bookings)
 
 
 @bookings_api.route('/calendar/edit', methods=['GET', 'POST'])
-@login_required
+# @login_required
 def edit_availability():
     if not request.form:
         return 'Empty Data', 400
