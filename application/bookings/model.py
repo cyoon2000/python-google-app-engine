@@ -10,6 +10,9 @@ from application.common import utils
 
 builtin_list = list
 
+BOOKING_STATUS_REQUESTED = 'CREATED'
+BOOKING_STATUS_CONFIRMED = 'CONFIRMED'
+BOOKING_STATUS_DECLINED = 'DECLINED'
 
 def init_app(app):
     db.init_app(app)
@@ -269,36 +272,28 @@ class EmailData(object):
         self.comment = comment
 
 
-def list_booking_request(limit=100, cursor=None):
-    cursor = int(cursor) if cursor else 0
+def list_booking_request_all(status, limit=100):
+    # cursor = int(cursor) if cursor else 0
     query = (BookingRequest.query
-             .filter(BookingRequest.status == 'CREATED')
-             .order_by(BookingRequest.updated_on)
-             .limit(limit)
-             .offset(cursor))
+             .filter(BookingRequest.status == status)
+             .order_by(BookingRequest.updated_on.desc())
+             .limit(limit))
+             # .offset(cursor))
+    requests = builtin_list(map(from_sql, query.all()))
+    # next_page = cursor + limit if len(bookings) == limit else None
+    # return (bookings, next_page)
+    return requests
+
+
+def list_booking_request(status, resort_id, limit=100):
+    query = (BookingRequest.query
+             .join(Unitgroup, Unitgroup.id == BookingRequest.unitgroup_id)
+             .filter(Unitgroup.resort_id == resort_id)
+             .filter(BookingRequest.status == status)
+             .order_by(BookingRequest.updated_on.desc())
+             .limit(limit))
     bookings = builtin_list(map(from_sql, query.all()))
-    next_page = cursor + limit if len(bookings) == limit else None
-    return (bookings, next_page)
-
-
-def list_booking_request_confirmed(limit=100):
-    query = (BookingRequest.query
-             .filter(BookingRequest.status == 'CONFIRMED')
-             .order_by(BookingRequest.updated_on.desc())
-             .limit(limit))
-
-    confirms = builtin_list(map(from_sql, query.all()))
-    return confirms
-
-
-def list_booking_request_declined(limit=100):
-    query = (BookingRequest.query
-             .filter(BookingRequest.status == 'DECLINED')
-             .order_by(BookingRequest.updated_on.desc())
-             .limit(limit))
-
-    declines = builtin_list(map(from_sql, query.all()))
-    return declines
+    return bookings
 
 
 def list_bookings_all(limit=100, cursor=None):

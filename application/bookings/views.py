@@ -74,7 +74,7 @@ def login():
                        request.form['password']):
             session['logged_in'] = True
             session['resort_id'] = get_resort_id(request.form['username'])
-            return redirect(url_for(".list_bookings"))
+            return redirect(url_for(".list_inbox"))
         else:
             error = 'Invalid username/password'
     # the code below is executed if the request method
@@ -127,20 +127,26 @@ def is_admin():
 @bookings_api.route("/inbox")
 @login_required
 def list_inbox():
-    token = request.args.get('page_token', None)
-    if token:
-        token = token.encode('utf-8')
+    # token = request.args.get('page_token', None)
+    # if token:
+    #     token = token.encode('utf-8')
 
-    requests, next_page_token = get_model().list_booking_request(cursor=token)
-    confirms = get_model().list_booking_request_confirmed(5)
-    declines = get_model().list_booking_request_declined(5)
+    resort_id = session['resort_id']
+
+    if is_admin():
+        requests = model.list_booking_request_all(model.BOOKING_STATUS_REQUESTED)
+        confirms = model.list_booking_request_all(model.BOOKING_STATUS_CONFIRMED, 5)
+        declines = model.list_booking_request_all(model.BOOKING_STATUS_DECLINED, 5)
+    else:
+        requests = model.list_booking_request(model.BOOKING_STATUS_REQUESTED, resort_id)
+        confirms = model.list_booking_request(model.BOOKING_STATUS_CONFIRMED, resort_id, 5)
+        declines = model.list_booking_request(model.BOOKING_STATUS_DECLINED, resort_id, 5)
 
     try: return render_template(
         "booking-request/landing.html",
         requests=requests,
         confirms=confirms,
-        declines=declines,
-        next_page_token=next_page_token
+        declines=declines
     )
     except TemplateNotFound:
         abort(404)
