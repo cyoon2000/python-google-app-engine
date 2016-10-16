@@ -30,6 +30,8 @@ EMAIL_SUBJECT_DECLINE = "Response for Your Booking Request"
 RESPONSE_CONFIRM = "confirm"
 RESPONSE_DECLINE = "decline"
 
+RESORTS = ['admin', 'bajajoe', 'captainkirk', 'downwinder', 'kurtnmarina', 'palapas', 'pelican', 'vparaiso', 'ventanabay', 'ventanawind']
+
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
 
@@ -43,8 +45,8 @@ def login_required(f):
     return decorated_function
 
 
-@bookings_api.before_request
-def before_request():
+# @bookings_api.before_request
+# def before_request():
     # ping mysql connection
     # try: model.ping_mysql()
     # except Exception as e:
@@ -52,10 +54,10 @@ def before_request():
     #     model.ping_mysql()
 
     # TODO - save resort_id in session upon login
-    session['resort_name'] = 'kirk'
+    # session['resort_name'] = 'kirk'
     # resort = model.Resort.query.filter_by(name=session['resort_name']).one()
-    resort = model.get_resort_by_name(session['resort_name'])
-    session['resort_id'] = resort.id
+    # resort = model.get_resort_by_name(session['resort_name'])
+    # session['resort_id'] = resort.id
 
 
 @bookings_api.after_request
@@ -71,7 +73,8 @@ def login():
         if valid_login(request.form['username'],
                        request.form['password']):
             session['logged_in'] = True
-            return redirect(url_for(".list_inbox"))
+            session['resort_id'] = get_resort_id(request.form['username'])
+            return redirect(url_for(".list_bookings"))
         else:
             error = 'Invalid username/password'
     # the code below is executed if the request method
@@ -86,17 +89,31 @@ def logout():
 
 
 def valid_login(username, password):
-    return True
+    if username == 'admin' and password == 'admin':
+        return True
+    if username in RESORTS and password == username:
+        return True
     # user = model.User.query.filter(username=username).first()
     # if user.password == password:
     #     return True
-    # return False
+    return False
 
 
 def is_loggied_in():
     if session.get('logged_in'):
         if session['logged_in']:
             return True
+    return False
+
+
+# TODO - save in db
+def get_resort_id(username):
+    return RESORTS.index(username)
+
+
+def is_admin():
+    if session['resort_id'] == 0:
+        return True
     return False
 
 
@@ -174,7 +191,11 @@ def list_bookings():
     if token:
         token = token.encode('utf-8')
 
-    bookings, next_page_token = model.list_bookings(cursor=token)
+    resort_id = session['resort_id']
+    if is_admin():
+        bookings, next_page_token = model.list_bookings_all(cursor=token)
+    else:
+        bookings, next_page_token = model.list_bookings(resort_id, cursor=token)
 
     try: return render_template(
         "booking/landing.html",
@@ -311,8 +332,9 @@ def list_calendar_default():
 
     return list_calendar(resort.name, begin_date)
 
-# TODO - make seprate end point for Webapp and Admin
+
 @bookings_api.route("/calendar/<resort_name>/<begin_date>")
+@login_required
 def list_calendar(resort_name, begin_date):
     begin_date = utils.convert_string_to_date(begin_date)
     # end_date = utils.get_end_date_from_begin_date(begin_date, utils.TWO_WEEKS)
@@ -332,10 +354,13 @@ def list_calendar(resort_name, begin_date):
     units = get_calendar(resort_name, begin_date, end_date)
 
     # get bookings in this period
-    bookings = model.get_bookings(begin_date, end_date)
+    if is_admin():
+        bookings = model.get_bookings_all(begin_date, end_date)
+    else:
+        bookings = model.get_bookings(session['resort_id'], begin_date, end_date)
+
 
     return render_template("calendar/landing.html", units=units, bookings=bookings)
-
 
 
 @bookings_api.route('/calendar/edit', methods=['GET', 'POST'])
@@ -368,7 +393,6 @@ def edit_availability():
     return jsonify(data=serialize_availability(avail))
 
 
-
 @bookings_api.route("/resorts/<id>/units")
 def get_units(id):
     results = model.get_units_by_resort(id)
@@ -386,39 +410,6 @@ def get_calendar_date(datestr):
         return "400"
 
     return jsonify(data=serialize_calendar_date(calendar.date_))
-
-
-# DEPRECATED - Not using Angular anymore
-# # Return JSON
-# # Sample data: http://localhost:8080/bookings/availability/unit/10?from=2016-07-01&to=2016-07-10
-# @bookings_api.route("/availability/unit/<id>")
-# def get_availabilities(id):
-#
-#     begin_date = utils.get_begin_date(request)
-#     end_date = utils.get_end_date(request, utils.TWO_WEEKS)
-#
-#     results = model.get_availabilities(id, begin_date, end_date)
-#     data = [serialize_availability(r) for r in results]
-#     return jsonify(data=data)
-#
-#
-# @bookings_api.route('/availability/<unit_id>', methods=['POST'])
-# def update_availability(unit_id):
-#     input = json.loads(request.data)
-#     if input['id']:
-#         avail = model.Availability.query.get(input['id'])
-#         avail = model.delete_entity(avail)
-#
-#     else:
-#         #avail = model.Availability.query.get(input['id'])
-#         #avail.status = -1 if input['booked'] is True else 1
-#         #avail = model.save_entity(avail)
-#         # 2=blocked
-#         avail = model.Availability(input['unit_id'], input['date_slot'], 2)
-#         avail = model.save_entity(avail)
-#         logging.info(serialize_availability(avail))
-#
-#     return jsonify(data=serialize_availability(avail))
 
 
 @bookings_api.route("/calendar/resort/<name>")

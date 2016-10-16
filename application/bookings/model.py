@@ -301,7 +301,7 @@ def list_booking_request_declined(limit=100):
     return declines
 
 
-def list_bookings(limit=100, cursor=None):
+def list_bookings_all(limit=100, cursor=None):
     cursor = int(cursor) if cursor else 0
     query = (Booking.query
              .order_by(Booking.updated_on.desc())
@@ -310,6 +310,50 @@ def list_bookings(limit=100, cursor=None):
     bookings = builtin_list(map(from_sql, query.all()))
     next_page = cursor + limit if len(bookings) == limit else None
     return (bookings, next_page)
+
+
+def list_bookings(resort_id, limit=100, cursor=None):
+    cursor = int(cursor) if cursor else 0
+    query = (Booking.query
+             .join(Unit, Unit.id == Booking.unit_id)
+             .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
+             .filter(Unitgroup.resort_id == resort_id)
+             .order_by(Booking.updated_on.desc())
+             .limit(limit)
+             .offset(cursor))
+    bookings = builtin_list(map(from_sql, query.all()))
+    next_page = cursor + limit if len(bookings) == limit else None
+    return (bookings, next_page)
+
+
+# get bookings that begins in this period (checking in this period)
+def get_bookings_begin(begin_date, end_date):
+    query = (Booking.query
+             .filter(Booking.begin_on.between(begin_date, end_date))
+             .order_by(Booking.begin_on, Booking.unit_id)
+    )
+    return query.all()
+
+
+# get bookings that exist in this period
+def get_bookings_all(begin_date, end_date):
+    query = (Booking.query
+             .filter(or_(Booking.begin_on.between(begin_date, end_date), func.ADDDATE(Booking.end_on, -1).between(begin_date, end_date)))
+             .order_by(Booking.begin_on, Booking.unit_id)
+    )
+    return query.all()
+
+
+# get bookings that exist in this period
+def get_bookings(resort_id, begin_date, end_date):
+    query = (Booking.query
+             .join(Unit, Unit.id == Booking.unit_id)
+             .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
+             .filter(Unitgroup.resort_id == resort_id)
+             .filter(or_(Booking.begin_on.between(begin_date, end_date), func.ADDDATE(Booking.end_on, -1).between(begin_date, end_date)))
+             .order_by(Booking.begin_on, Booking.unit_id)
+    )
+    return query.all()
 
 
 def read(id):
@@ -545,24 +589,6 @@ def get_availability(unit_id, date_slot):
 #         {'unit_id': unit_id,
 #          'date': date_slot})
 #     return availabilities
-
-
-# get bookings that begins in this period (checking in this period)
-def get_bookings_begin(begin_date, end_date):
-    query = (Booking.query
-             .filter(Booking.begin_on.between(begin_date, end_date))
-             .order_by(Booking.begin_on, Booking.unit_id)
-    )
-    return query.all()
-
-
-# get bookings that exist in this period
-def get_bookings(begin_date, end_date):
-    query = (Booking.query
-             .filter(or_(Booking.begin_on.between(begin_date, end_date), func.ADDDATE(Booking.end_on, -1).between(begin_date, end_date)))
-             .order_by(Booking.begin_on, Booking.unit_id)
-    )
-    return query.all()
 
 
 # returns resorts ( id, name, count )

@@ -44,4 +44,11 @@
         <!--<span class="psw">Forgot <a href="#">password?</a></span>-->
     <!--</div>-->
 </form>
+
+{% if error %}
+<div class="alert alert-danger">
+    <strong>Login Failed. </strong> {{ error }}
+</div>
+{% endif %}
+
 </body>
