@@ -1,0 +1,49 @@
+{% block content %}
+
+<div class="container">
+
+    <!--<div class="page-header text-center ">-->
+        <!--<h2>Declined Booking Requests</h2>-->
+    <!--</div>-->
+
+    <table id="declines" class="table table-striped table-bordered">
+        <thead>
+        <tr>
+            <th>Check In</th>
+            <th>Check Out</th>
+            <th>Guests</th>
+            <th>Unit (Type)</th>
+            <th>Ave Rate<br/> per night</th>
+            <th>nights</th>
+            <th>Name</th>
+            <th>Date Requested</th>
+            <th>Date Declined</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for booking_request in declines %}
+        <tr>
+            <td>{{booking_request.checkin}}</td>
+            <td>{{booking_request.checkout}}</td>
+            <td>{{booking_request.guests}}</td>
+            <td>{{booking_request.unitgroup_name}}</td>
+            <td>USD {{booking_request.avg_price}}</td>
+            <td></td>
+            <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
+            <td>{{booking_request.created_on.strftime('%Y-%m-%d') if booking_request.created_on}}</td>
+            <td>{{booking_request.updated_on.strftime('%Y-%m-%d') if booking_request.updated_on}}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#declines').DataTable();
+    });
+
+</script>
+
+{% endblock %}

@@ -185,18 +185,15 @@ def list_inbox():
 @bookings_api.route("/confirms")
 # @login_required
 def list_confirms():
-    # token = request.args.get('page_token', None)
-    # if token:
-    #     token = token.encode('utf-8')
-
-    # requests, next_page_token = get_model().list_booking_request(cursor=token)
-    confirms = model.list_booking_request_confirmed(100)
+    resort_id = get_session_resort_id()
+    if is_admin():
+        confirms = model.list_booking_request_all(model.BOOKING_STATUS_CONFIRMED, 100)
+    else:
+        confirms = model.list_booking_request(model.BOOKING_STATUS_CONFIRMED, resort_id, 100)
 
     try: return render_template(
         "booking-request/list_confirms.html",
         confirms=confirms)
-        # confirms=confirms,
-        # next_page_token=next_page_token)
     except TemplateNotFound:
         abort(404)
 
@@ -204,18 +201,15 @@ def list_confirms():
 @bookings_api.route("/declines")
 # @login_required
 def list_declines():
-    # token = request.args.get('page_token', None)
-    # if token:
-    #     token = token.encode('utf-8')
-
-    # requests, next_page_token = get_model().list_booking_request(cursor=token)
-    declines = model.list_booking_request_declined(100)
+    resort_id = get_session_resort_id()
+    if is_admin():
+        declines = model.list_booking_request(model.BOOKING_STATUS_DECLINED, resort_id, 5)
+    else:
+        declines = model.list_booking_request(model.BOOKING_STATUS_DECLINED, resort_id, 100)
 
     try: return render_template(
         "booking-request/list_declines.html",
         declines=declines)
-    # confirms=confirms,
-    # next_page_token=next_page_token)
     except TemplateNotFound:
         abort(404)
 
