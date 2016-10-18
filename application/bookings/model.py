@@ -185,7 +185,7 @@ class Booking(Base):
     unit_id = db.Column(db.Integer, db.ForeignKey('unit.id'))
     availabilities = db.relationship('Availability', backref='booking', lazy='dynamic')
     notes = db.Column(db.String(256))
-    booking_request_id = db.Column(db.Integer, db.ForeignKey('booking_request.id'))
+    # booking_request_id = db.Column(db.Integer, db.ForeignKey('booking_request.id'))
     #transaction_id = db.Column(db.String(30), unique=True)
 
     def __init__(self, unit_id, unit_name, unit_info):
@@ -232,6 +232,7 @@ class BookingRequest(Base):
         return "(unitgroup name = %s : checkin = %s checkout = %s guests = %s)" \
                % (self.unitgroup_name, self.checkin, self.checkout,  self.guests)
 
+
     def serialize_booking_request(self):
         unit_info = self.unit_info
         if unit_info is None:
@@ -248,20 +249,11 @@ class BookingRequest(Base):
         }
 
 
+# wrapper objects for query results
 class BookingInfo():
-    def __init__(self, checkin, checkout, guests, unitgroup_name):
-        self.unitgroup_name = unitgroup_name
-        self.checkin = checkin
-        self.checkout = checkout
-        self.guests = guests
-        self.avg_price = None
-        self.first_name = None
-        self.last_name = None
-        self.email = None
-        # meta data
-        self.resort_name = None
-        self.unit_Name = None
-        self.resort_email = None
+    def __init__(self, booking, unit):
+        self.booking = booking
+        self.unit = unit
 
 
 class EmailData(object):
@@ -300,6 +292,8 @@ def list_booking_request(status, resort_id, limit=100):
 def list_bookings_all(limit=100):
     # cursor = int(cursor) if cursor else 0
     query = (Booking.query
+             .join(Unit, Unit.id == Booking.unit_id)
+             .add_entity(Unit)
              .order_by(Booking.updated_on.desc())
              .limit(limit))
              # .offset(cursor))
@@ -309,34 +303,36 @@ def list_bookings_all(limit=100):
     return bookings
 
 
+# returns Booking and Unit info
 def list_bookings(resort_id, limit=100):
     query = (Booking.query
              .join(Unit, Unit.id == Booking.unit_id)
              .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
              .filter(Unitgroup.resort_id == resort_id)
+             .add_entity(Unit)
              .order_by(Booking.updated_on.desc())
              .limit(limit))
-    bookings = builtin_list(map(from_sql, query.all()))
-    # next_page = cursor + limit if len(bookings) == limit else None
+
+    bookings = query.all()
     return bookings
 
 
-# get bookings that begins in this period (checking in this period)
-def get_bookings_begin(begin_date, end_date):
-    query = (Booking.query
-             .filter(Booking.begin_on.between(begin_date, end_date))
-             .order_by(Booking.begin_on, Booking.unit_id)
-    )
-    return query.all()
-
-
-# get bookings that exist in this period
-def get_bookings_all(begin_date, end_date):
-    query = (Booking.query
-             .filter(or_(Booking.begin_on.between(begin_date, end_date), func.ADDDATE(Booking.end_on, -1).between(begin_date, end_date)))
-             .order_by(Booking.begin_on, Booking.unit_id)
-    )
-    return query.all()
+# # get bookings that begins in this period (checking in this period)
+# def get_bookings_begin(begin_date, end_date):
+#     query = (Booking.query
+#              .filter(Booking.begin_on.between(begin_date, end_date))
+#              .order_by(Booking.begin_on, Booking.unit_id)
+#     )
+#     return query.all()
+#
+#
+# # get bookings that exist in this period
+# def get_bookings_all(begin_date, end_date):
+#     query = (Booking.query
+#              .filter(or_(Booking.begin_on.between(begin_date, end_date), func.ADDDATE(Booking.end_on, -1).between(begin_date, end_date)))
+#              .order_by(Booking.begin_on, Booking.unit_id)
+#     )
+#     return query.all()
 
 
 # get bookings that exist in this period
@@ -356,6 +352,16 @@ def read(id):
     if not result:
         return None
     return from_sql(result)
+
+
+# join Booking with Unit for Unit meta data
+def get_booking(id):
+    query = (Booking.query
+             .join(Unit, Unit.id == Booking.unit_id)
+             .filter(Booking.id == id)
+             .add_entity(Unit)
+    )
+    return query.first()
 
 
 def create_booking(booking):

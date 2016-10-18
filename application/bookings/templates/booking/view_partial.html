@@ -6,7 +6,10 @@
     <h4><span class="label label-success">Success</span> <small>Booking Updated Successfully </small></h4><br/>
 {% endif %}
 
-<h2><span class="label label-primary">Booking Information</span></h2>
+<!--<h2><span class="label label-primary">Booking Information</span></h2>-->
+<div class="page-header text-center ">
+    <h2>View Booking</h2>
+</div>
 
 <div class="col-xs-12" style="height:30px;"></div>
 <hr/>
@@ -39,17 +42,12 @@
 <hr/>
 
 <form method="POST" enctype="multipart/form-data">
-
-    <div class="form-group">
-        <label for="unit_name">Unit Name</label>
-        <input type="text" name="unit_name" id="unit_name" value="{{booking.unit_name}}" class="form-control" readonly="readonly"/>
-    </div>
     <div class="row">
         <div class='col-sm-4'>
             <div class="form-group">
                 <label for="begin_on">Check In</label>
                 <div class='input-group date' id='datepicker1'>
-                    <input type="text" name="begin_on" id="begin_on" value="{{booking.begin_on}}" class="form-control" readonly="readonly"/>
+                    <input type="text" name="begin_on" id="begin_on" value="{{ booking.begin_on }}" class="form-control" readonly="readonly"/>
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
@@ -60,31 +58,37 @@
             <div class="form-group">
                 <label for="end_on">Check Out</label>
                 <div class='input-group date' id='datepicker2'>
-                    <input type="text" name="end_on" id="end_on" value="{{booking.end_on}}" class="form-control" readonly="readonly"/>
+                    <input type="text" name="end_on" id="end_on" value="{{ booking.end_on }}" class="form-control" readonly="readonly"/>
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
                 </div>
             </div>
         </div>
+        <div class='col-sm-4'>
+            <div class="form-group">
+                <label for="guests">Guests</label>
+        <input type="text" name="guests" id="guests" value="{{booking.guests}}" class="form-control" readonly="readonly"/>
+    </div>
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="unit_display_name">Unit Name</label>
+        <input type="text" name="unit_display_name" id="unit_display_name" value="{{ unit.display_name }}" class="form-control" readonly="readonly"/>
     </div>
 
     <div class="form-group">
-        <label for="guests">Guests</label>
-        <input type="text" name="guests" id="guests" value="{{booking.guests}}" class="form-control" readonly="readonly"/>
-    </div>
-    <div class="form-group">
         <label for="notes">Notes</label>
-        <input type="text" name="notes" id="notes" value="{{booking.notes}}" class="form-control" readonly="readonly"/>
+        <input type="text" name="notes" id="notes" value="{{ booking.notes }}" class="form-control" readonly="readonly"/>
     </div>
 
     <div class="col-xs-12" style="height:30px;"></div>
     <div class="btn-group">
-        <a href="/bookings/{{booking.id}}/edit" class="btn btn-info btn-sm">
+        <a href="/bookings/{{ booking.id }}/edit" class="btn btn-info btn-sm">
             <i class="glyphicon glyphicon-edit"></i>
             Edit booking
         </a>
-        <a href="/bookings/{{booking.id}}/delete" class="btn btn-danger btn-sm">
+        <a href="/bookings/{{ booking.id }}/delete" class="btn btn-danger btn-sm">
             <i class="glyphicon glyphicon-trash"></i>
             Delete booking
         </a>

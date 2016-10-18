@@ -147,7 +147,7 @@ def get_session_resort_id():
     return None
 
 
-@bookings_api.errorhandler(Exception)
+# @bookings_api.errorhandler(Exception)
 # def unhandled_exception(e):
 #     logging.error("############# ERROR ###############")
 #     logging.error(unicode(e))
@@ -217,20 +217,23 @@ def list_declines():
 @bookings_api.route("/")
 @login_required
 def list_bookings():
-    # token = request.args.get('page_token', None)
-    # if token:
-    #     token = token.encode('utf-8')
+
+    booking_info_list = []
 
     if is_admin():
-        # bookings, next_page_token = model.list_bookings_all()
-        bookings = model.list_bookings_all()
+        results = model.list_bookings_all()
     else:
+        # create BookingInfo (dto) from Booking and Unit which has meta data
         resort_id = get_session_resort_id()
-        bookings = model.list_bookings(resort_id)
+        results = model.list_bookings(resort_id)
+
+    for result in results:
+        booking_info = model.BookingInfo(result.Booking, result.Unit)
+        booking_info_list.append(booking_info)
 
     try: return render_template(
         "booking/landing.html",
-        bookings=bookings)
+        booking_info_list=booking_info_list)
     except TemplateNotFound:
         abort(404)
 
@@ -238,23 +241,29 @@ def list_bookings():
 @bookings_api.route('/<id>')
 # @login_required
 def view(id):
-    booking = get_model().read(id)
-    return render_template("booking/view.html", booking=booking)
+    booking = model.Booking.query.get(id)
+    unit = model.Unit.query.filter(model.Unit.id == booking.unit_id).one()
+
+    return render_template("booking/view.html", booking=booking, unit=unit)
 
 
 @bookings_api.route('/<id>/<action>')
 # @login_required
 def view_confirm(id, action):
-    booking = get_model().read(id)
-    return render_template("booking/view.html", booking=booking, action=action)
+    booking = model.Booking.query.get(id)
+    unit = model.Unit.query.filter(model.Unit.id == booking.unit_id).one()
+
+    return render_template("booking/view.html", booking=booking, unit=unit, action=action)
 
 
 # this returns just body w/o menu
 @bookings_api.route('/<id>/partial')
 # @login_required
 def view_booking_modal(id):
-    booking = get_model().read(id)
-    return render_template("booking/view_partial.html", booking=booking)
+    booking = model.Booking.query.get(id)
+    unit = model.Unit.query.filter(model.Unit.id == booking.unit_id).one()
+
+    return render_template("booking/view_partial.html", booking=booking, unit=unit)
 
 
 @bookings_api.route('/<id>/edit', methods=['GET', 'POST'])
@@ -262,7 +271,8 @@ def view_booking_modal(id):
 def edit(id):
     data = request.form.to_dict(flat=True)
     booking = model.Booking.query.get(id)
-    unit = model.Unit.query.filter(model.Unit.id == booking.unit_id).one()
+    if booking.unit_id:
+        unit = model.Unit.query.filter(model.Unit.id == booking.unit_id).one()
 
     if request.method == 'POST':
         logging.info("[Update] Booking Begin: booking id = %r", id)
@@ -271,8 +281,7 @@ def edit(id):
         logging.info("[Update] Booking Success: booking id = %r", id)
         return redirect(url_for('.view_confirm', id=booking['id'], action="Edit"))
 
-    # return render_template("booking/form_edit.html", action="Edit", booking=booking)
-    return render_template("booking/form_add.html", action="Edit", booking=booking)
+    return render_template("booking/form_add.html", action="Edit", booking=booking, unit=unit)
 
 
 @bookings_api.route('/add', methods=['GET', 'POST'])
@@ -333,18 +342,17 @@ def add():
     return render_template("booking/form_add.html", action="Add", units=units, booking=booking)
 
 
-def build_content_for_email(booking, unit_info):
-    booking_info = model.BookingInfo(booking.unit_name, booking.begin_on, booking.end_on, booking.guests)
-    booking_info.avg_price = unit_info.avg_price
-    booking_info.nights = unit_info.nights
-    booking_info.first_name = booking.first_name
-    booking_info.last_name = booking.last_name
-    booking_info.email = booking.email
-    # meta data
-    booking_info.resort_name = unit_info.resort.displayName
-    booking_info.unit_Name = unit_info.unit.displayName
-    booking_info.resort_email = unit_info.resort.email
-    return booking_info
+# def build_booking_info(booking):
+#     unit = model.Unit.query.get(booking.unit_id)
+#     unit_info = build_unit_info(unit.unitgroup_name, booking.begin_on, booking.end_on)
+#     booking_info = model.BookingInfo(booking.begin_on, booking.end_on, booking.guests, booking.id, unit_info)
+#     booking_info.avg_price = unit_info.avg_price
+#     booking_info.nights = unit_info.nights
+#     booking_info.first_name = booking.first_name
+#     booking_info.last_name = booking.last_name
+#     booking_info.email = booking.email
+#
+#     return booking_info
 
 
 @bookings_api.route('/<id>/delete')

@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h2><span class="label label-primary">{{ action }} Booking</span></h2>
+<!--<h2><span class="label label-primary">{{ action }} Booking</span></h2>-->
+<div class="page-header text-center ">
+    <h2>{{ action }} Booking</h2>
+</div>
+
 <div class="col-xs-12" style="height:30px;"></div>
 <hr/>
 
@@ -86,11 +90,13 @@
         <div class="form-group">
             <input type="hidden" name="id" id="id" value="{{booking.id}}" class="form-control"/>
             <input type="hidden" name="unit_id" id="unit_id" value="{{booking.unit_id}}" class="form-control"/>
-            <input type="hidden" name="booking_request_id" id="booking_request_id" value="{{booking.booking_request_id}}" class="form-control"/>
+            <!--<input type="hidden" name="booking_request_id" id="booking_request_id" value="{{booking.booking_request_id}}" class="form-control"/>-->
         </div>
 
+        <label for="unit_name">Unit</label>
         {% if action == 'Edit' %}
-            <input type="text" name="unit_name" id="unit_name" value="{{booking.unit_name}}" class="form-control" readonly="readonly"/>
+            <input type="hidden" name="unit_name" id="unit_name" value="{{booking.unit_name}}" class="form-control" readonly="readonly"/>
+            <input type="text" name="unit_display_name" id="unit_display_name" value="{{unit.display_name}}" class="form-control" disabled/>
         {% else %}
             <label for="unit_name">Select Unit</label>
             <select class="form-control" id="unit_name" name="unit_name">
@@ -100,7 +106,7 @@
                 {% endfor %}
 
             </select>
-            <span class="label label-default">Note</span> The selected Unit must be available to be able to proceed to next step.
+            <span class="label label-default">Note</span> Please make sure the selected Unit is available
         {% endif %}
     </div>
 
@@ -112,7 +118,7 @@
     <hr/>
 
     <!--<button type="submit" class="btn btn-success btn-lg">{{ action }} Booking</button>-->
-    <button type="submit" class="ocean-full">Yes, Proceed with {{ action }} Booking</button>
+    <button type="submit" class="ocean-full">Save Booking</button>
 </form>
 
 </div>

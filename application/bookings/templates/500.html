@@ -2,10 +2,13 @@
 
 {% block content %}
 
-<h2>Error</h2>
-<p>
+<div class="alert alert-danger fade in">
+    <!--<a href="#" class="close" data-dismiss="alert">&times;</a>-->
+    Oh Snap! Please refresh your browser. Most likely the problem will go away just by reloading the page.
+</div>
+<small>
     {{ msg }}
-</p>
+</small>
 {% endblock %}
 
 
