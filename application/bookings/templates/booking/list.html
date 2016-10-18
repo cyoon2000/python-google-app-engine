@@ -4,7 +4,8 @@
 
     <div class="col-xs-12" style="height:30px;"></div>
 
-    <table class="table table-hover">
+    <!--<table class="table table-hover">-->
+    <table id="bookings" class="table table-striped table-bordered">
         <thead>
         <tr>
             <th>Check In</th>
@@ -62,6 +63,19 @@
         </tbody>
     </table>
 </div>
+
+<script>
+    $(document).ready(function() {
+        $('#bookings').DataTable({
+            "order": [[ 1, "asc" ]],
+            "columnDefs": [
+              { orderable: false, targets: [8, 9, 10] },
+            ],
+        }
+        );
+    });
+
+</script>
 
 {% endblock %}
 
