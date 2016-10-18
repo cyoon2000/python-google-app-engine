@@ -297,9 +297,10 @@ def list_bookings_all(limit=100):
              .order_by(Booking.updated_on.desc())
              .limit(limit))
              # .offset(cursor))
-    bookings = builtin_list(map(from_sql, query.all()))
+    # bookings = builtin_list(map(from_sql, query.all()))
     # next_page = cursor + limit if len(bookings) == limit else None
     # return (bookings, next_page)
+    bookings = query.all()
     return bookings
 
 
