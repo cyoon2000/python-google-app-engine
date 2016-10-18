@@ -342,6 +342,7 @@ def get_bookings(resort_id, begin_date, end_date):
              .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
              .filter(Unitgroup.resort_id == resort_id)
              .filter(or_(Booking.begin_on.between(begin_date, end_date), func.ADDDATE(Booking.end_on, -1).between(begin_date, end_date)))
+             .add_entity(Unit)
              .order_by(Booking.begin_on, Booking.unit_id)
     )
     return query.all()

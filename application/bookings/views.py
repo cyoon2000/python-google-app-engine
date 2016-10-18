@@ -374,8 +374,9 @@ def list_calendar_default():
         resorts = model.get_resorts()
         return render_template("calendar/admin.html", resorts=resorts)
 
-    resort = model.Resort.query.get(session['resort_id'])
-    return list_calendar(resort.name, begin_date)
+    # resort = model.Resort.query.get(session['resort_id'])
+    resort_name = get_session_resort_name()
+    return list_calendar(resort_name, begin_date)
 
 
 @bookings_api.route("/calendar/<resort_name>")
@@ -408,9 +409,14 @@ def list_calendar(resort_name, begin_date):
         return render_template("500.html", msg="Page does not exist.")
 
     units = get_calendar(resort_name, begin_date, end_date)
-    bookings = model.get_bookings(resort.id, begin_date, end_date)
+    results = model.get_bookings(resort.id, begin_date, end_date)
 
-    return render_template("calendar/landing.html", units=units, bookings=bookings)
+    booking_info_list = []
+    for result in results:
+        booking_info = model.BookingInfo(result.Booking, result.Unit)
+        booking_info_list.append(booking_info)
+
+    return render_template("calendar/landing.html", units=units, booking_info_list=booking_info_list)
 
 
 @bookings_api.route('/calendar/edit', methods=['GET', 'POST'])
