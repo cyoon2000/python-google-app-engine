@@ -202,13 +202,18 @@ def list_inbox():
 def list_confirms():
     resort_id = get_session_resort_id()
     if is_admin():
-        confirms = model.list_booking_request_all(model.BOOKING_STATUS_CONFIRMED, 100)
+        results = model.list_booking_request_all(model.BOOKING_STATUS_CONFIRMED, 100)
     else:
-        confirms = model.list_booking_request(model.BOOKING_STATUS_CONFIRMED, resort_id, 100)
+        results = model.list_booking_request(model.BOOKING_STATUS_CONFIRMED, resort_id, 100)
+
+    request_info_list = []
+    for result in results:
+        request_info = model.BookingRequestInfo(result.BookingRequest, result.Unitgroup)
+        request_info_list.append(request_info)
 
     try: return render_template(
         "booking-request/list_confirms.html",
-        confirms=confirms)
+        confirms=request_info_list)
     except TemplateNotFound:
         abort(404)
 
@@ -218,13 +223,18 @@ def list_confirms():
 def list_declines():
     resort_id = get_session_resort_id()
     if is_admin():
-        declines = model.list_booking_request(model.BOOKING_STATUS_DECLINED, resort_id, 5)
+        results = model.list_booking_request(model.BOOKING_STATUS_DECLINED, resort_id, 5)
     else:
-        declines = model.list_booking_request(model.BOOKING_STATUS_DECLINED, resort_id, 100)
+        results = model.list_booking_request(model.BOOKING_STATUS_DECLINED, resort_id, 100)
+
+    request_info_list = []
+    for result in results:
+        request_info = model.BookingRequestInfo(result.BookingRequest, result.Unitgroup)
+        request_info_list.append(request_info)
 
     try: return render_template(
         "booking-request/list_declines.html",
-        declines=declines)
+        declines=request_info_list)
     except TemplateNotFound:
         abort(404)
 
