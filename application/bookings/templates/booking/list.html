@@ -13,6 +13,7 @@
             <th>Guests</th>
             <th>Unit Name</th>
             <th>Booked Rate <br/> per night(rounded)</th>
+            <th>Nights</th>
             <th>Name</th>
             <th>Email</th>
             <th>Booking Code</th>
@@ -30,6 +31,7 @@
             <td>{{ booking_info.booking.guests }}</td>
             <td>{{ booking_info.unit.display_name }}</td>
             <td>USD {{ booking_info.booking.booked_rate }}</td>
+            <td> {{ (booking_info.booking.end_on - booking_info.booking.begin_on).days }} </td>
             <td>{{ booking_info.booking.first_name}} {{ booking_info.booking.last_name }}</td>
             <td>{{ booking_info.booking.email}}</td>
             <td>{{ booking_info.booking.id }}</td>

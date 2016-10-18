@@ -14,7 +14,7 @@
             <th>Guests</th>
             <th>Unit (Type)</th>
             <th>Ave Rate<br/> per night</th>
-            <th>nights</th>
+            <th>Nights</th>
             <th>Name</th>
             <th>Date Requested</th>
             <th>Date Declined</th>
@@ -28,7 +28,7 @@
             <td>{{ request_info.booking_request.guests }}</td>
             <td>{{ request_info.unitgroup.display_name }}</td>
             <td>USD {{ request_info.booking_request.avg_price }}</td>
-            <td></td>
+            <td> {{ (request_info.booking_request.checkout - request_info.booking_request.checkin).days }} </td>
             <td>{{ request_info.booking_request.first_name }} {{ request_info.booking_request.last_name }}</td>
             <td>{{ request_info.booking_request.created_on.strftime('%a, %b %d %Y') }}</td>
             <td>{{ request_info.booking_request.updated_on.strftime('%a, %b %d %Y') }}</td>
