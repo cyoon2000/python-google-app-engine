@@ -18,19 +18,19 @@
         </tr>
         </thead>
         <tbody>
-        {% for booking_request in requests %}
+        {% for request_info in requests %}
         <tr>
-            <td>{{booking_request.checkin}}</td>
-            <td>{{booking_request.checkout}}</td>
-            <td>{{booking_request.guests}}</td>
-            <td>{{booking_request.unitgroup_name}}</td>
-            <td>USD {{booking_request.avg_price}}</td>
+            <td>{{ request_info.booking_request.checkin.strftime('%a, %b %d %Y') }}</td>
+            <td>{{ request_info.booking_request.checkout.strftime('%a, %b %d %Y') }}</td>
+            <td>{{ request_info.booking_request.guests }}</td>
+            <td>{{ request_info.unitgroup.display_name }}</td>
+            <td>USD {{ request_info.booking_request.avg_price }}</td>
             <td></td>
-            <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
-            <td>{{booking_request.updated_on}}</td>
-            <td><a href="/bookings/add?bookingRequestId={{booking_request.id}}" target="_blank" class="btn btn-success btn-sm">Confirm</button></a>
+            <td>{{ request_info.booking_request.first_name }} {{ request_info.booking_request.last_name }}</td>
+            <td>{{ request_info.booking_request.updated_on.strftime('%a, %b %d %Y') }}</td>
+            <td><a href="/bookings/add?bookingRequestId={{ request_info.booking_request.id }}" target="_blank" class="btn btn-success btn-sm">Confirm</button></a>
             <!--<td><button type="button" class="btn btn-success btn-sm" data-toggle="modal" data-target="#confirmModal" data-id="{{booking_request.id}}">Confirm</button></td>-->
-            <td><button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#declineModal" data-id="{{booking_request.id}}">Decline</button></td>
+            <td><button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#declineModal" data-id="{{ request_info.booking_request.id }}">Decline</button></td>
         </tr>
         {% endfor %}
         </tbody>
@@ -91,45 +91,7 @@
             "order": [[ 7, "desc" ]],
             "columnDefs": [
               { orderable: false, targets: [8, 9] },
-              {
-                "targets": 0,
-                "data": "begin_date",
-                "render": function ( data ) {
-                    var date = new Date(data);
-                    // var month = date.getMonth() + 1;
-                    // return (month.length > 1 ? month : "0" + month) + "/" + date.getDate() + "/" + date.getFullYear();
-                    locale = "en-us",
-                    month = date.toLocaleString(locale, { month: "short" });
-                    day = date.toLocaleString(locale, { weekday: "short" });
-                    return day + " " + month + " " + date.getDate() + ", " + date.getFullYear();
-                }
-              },
-              {
-                "targets": 1,
-                "data": "end_date",
-                "render": function ( data ) {
-                    var date = new Date(data);
-                    // var month = date.getMonth() + 1;
-                    // return (month.length > 1 ? month : "0" + month) + "/" + date.getDate() + "/" + date.getFullYear();
-                    locale = "en-us",
-                    month = date.toLocaleString(locale, { month: "short" });
-                    day = date.toLocaleString(locale, { weekday: "short" });
-                    return day + " " + month + " " + date.getDate() + ", " + date.getFullYear();
-                }
-              },
-              {
-                "targets": 7,
-                "data": "updated_on",
-                "render": function ( data ) {
-                    var date = new Date(data);
-                    // var month = date.getMonth() + 1;
-                    // return (month.length > 1 ? month : "0" + month) + "/" + date.getDate() + "/" + date.getFullYear();
-                    locale = "en-us",
-                    month = date.toLocaleString(locale, { month: "short" });
-                    day = date.toLocaleString(locale, { weekday: "short" });
-                    return day + " " + month + " " + date.getDate() + ", " + date.getFullYear();
-                }
-              }
+
             ],
         }
         );

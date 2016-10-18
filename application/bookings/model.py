@@ -250,6 +250,13 @@ class BookingRequest(Base):
 
 
 # wrapper objects for query results
+class BookingRequestInfo():
+    def __init__(self, booking_request, unitgroup):
+        self.booking_request = booking_request
+        self.unitgroup = unitgroup
+
+
+# wrapper objects for query results
 class BookingInfo():
     def __init__(self, booking, unit):
         self.booking = booking
@@ -268,13 +275,12 @@ def list_booking_request_all(status, limit=100):
     # cursor = int(cursor) if cursor else 0
     query = (BookingRequest.query
              .filter(BookingRequest.status == status)
+             .add_entity(Unitgroup)
              .order_by(BookingRequest.updated_on.desc())
              .limit(limit))
              # .offset(cursor))
-    requests = builtin_list(map(from_sql, query.all()))
-    # next_page = cursor + limit if len(bookings) == limit else None
-    # return (bookings, next_page)
-    return requests
+    # requests = builtin_list(map(from_sql, query.all()))
+    return query.all()
 
 
 def list_booking_request(status, resort_id, limit=100):
@@ -282,10 +288,11 @@ def list_booking_request(status, resort_id, limit=100):
              .join(Unitgroup, Unitgroup.id == BookingRequest.unitgroup_id)
              .filter(Unitgroup.resort_id == resort_id)
              .filter(BookingRequest.status == status)
+             .add_entity(Unitgroup)
              .order_by(BookingRequest.updated_on.desc())
              .limit(limit))
-    bookings = builtin_list(map(from_sql, query.all()))
-    return bookings
+    # bookings = builtin_list(map(from_sql, query.all()))
+    return query.all()
 
 
 # def list_bookings_all(limit=100, cursor=None):

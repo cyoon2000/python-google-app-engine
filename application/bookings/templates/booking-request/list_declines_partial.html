@@ -21,17 +21,17 @@
         </tr>
         </thead>
         <tbody>
-        {% for booking_request in declines %}
+        {% for request_info in declines %}
         <tr>
-            <td>{{booking_request.checkin}}</td>
-            <td>{{booking_request.checkout}}</td>
-            <td>{{booking_request.guests}}</td>
-            <td>{{booking_request.unitgroup_name}}</td>
-            <td>USD {{booking_request.avg_price}}</td>
+            <td>{{ request_info.booking_request.checkin.strftime('%a, %b %d %Y') }}</td>
+            <td>{{ request_info.booking_request.checkout.strftime('%a, %b %d %Y') }}</td>
+            <td>{{ request_info.booking_request.guests }}</td>
+            <td>{{ request_info.unitgroup.display_name }}</td>
+            <td>USD {{ request_info.booking_request.avg_price }}</td>
             <td></td>
-            <td>{{booking_request.first_name}} {{booking_request.last_name}}</td>
-            <td>{{booking_request.created_on.strftime('%Y-%m-%d') if booking_request.created_on}}</td>
-            <td>{{booking_request.updated_on.strftime('%Y-%m-%d') if booking_request.updated_on}}</td>
+            <td>{{ request_info.booking_request.first_name }} {{ request_info.booking_request.last_name }}</td>
+            <td>{{ request_info.booking_request.created_on.strftime('%a, %b %d %Y') }}</td>
+            <td>{{ request_info.booking_request.updated_on.strftime('%a, %b %d %Y') }}</td>
         </tr>
         {% endfor %}
         </tbody>

@@ -164,19 +164,34 @@ def list_inbox():
     resort_id = get_session_resort_id()
 
     if is_admin():
-        requests = model.list_booking_request_all(model.BOOKING_STATUS_REQUESTED)
-        confirms = model.list_booking_request_all(model.BOOKING_STATUS_CONFIRMED, 5)
-        declines = model.list_booking_request_all(model.BOOKING_STATUS_DECLINED, 5)
+        results = model.list_booking_request_all(model.BOOKING_STATUS_REQUESTED)
+        results_confirms = model.list_booking_request_all(model.BOOKING_STATUS_CONFIRMED, 5)
+        results_declines = model.list_booking_request_all(model.BOOKING_STATUS_DECLINED, 5)
     else:
-        requests = model.list_booking_request(model.BOOKING_STATUS_REQUESTED, resort_id)
-        confirms = model.list_booking_request(model.BOOKING_STATUS_CONFIRMED, resort_id, 5)
-        declines = model.list_booking_request(model.BOOKING_STATUS_DECLINED, resort_id, 5)
+        results = model.list_booking_request(model.BOOKING_STATUS_REQUESTED, resort_id)
+        results_confirms = model.list_booking_request(model.BOOKING_STATUS_CONFIRMED, resort_id, 5)
+        results_declines = model.list_booking_request(model.BOOKING_STATUS_DECLINED, resort_id, 5)
+
+    request_info_list = []
+    for result in results:
+        request_info = model.BookingRequestInfo(result.BookingRequest, result.Unitgroup)
+        request_info_list.append(request_info)
+
+    confirm_info_list = []
+    for result in results_confirms:
+        request_info = model.BookingRequestInfo(result.BookingRequest, result.Unitgroup)
+        confirm_info_list.append(request_info)
+
+    decline_info_list = []
+    for result in results_declines:
+        request_info = model.BookingRequestInfo(result.BookingRequest, result.Unitgroup)
+        decline_info_list.append(request_info)
 
     try: return render_template(
         "booking-request/landing.html",
-        requests=requests,
-        confirms=confirms,
-        declines=declines
+        requests=request_info_list,
+        confirms=confirm_info_list,
+        declines=decline_info_list
     )
     except TemplateNotFound:
         abort(404)
@@ -298,7 +313,7 @@ def add():
 
     if booking_request_id:
         booking = build_booking_from_booking_request(booking_request_id)
-        booking.booking_request_id = booking_request_id
+        # booking.booking_request_id = booking_request_id
 
         # for dropdown: re-populate units from given unitgroup
         booking_request = get_model().BookingRequest.query.get(booking_request_id)
@@ -326,20 +341,20 @@ def add():
         booking.notes = data['notes']
 
         # set booking_request_id only if exists
-        if data['booking_request_id']:
-            booking.booking_request_id = data['booking_request_id']
+        # if data['booking_request_id']:
+        #     booking.booking_request_id = data['booking_request_id']
 
         booking = model.create_booking(booking)
         booking = model.Booking.query.get(booking['id'])
 
         # send email confirmation if a BookingRequest is associated
-        if booking.booking_request_id:
-            confirm(booking.booking_request_id, unit_info)
+        if data['booking_request_id']:
+            confirm(data['booking_request_id'], unit_info)
 
         # return redirect(url_for('.view_confirm', id=booking['id'], action="Add"))
         return redirect(url_for('.view_confirm', id=booking.id, action="Add"))
 
-    return render_template("booking/form_add.html", action="Add", units=units, booking=booking)
+    return render_template("booking/form_add.html", action="Add", units=units, booking=booking, booking_request_id=booking_request_id )
 
 
 # def build_booking_info(booking):
@@ -620,7 +635,6 @@ def book(groupname):
 # No comment will be added for /bo email
 # @bookings_api.route('/confirm', methods=['POST'])
 def confirm(booking_request_id, unit_info):
-    logging.info('[CONFIRM Booking Request] Begin: booking_request_id = %r', booking_request_id)
 
     # booking_request = build_booking_request(id)
     # logging.info(booking_request)
@@ -629,11 +643,10 @@ def confirm(booking_request_id, unit_info):
         booking_request.status = "CONFIRMED"
         booking_request = model.save_entity(booking_request)
         booking_request.unit_info = unit_info
+        logging.info("[CONFIRM Booking Request] : id = %d, unitgroup = %s, email = %s", booking_request.id, booking_request.unitgroup_name, booking_request.email)
 
-    logging.info("[CONFIRM Booking Request] : id = %d, unitgroup = %s, email = %s", booking_request.id, booking_request.unitgroup_name, booking_request.email)
-
-    return send_mail(booking_request, RESPONSE_CONFIRM, "")
-
+        return send_mail(booking_request, RESPONSE_CONFIRM, "")
+    pass
 
 # Comment will be added for decline email
 @bookings_api.route('/decline', methods=['POST'])
