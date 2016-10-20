@@ -141,6 +141,7 @@
             data: $("#myForm").serialize(),
             success: function(data){
                 alert("The decline email will be sent shortly.")
+                window.location='/bookings/inbox'
             },
             error: function(XMLHttpRequest, textStatus, errorThrown) {
                 alert(errorThrown);
