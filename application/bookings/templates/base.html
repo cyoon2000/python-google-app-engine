@@ -62,11 +62,8 @@
     <li><a href="/bookings/calendar">Calendar</a></li>
 
     <div class="pull-right">
-        <!--{% if nick_name %}-->
-            Welcome! <li><a href="/bookings/logout">Sign Out</a></li>
-        <!--{% else %}-->
-            <li><a href="/bookings/logout">Sign Out</a></li>
-        <!--{% endif %}-->
+        <li>Welcome {{nickname}}!  <a href="/bookings/logout">Sign Out</a></li>
+            <!--<li><a href="/bookings/logout">Sign Out</a></li>-->
     </div>
     <li class="icon">
         <a href="javascript:void(0);" onclick="myFunction()">&#9776;</a>

@@ -41,7 +41,10 @@
 
 <script>
     $(document).ready(function() {
-        $('#confirms').DataTable();
+        $('#confirms').DataTable( {
+            "order": [[ 8, "desc" ]],
+        }
+        );
     });
 
 </script>

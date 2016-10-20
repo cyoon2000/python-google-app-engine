@@ -141,6 +141,12 @@ def get_session_resort_name():
     return None
 
 
+def get_session_nickname():
+    if session.get('nickname'):
+        return session['nickname']
+    return None
+
+
 def get_session_resort_id():
     if session.get('resort_id'):
         return session['resort_id']
@@ -187,11 +193,14 @@ def list_inbox():
         request_info = model.BookingRequestInfo(result.BookingRequest, result.Unitgroup)
         decline_info_list.append(request_info)
 
+    # nickname = get_session_nickname()
+
     try: return render_template(
         "booking-request/landing.html",
         requests=request_info_list,
         confirms=confirm_info_list,
-        declines=decline_info_list
+        declines=decline_info_list,
+        nickname=get_session_nickname()
     )
     except TemplateNotFound:
         abort(404)
@@ -213,7 +222,8 @@ def list_confirms():
 
     try: return render_template(
         "booking-request/list_confirms.html",
-        confirms=request_info_list)
+        confirms=request_info_list,
+        nickname=get_session_nickname())
     except TemplateNotFound:
         abort(404)
 
@@ -234,7 +244,8 @@ def list_declines():
 
     try: return render_template(
         "booking-request/list_declines.html",
-        declines=request_info_list)
+        declines=request_info_list,
+        nickname=get_session_nickname())
     except TemplateNotFound:
         abort(404)
 
@@ -258,7 +269,7 @@ def list_bookings():
 
     try: return render_template(
         "booking/landing.html",
-        booking_info_list=booking_info_list)
+        booking_info_list=booking_info_list, nickname=get_session_nickname())
     except TemplateNotFound:
         abort(404)
 
@@ -397,7 +408,7 @@ def list_calendar_default():
 
     if is_admin():
         resorts = model.get_resorts()
-        return render_template("calendar/admin.html", resorts=resorts)
+        return render_template("calendar/admin.html", resorts=resorts, nickname=get_session_nickname())
 
     # resort = model.Resort.query.get(session['resort_id'])
     resort_name = get_session_resort_name()
@@ -441,7 +452,7 @@ def list_calendar(resort_name, begin_date):
         booking_info = model.BookingInfo(result.Booking, result.Unit)
         booking_info_list.append(booking_info)
 
-    return render_template("calendar/landing.html", units=units, booking_info_list=booking_info_list)
+    return render_template("calendar/landing.html", units=units, booking_info_list=booking_info_list, nickname=get_session_nickname())
 
 
 @bookings_api.route('/calendar/edit', methods=['GET', 'POST'])
@@ -650,7 +661,7 @@ def confirm(booking_request_id, unit_info):
     # logging.info(booking_request)
     booking_request = model.BookingRequest.query.get(booking_request_id)
     if booking_request:
-        booking_request.status = "CONFIRMED"
+        booking_request.status = model.BOOKING_STATUS_CONFIRMED
         booking_request = model.save_entity(booking_request)
         booking_request.unit_info = unit_info
         logging.info("[CONFIRM Booking Request] : id = %d, unitgroup = %s, email = %s", booking_request.id, booking_request.unitgroup_name, booking_request.email)
@@ -666,12 +677,17 @@ def decline():
         return 'Sorry, Invalid Request. bookingRequestId is required', 400
     comment = request.form['comment']
 
-    booking_request = build_booking_request(id)
-    booking_request.status = "DECLINED"
+    booking_request = get_model().BookingRequest.query.get(id)
+    booking_request.status = model.BOOKING_STATUS_DECLINED
     booking_request = model.save_entity(booking_request)
 
     logging.info("sending DECLINE email : id = %d, name = %s", booking_request.id, booking_request.unitgroup_name)
+    unit_info = build_unit_info_from_booking_request(booking_request)
+
+    booking_request.unit_info = unit_info
     return send_mail(booking_request, RESPONSE_DECLINE, comment)
+
+    #return redirect(url_for('.list_inbox'))
 
 
 @bookings_api.route('/mail/<groupname>', methods=['POST'])
@@ -707,10 +723,11 @@ def test_mail(groupname):
 # build booking instance from BookingRequest. Unit is not determined yet at this time
 def build_booking_from_booking_request(booking_request_id):
 
-    booking_request = build_booking_request(booking_request_id)
+    booking_request = get_model().BookingRequest.query.get(booking_request_id)
+    unit_info = build_unit_info_from_booking_request(booking_request)
 
     # build Booking instance from BookingRequest
-    booking = model.Booking(None, None, booking_request.unit_info)
+    booking = model.Booking(None, None, unit_info)
     booking.email = booking_request.email
     booking.first_name = booking_request.first_name
     booking.last_name = booking_request.last_name
@@ -726,10 +743,11 @@ def get_first_available_unit(unitgroup_id, checkin, checkout):
     return None
 
 
-def build_booking_request(id):
-    booking_request = get_model().BookingRequest.query.get(id)
-    booking_request.unit_info = build_unit_info(booking_request.unitgroup_name, booking_request.checkin, booking_request.checkout)
-    return booking_request
+def build_unit_info_from_booking_request(booking_request):
+    # booking_request = get_model().BookingRequest.query.get(id)
+    # booking_request.unit_info = build_unit_info(booking_request.unitgroup_name, booking_request.checkin, booking_request.checkout)
+    # return booking_request
+    return build_unit_info(booking_request.unitgroup_name, booking_request.checkin, booking_request.checkout)
 
 
 def build_unit_info(unitgroup_name, checkin, checkout):
@@ -749,6 +767,7 @@ def build_unit_info(unitgroup_name, checkin, checkout):
 #     logging.info(unit_info)
 
     return unit_info
+
 
 def send_mail(booking_request, response_type, comment):
     # TODO get recipient from content API (email for resort)
