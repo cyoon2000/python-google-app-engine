@@ -1,18 +1,13 @@
 name,displayName,seoName,email,wifi,parking,communalKitchen,privateBeach,freeBreakfast,noteOnFood,swimPool,lessonKite,rentKite,lessonWindsurf,rentWindsurf,mtnbike,rentPerformanceMtnBike,fishingTrip,scubaDivingTrip,yoga,massage,noteOnActivity,checkIn,checkOut,cc,extraPersonCharge,pets,minimumStay,cancelPolicy,about
-bj,Baja Joe's,baja-joe,,Y,Y,Y,Y,,"Coffee Bar, Bar on Property",,Y,Y,,Y,Y,,,,,,,,,Y,,N,,,
-kirk,Captain Kirk's,captain-kirks,,Y,Y,Y,Y,Y,"Free Coffee, Lunch/Dinner available upon Request",,Y,Y,,Y,Y,Y,Y,Y,Y,Y,"SUP Rental, Free Canoe Rental",Flexible,Flexible,Y,USD 30 per person per night,,,All reservation payments are non-refundable unless we can re-rent the same property for the same period of time. Reservations that are re-rented are subject to a $200.00 fee. Reservations may be re-scheduled (Same property and number of nights) up to 60 days prior to scheduled arrival date subject to a $100.00 re-scheduling fee.,
-dw,Downwinder Inn,downwinder-inn,,Y,Y,Y,,,,,,,,,,,Y,Y,,,,,,,,,,,
+bj,Baja Joe's,baja-joe,bajajoeshotel@gmail.com,Y,Y,Y,Y,,"Coffee Bar, Bar on Property",,Y,Y,,Y,Y,,,,,,,,,Y,,N,,,
+kirk,Captain Kirk's,captain-kirks,info@captainkirks.com,Y,Y,Y,Y,Y,"Free Coffee, Lunch/Dinner available upon Request",,Y,Y,,Y,Y,Y,Y,Y,Y,Y,"SUP Rental, Free Kayak Rental",Flexible,Flexible,Y,USD 30 per person per night,,,All reservation payments are non-refundable unless we can re-rent the same property for the same period of time. Reservations that are re-rented are subject to a $200.00 fee. Reservations may be re-scheduled (Same property and number of nights) up to 60 days prior to scheduled arrival date subject to a $100.00 re-scheduling fee.,
+dw,Downwinder Inn,downwinder-inn,charbrite@yahoo.com,Y,Y,Y,,,,,,,,,,,Y,Y,,,,,,,,,,,
 kurt,Kurt n Marina,kurt-n-marina,kurtnmarina@gmail.com,Y,Y,Y,Y,,"Restaurant on Property, BBQ Grill",,,,,,,,,,,,Kite School Nearby,After 3PM,Before 11AM,Y,USD 20 per person per night,,"7 nights for Nov, Dec, Jan",,"Hotel in front of the beach, nice rooms, communnity kitchen & restaurant. Good place for kitesurfing & windsurfing. Full service restaurant - 6 days a week, Monday thru Saturday. Breakfast & lunch, 8:00 am to 2:00 pm"
 plp,Palapas Ventana,palapas-ventana,contact@palapasventana.com,Y,Y,,Y,,Restaurant on Property,Y,Y,,Y,,,,Y,Y,,Y,SUP Rental,3PM to 9PM,Before 12PM,Y,USD 30 per person per night,,1 night,Palapas Ventana requires a 50% deposit of the total costs of the stay to hold the reservation,"Unique resort in La Ventana Bay in the Sea of Cortez, Baja Mexico"
-pelican,Pelican Reef 4 Bdrm Villa,pelican-reef,,Y,Y,Y,Y,,"Catering Available, BBQ Grill",,Y,,,,Y,Y,Y,Y,Y,Y,"SUP Rental, Free Canoe Rental",Flexible,Flexible,,,,,,"Welcome to the world of Sail-In/Sail-Out. Pelican Reef is a full service 4 bedroom villa located in the kite boarding capital of La Ventana, Baja, Mexico. Come experience the newest amenity to kite boarding: convenience and luxury! Enjoy the pleasure of:
-Private kite launch & full beach support 
-Private après bar & patio on the beach
-4 Bedrooms with ensuite bathrooms
-Large common areas
-All-inclusive options
-Maid service
-Your own personal villa host."
-vp,Villa Paraiso,villa-paraiso,,Y,Y,Y,Y,,,Y,,,,,,,,,,,,3PM to10PM,1AM-2PM,Y,USD 30 per person per night,N,,,
+pelican,Pelican Reef 4 Bdrm Villa,pelican-reef,pelicanreefventana@gmail.com,Y,Y,,Y,Y,"Full Kitchen, Catering Available, BBQ Grill",,Y,,,,,Y,Y,Y,Y,Y,"SUP Rental, Free Kayak Rental",Flexible,Flexible,,,,,,"Pelican Reef is a sail-in/sail-out beachfront villa located on the crystal blue Sea of Cortez in La Ventana, a wind sport heaven. 
+
+Enjoy the experience of a private 4-bedroom villa with ensuite bathrooms, large common dining and living areas, ocean front bar, sun patio and gear storage as well as a private launch beach and spectacular views. Breakfast is included. Equipment rental and lessons are available on location for both Windsurfing and Kite boarding."
+vp,Villa Paraiso,villa-paraiso,villaparaisobcs@hotmail.com,Y,Y,Y,Y,,,Y,,,,,,,,,,,,3PM to10PM,1AM-2PM,Y,USD 30 per person per night,N,,,
 vbay,Ventana Bay Resort,ventana-bay,mrbillbaja@aol.com,Y,Y,,Y,,"Restaurant on Property, Breakfast/Lunch/Dinner Available",,Y,Y,,,,Y,Y,,,Y,SUP Rental,After 2PM,8AM to11AM,Y,On Request Only,N,"7 nights for Christmas (20 dec – 2 jan) and Thanksgiving (21. – 27. Nov), 2 nights otherwise","100 percent of the first night may be charged anytime after booking.
 If cancelled or modified up to 20 days before date of arrival, 100 percent of the first night will be charged.
 If cancelled or modified later or in case of no-show, 100 percent of the total price of the reservation will be charged.","The Ventana Bay Resort is a beautiful and spacious beachfront resort South East of La Paz. Come experience the magic of Ventana Bay Resort in Baja, Mexico!
@@ -26,4 +21,4 @@ Ventana Bay Resort offers you a choice of accommodations, from beachfront rooms 
 Our Cisco’s Restaurant with its fully licensed bar will keep you refueled in this beautiful desert paradise on the Sea of Cortez.
 
 Escape - Refresh - Rejuvenate"
-vwind,Ventana Windsports,ventana-windsports,,Y,Y,,Y,,"Restaurant on Property, Breakfast/Lunch pkg, ",,Y,Y,Y,Y,Y,Y,Y,Y,,Y,SUP Rental Included in room pkg,,,Y,,N,,,
+vwind,Ventana Windsports,ventana-windsports,Info@VentanaWindsports.com,Y,Y,,Y,,"Restaurant on Property, Breakfast/Lunch pkg, ",,Y,Y,Y,Y,Y,Y,Y,Y,,Y,SUP Rental Included in room pkg,,,Y,,N,,,
