@@ -662,7 +662,14 @@ def search_by_unit_group(unitgroup_name, begin_date, end_date):
 
 
 def ping_mysql():
-    db.session.execute('select 1')
+    try:
+        print "pinging server"
+        db.session.execute('select 1')
+    except Exception as e:
+        db.session.rollback()
+        print "raising disconnect error"
+        logging.error(e)
+
 
 # IMPORTANT :
 # RUN ONLY ONCE - which should happen in local DEV, not in PROD server. (invoked from __init___)

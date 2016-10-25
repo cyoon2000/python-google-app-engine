@@ -46,19 +46,9 @@ def login_required(f):
     return decorated_function
 
 
-# @bookings_api.before_request
-# def before_request():
-    # ping mysql connection
-    # try: model.ping_mysql()
-    # except Exception as e:
-    #     logging.error(e)
-    #     model.ping_mysql()
-
-    # TODO - save resort_id in session upon login
-    # session['resort_name'] = 'kirk'
-    # resort = model.Resort.query.filter_by(name=session['resort_name']).one()
-    # resort = model.get_resort_by_name(session['resort_name'])
-    # session['resort_id'] = resort.id
+@bookings_api.before_request
+def before_request():
+    model.ping_mysql()
 
 
 @bookings_api.after_request
