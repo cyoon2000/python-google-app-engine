@@ -89,6 +89,7 @@ class ResortInfo(object):
         return {
             'name': resort.name,
             'displayName': resort.displayName,
+            'email': resort.email,
             'profilePhoto': serialize_profile_photo(self.profile_photo),
             'beachFront': resort.privateBeach,
             'wifi': resort.wifi,

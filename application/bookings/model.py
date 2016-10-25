@@ -495,6 +495,14 @@ def get_resort_by_name(resort_name):
     return Resort.query.filter_by(name=resort_name).one()
 
 
+def get_resort_by_unitgroup_id(unitgroup_id):
+    query = (Resort.query
+                .join(Unitgroup, Unitgroup.resort_id == Resort.id)
+                .filter(Unitgroup.id == unitgroup_id)
+            )
+    return query.first()
+
+
 def get_unitgroups(resort_id):
     return Unitgroup.query.filter_by(resort_id=resort_id).all()
 
