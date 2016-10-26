@@ -269,6 +269,8 @@ class EmailData(object):
         self.subject = subject
         self.status = status
         self.comment = comment
+        # this field is set only for inquiry email
+        self.resort_display_name = None
 
 
 def list_booking_request_all(status, limit=100):
