@@ -607,7 +607,7 @@ def inquiry(resortname):
     customer_email = request.form['email']
     comment = request.form['comment']
 
-    return send_inquiry_mail(resortname, None, "")
+    return send_inquiry_mail(resortname, customer_email, comment)
 
 
 @bookings_api.route('/book/<groupname>', methods=['POST'])
