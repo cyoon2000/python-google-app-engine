@@ -622,16 +622,12 @@ def book(groupname):
     email = request.form['email']
     firstname = request.form['firstname']
     lastname = request.form['lastname']
-    stripe_token = request.form['stripe_token']
-    print "*****"
-    print stripe_token
+    comment = request.form['comment']
 
-    customer_id = create_stripe_customer(stripe_token, email)
-
-    # TODO - save customer_id to database
-
-    # TODO - charge later
-    charge_customer(customer_id, 150)
+    # TODO - enable Stripe later
+    # stripe_token = request.form['stripe_token']
+    # customer_id = create_stripe_customer(stripe_token, email)
+    # charge_customer(customer_id, 150)
 
     checkin = utils.convert_string_to_date(checkin)
     checkout = utils.convert_string_to_date(checkout)
@@ -651,7 +647,7 @@ def book(groupname):
         booking_request = model.save_entity(booking_request)
         logging.info(get_model().BookingRequest.serialize_booking_request(booking_request))
 
-    return send_booking_mail(booking_request, None, "")
+    return send_booking_mail(booking_request, None, comment)
     #return jsonify(results=get_model().BookingRequest.serialize_booking_request(booking_request))
 
 
