@@ -38,6 +38,20 @@ RESORTS = ['admin', 'bajajoe', 'captainkirk', 'downwinder', 'kurtnmarina', 'pala
 bookings_api = Blueprint('bookings', __name__, template_folder='templates')
 
 
+def ssl_required(f):
+    @wraps(f)
+    def decorated_view(*args, **kwargs):
+        if current_app.config.get("SSL"):
+            if request.is_secure:
+                return f(*args, **kwargs)
+            else:
+                return redirect(request.url.replace("http://", "https://"))
+
+        return f(*args, **kwargs)
+
+    return decorated_view
+
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -528,6 +542,7 @@ def get_calendar(resort_name, begin_date, end_date):
 
 
 @bookings_api.route('/search')
+@ssl_required
 def search():
     begin_date = utils.get_begin_date(request)
     end_date = utils.get_end_date(request)
@@ -551,6 +566,7 @@ def search():
 
 # /search/resort/bj?from=2016-07-20&to=2016-07-22&guests=1
 @bookings_api.route('/search/resort/<resortname>')
+@ssl_required
 def search_resort(resortname):
     begin_date = utils.get_begin_date(request)
     end_date = utils.get_end_date(request)
@@ -578,6 +594,7 @@ def search_resort(resortname):
 
 
 @bookings_api.route('/search/<resortname>/<typename>')
+@ssl_required
 def search_unit(resortname, typename):
 
     # begin_date = request.args.get('from')
@@ -599,6 +616,7 @@ def search_unit(resortname, typename):
 
 
 @bookings_api.route('/inquiry/<resortname>', methods=['POST'])
+@ssl_required
 def inquiry(resortname):
 
     if not request.form:
@@ -611,6 +629,7 @@ def inquiry(resortname):
 
 
 @bookings_api.route('/book/<groupname>', methods=['POST'])
+@ssl_required
 def book(groupname):
 
     if not request.form:
