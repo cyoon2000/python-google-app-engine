@@ -41,7 +41,7 @@ class ResortInfo(object):
 
     # deactivate some resorts for now
     def check_active(self):
-        if self.resort.name == 'vp' or self.resort.name == 'vwind':
+        if self.resort.name == 'vwind':
             self.active = False
 
     def build_profile_photo(self):
