@@ -530,6 +530,7 @@ def get_units_by_resort(resort_id):
                 .join(Unitgroup, Unitgroup.id == Unit.unitgroup_id)
                 .filter(Unitgroup.resort_id == resort_id)
                 .filter(Unit.active == 1)
+                .order_by(Unit.unitgroup_id)
                 .order_by(Unit.id)
             )
     return query.all()
