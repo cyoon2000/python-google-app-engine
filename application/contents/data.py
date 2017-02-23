@@ -71,7 +71,7 @@ class PhotoRecord(namedtuple('PhotoRecord_', fields)):
 # parse instruction for Price CSV file
 #typeName	resortName	peakBeginDate1	peakEndDate1	peakPrice1	peakBeginDate2	peakEndDate2	peakPrice2
 # highBeginDate	highEndDate	highPrice	lowBeginDate	lowEndDate	lowPrice	promoBeginDate	promoEndDate	promoPrice
-fields = ("typeName", "resortName", "peakBeginDate1", "peakEndDate1", "peakPrice1", "peakBeginDate2", "peakEndDate2", "peakPrice2", "highBeginDate", "highEndDate", "highPrice", "lowBeginDate", "lowEndDate", "lowPrice", "promoBeginDate", "promoEndDate", "promoPrice")
+fields = ("typeName", "resortName", "peakBeginDate1", "peakEndDate1", "peakPrice1", "peakBeginDate2", "peakEndDate2", "peakPrice2", "highBeginDate", "highEndDate", "highPrice", "lowBeginDate", "lowEndDate", "lowPrice", "promoBeginDate", "promoEndDate", "promoPrice", "highBeginDate2", "highEndDate2", "highPrice2")
 class PriceRecord(namedtuple('PriceRecord_', fields)):
 
     @classmethod

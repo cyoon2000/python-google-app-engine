@@ -395,6 +395,8 @@ def find_price_for_date(unitname, date):
         return convert_price_string_to_number(price_data.peakPrice2)
     elif price_data.highBeginDate and is_in_range(date, price_data.highBeginDate, price_data.highEndDate):
         return convert_price_string_to_number(price_data.highPrice)
+    elif price_data.highBeginDate2 and is_in_range(date, price_data.highBeginDate2, price_data.highEndDate2):
+        return convert_price_string_to_number(price_data.highPrice2)
     else:
         return convert_price_string_to_number(price_data.lowPrice)
 
