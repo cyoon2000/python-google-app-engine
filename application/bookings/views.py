@@ -30,6 +30,7 @@ EMAIL_SUBJECT_INQUIRY = "Your Booking Inquiry has been received"
 EMAIL_SUBJECT_REQUEST = "Your Booking Request has been received"
 EMAIL_SUBJECT_CONFIRM = "Confirmation for Your Booking Request"
 EMAIL_SUBJECT_DECLINE = "Response for Your Booking Request"
+EMAIL_SUBJECT_CONTACT = "Thanks for contacting GoKiteBaja."
 RESPONSE_CONFIRM = "confirm"
 RESPONSE_DECLINE = "decline"
 
@@ -628,6 +629,19 @@ def inquiry(resortname):
     return send_inquiry_mail(resortname, customer_email, comment)
 
 
+@bookings_api.route('/contact/<category>', methods=['POST'])
+@ssl_required
+def contact_us(category):
+
+    if not request.form:
+        return 'Empty Data', 400
+
+    customer_email = request.form['email']
+    comment = request.form['comment']
+
+    return send_mail_contact_us(category, customer_email, comment)
+
+
 @bookings_api.route('/book/<groupname>', methods=['POST'])
 @ssl_required
 def book(groupname):
@@ -739,7 +753,7 @@ def test_mail(groupname):
 
 
 @bookings_api.route('/test/inquiry/<resortname>', methods=['POST'])
-def test_inquiry_mail(resortname):
+def test_mail_inquiry(resortname):
     input = json.loads(request.data)
     if not input:
         return 'Sorry, Invalid Request', 400
@@ -748,6 +762,18 @@ def test_inquiry_mail(resortname):
     comment = input['comment']
 
     return send_inquiry_mail(resortname, customer_email, comment)
+
+
+@bookings_api.route('/test/contact/<category>', methods=['POST'])
+def test_mail_contact(category):
+    input = json.loads(request.data)
+    if not input:
+        return 'Sorry, Invalid Request', 400
+
+    customer_email = input['customer_email']
+    comment = input['comment']
+
+    return send_mail_contact_us(category, customer_email, comment)
 
 
 # build booking instance from BookingRequest. Unit is not determined yet at this time
@@ -841,11 +867,20 @@ def send_mail(resort_email, booking_request, response_type, comment):
 def send_inquiry_mail(resort_name, customer_email, comment):
     resort = get_content_model().find_resort_by_name(resort_name)
 
-    subject = "Thanks for your inquiry!"
+    subject = "Thanks for your inquiry"
     status = "Your booking inquiry has been sent to the resort at " + resort.email
     email_data = get_model().EmailData(None, subject, status, comment)
     email_data.resort_display_name = resort.displayName
     email_content = send_complex_message(EMAIL_TEMPLATE_INQUIRY, resort.email, customer_email, email_data, EMAIL_SUBJECT_INQUIRY)
+    return jsonify(results=email_content)
+
+
+def send_mail_contact_us(category, customer_email, comment):
+    subject = "Thanks for your message"
+    status = "We received your message"
+    email_data = get_model().EmailData(None, subject, status, comment)
+    email_data.resort_display_name = category
+    email_content = send_complex_message(EMAIL_TEMPLATE_INQUIRY, "gokitebaja@gmail.com", customer_email, email_data, EMAIL_SUBJECT_CONTACT)
     return jsonify(results=email_content)
 
 
