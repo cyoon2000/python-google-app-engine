@@ -637,10 +637,9 @@ def contact_us():
 
     customer_email = request.form['email']
     comment = request.form['comment']
-    #subject = request.form['subject']
-    subject = ""
+    name = request.form['name']
 
-    return send_mail_contact_us(subject, customer_email, comment)
+    return send_mail_contact_us(name, customer_email, comment)
 
 
 @bookings_api.route('/book/<groupname>', methods=['POST'])
@@ -877,11 +876,12 @@ def send_inquiry_mail(resort_name, customer_email, comment):
     return jsonify(results=email_content)
 
 
-def send_mail_contact_us(subject, customer_email, comment):
-    title = "Thanks for your message"
-    status = "We will get back to you shortly"
+def send_mail_contact_us(name, customer_email, comment):
+    #title = "Thanks for your message"
+    title = "Hi " + name
+    status = "Thanks for your message!"
     email_data = get_model().EmailData(None, title, status, comment)
-    email_data.resort_display_name = subject
+    email_data.resort_display_name = ""
     email_content = send_complex_message(EMAIL_TEMPLATE_INQUIRY, "gokitebaja@gmail.com", customer_email, email_data, EMAIL_SUBJECT_CONTACT)
     return jsonify(results=email_content)
 

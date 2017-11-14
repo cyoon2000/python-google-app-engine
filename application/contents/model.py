@@ -16,9 +16,13 @@ DATE_ISO_FORMAT = '%Y-%m-%d'
 RESORT_NAME_LIST = ["bj", "kirk", "dw", "kirt", "plp", "pelican", "vp", "vbay", "vwind"]
 
 # photo file path
-PHOTO_PATH_THUMB = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image-480/la-ventana-'
-PHOTO_PATH_1X = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
-PHOTO_PATH_2X = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
+PHOTO_PATH_BASE = 'https://s3-us-west-1.amazonaws.com/gokitebaja-static/'
+PHOTO_PATH_THUMB = PHOTO_PATH_BASE + 'gokitebaja/image-480/la-ventana-'
+PHOTO_PATH_1X = PHOTO_PATH_BASE + 'gokitebaja/image/la-ventana-'
+PHOTO_PATH_2X = PHOTO_PATH_BASE + 'gokitebaja/image/la-ventana-'
+#PHOTO_PATH_THUMB = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image-480/la-ventana-'
+#PHOTO_PATH_1X = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
+#PHOTO_PATH_2X = 'https://dl.dropboxusercontent.com/u/122147773/gokitebaja/image/la-ventana-'
 
 class ResortInfo(object):
     def __init__(self, resort, begin_date, end_date, count=None):
